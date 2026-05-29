@@ -1,7 +1,6 @@
 package root
 
 import (
-	"fmt"
 	"os"
 	"path/filepath"
 
@@ -184,7 +183,7 @@ func maybeHintCompletion(cmd *cobra.Command) {
 	if completionIsInstalled(shell) {
 		return
 	}
-	output.Hint(fmt.Sprintf("tab completions not set up — run: life-ustc completion install"))
+	output.Hint("tab completions not set up — run: life-ustc completion install")
 }
 
 func completionIsInstalled(shell string) bool {
