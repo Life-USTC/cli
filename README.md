@@ -2,7 +2,7 @@
 
 Command-line client for the [Life@USTC](https://life-ustc.tiankaima.dev) campus platform.
 
-Built with Go, inspired by [GitHub CLI](https://github.com/cli/cli).
+Built with Go around a [GitHub CLI](https://github.com/cli/cli)-style command model.
 
 ## Installation
 
@@ -38,36 +38,44 @@ life-ustc auth login
 life-ustc auth status
 life-ustc me
 
-# Browse (no auth required)
+# Personal workflows
+life-ustc todo --pending
+life-ustc todo create --title "Write report" --priority high
+life-ustc todo done <TODO_ID>
+life-ustc homework --pending
+life-ustc homework create <SECTION_ID> --title "Problem Set 1"
+life-ustc homework create
+life-ustc homework done <HOMEWORK_ID>
+life-ustc upload file ./report.pdf
+life-ustc upload download <ID> -o report.pdf
+life-ustc calendar get
+life-ustc calendar set <SECTION_ID_1> <SECTION_ID_2>
+
+# Browse (no auth required unless noted)
+# In a terminal, bare course/section/teacher list commands open an interactive TUI.
+life-ustc course
 life-ustc course list --search "数学分析"
+life-ustc course --no-interactive --limit 20
 life-ustc course view <JW_ID>
 life-ustc section list --semester-id <ID>
+life-ustc section
 life-ustc teacher list --search "张"
+life-ustc teacher
 life-ustc semester list
 life-ustc semester current
 life-ustc bus query --from east --to west
 life-ustc metadata
 
-# Personal features (auth required)
-life-ustc todo list
-life-ustc todo create --title "Write report" --priority high
-life-ustc todo update <ID> --completed
-life-ustc todo delete <ID>
-
-life-ustc homework list --section-id <ID>
-life-ustc homework complete <ID>
-
+# Community features
 life-ustc comment list --target-type section --target-id <ID>
 life-ustc comment create --target-type section --target-id <ID> --body "Great class!"
-
-life-ustc upload list
-life-ustc upload file ./report.pdf
-life-ustc upload download <ID> -o report.pdf
-
-life-ustc calendar get
-life-ustc calendar set <SECTION_ID_1> <SECTION_ID_2>
-
 life-ustc description get --target-type course --target-id <ID>
+life-ustc description set --target-type course --target-id <ID> --content "Good for freshmen."
+
+# Raw API access
+life-ustc api semesters/current
+life-ustc api todos -F title='Write report' -F priority=high
+life-ustc api sections --jq '.data[].code'
 
 # Admin
 life-ustc admin user list
@@ -75,13 +83,62 @@ life-ustc admin comment list --status active
 life-ustc admin suspension create --user-id <ID> --reason "spam"
 ```
 
+## Command Model
+
+- `me` is identity and account status.
+- Personal resources live at the top level: `todo`, `homework`, `calendar`, `upload`.
+- Browseable campus resources also live at the top level: `course`, `section`, `teacher`, `semester`, `schedule`, `bus`.
+- Generic cross-resource workflows are available via `comment`, `description`, and `api`.
+- Commands that benefit from guided input open their own TUI by default in an interactive terminal when no list/filter flags are provided, such as `course`, `section`, and `teacher`; use `--no-interactive` to force plain table output.
+
 ## JSON output
 
-All commands support `--format json` for machine-readable output:
+All commands support `--format json` or `--json` for machine-readable output:
 
 ```bash
-life-ustc --format json semester list
-life-ustc --format json course view 12345
+life-ustc --json semester list
+life-ustc --json course view 12345
+life-ustc section list --jq '.data[].code'
+```
+
+## Shell Integration
+
+Install completion into your current shell without manually registering scripts:
+
+```bash
+life-ustc completion install
+```
+
+You can also target a specific shell:
+
+```bash
+life-ustc completion install --shell zsh
+life-ustc completion install --shell bash
+```
+
+Manual script generation remains available for package managers or custom setups:
+
+```bash
+life-ustc completion -s zsh
+life-ustc completion -s fish
+```
+
+## Raw API
+
+Use `life-ustc api` for unsupported or newly added endpoints.
+
+```bash
+# GET /api/metadata
+life-ustc api metadata
+
+# POST /api/todos with JSON body inferred from fields
+life-ustc api todos -F title='Write report' -F priority=high
+
+# POST exact request body from a file
+life-ustc api -X POST todos --input ./todo.json
+
+# Include response headers
+life-ustc api -i metadata
 ```
 
 ## Configuration
@@ -96,6 +153,7 @@ life-ustc --format json course view 12345
 |-------------|--------------------------------|
 | `--server`  | Server URL                     |
 | `--format`  | Output format (table/json)     |
+| `--jq`      | Filter JSON output with jq     |
 | `--no-color`| Disable colored output         |
 | `--version` | Show version                   |
 | `--help`    | Show help                      |
