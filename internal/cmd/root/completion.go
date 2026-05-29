@@ -95,7 +95,7 @@ shell needs an explicit source or fpath entry.`,
 
 			output.Success(fmt.Sprintf("Installed %s completion.", shellName))
 			output.Info(fmt.Sprintf("Script: %s", install.scriptPath))
-			if install.rcPath != "" {
+			if install.rcPath != "" && install.rcBlock != "" {
 				output.Info(fmt.Sprintf("Shell profile: %s", install.rcPath))
 			}
 			if install.reloadHint != "" {
@@ -351,36 +351,29 @@ func planCompletionInstall(shell string) (*completionInstall, error) {
 
 	switch shell {
 	case "bash":
-		scriptPath := filepath.Join(home, ".local", "share", "bash-completion", "completions", "life-ustc")
+		scriptPath, rcBlock := planBashInstall(home)
 		rcPath := preferredBashRC(home)
+		reloadHint := "restart your shell"
+		if rcBlock != "" {
+			reloadHint = fmt.Sprintf("restart your shell or run: source %s", rcPath)
+		}
 		return &completionInstall{
 			scriptPath: scriptPath,
 			rcPath:     rcPath,
-			rcBlock: managedBlock(fmt.Sprintf(`for __life_ustc_bash_completion in \
-  /usr/share/bash-completion/bash_completion \
-  /etc/bash_completion; do
-  if [ -f "$__life_ustc_bash_completion" ]; then
-    source "$__life_ustc_bash_completion"
-    break
-  fi
-done
-unset __life_ustc_bash_completion
-if [ -f %q ]; then
-  source %q
-fi`, scriptPath, scriptPath)),
-			reloadHint: fmt.Sprintf("restart your shell or run: source %s", rcPath),
+			rcBlock:    rcBlock,
+			reloadHint: reloadHint,
 		}, nil
 	case "zsh":
-		compDir := filepath.Join(home, ".zsh", "completions")
+		scriptPath, rcPath, rcBlock := planZshInstall(home)
+		reloadHint := "restart your shell"
+		if rcPath != "" {
+			reloadHint = fmt.Sprintf("restart your shell or run: source %s", rcPath)
+		}
 		return &completionInstall{
-			scriptPath: filepath.Join(compDir, "_life-ustc"),
-			rcPath:     filepath.Join(home, ".zshrc"),
-			rcBlock: managedBlock(fmt.Sprintf(`fpath=(%q $fpath)
-if ! (( $+functions[compdef] )); then
-  autoload -Uz compinit
-  compinit -i
-fi`, compDir)),
-			reloadHint: fmt.Sprintf("restart your shell or run: source %s", filepath.Join(home, ".zshrc")),
+			scriptPath: scriptPath,
+			rcPath:     rcPath,
+			rcBlock:    rcBlock,
+			reloadHint: reloadHint,
 		}, nil
 	case "fish":
 		configHome := configHome(home)
@@ -400,6 +393,62 @@ fi`, compDir)),
 	default:
 		return nil, fmt.Errorf("unsupported shell %q", shell)
 	}
+}
+
+func planZshInstall(home string) (scriptPath, rcPath, rcBlock string) {
+	// Prefer system site-functions directories that are already in $fpath.
+	// Installing there makes completion work instantly with zero RC changes.
+	for _, dir := range []string{
+		"/usr/local/share/zsh/site-functions",
+		"/usr/share/zsh/site-functions",
+	} {
+		if isDirWritable(dir) {
+			return filepath.Join(dir, "_life-ustc"), "", ""
+		}
+	}
+
+	// Fall back to user-local completion directory with RC fpath entry.
+	compDir := filepath.Join(home, ".zsh", "completions")
+	return filepath.Join(compDir, "_life-ustc"),
+		filepath.Join(home, ".zshrc"),
+		managedBlock(fmt.Sprintf(`fpath=(%q $fpath)
+if ! (( $+functions[compdef] )); then
+  autoload -Uz compinit
+  compinit -i
+fi`, compDir))
+}
+
+func planBashInstall(home string) (scriptPath, rcBlock string) {
+	systemScript := "/usr/share/bash-completion/completions/life-ustc"
+	userScript := filepath.Join(home, ".local", "share", "bash-completion", "completions", "life-ustc")
+
+	if isDirWritable(filepath.Dir(systemScript)) {
+		return systemScript, ""
+	}
+
+	return userScript, managedBlock(fmt.Sprintf(`for __life_ustc_bash_completion in \
+  /usr/share/bash-completion/bash_completion \
+  /etc/bash_completion; do
+  if [ -f "$__life_ustc_bash_completion" ]; then
+    source "$__life_ustc_bash_completion"
+    break
+  fi
+done
+unset __life_ustc_bash_completion
+if [ -f %q ]; then
+  source %q
+fi`, userScript, userScript))
+}
+
+func isDirWritable(path string) bool {
+	f, err := os.CreateTemp(path, ".life-ustc-write-test-")
+	if err != nil {
+		return false
+	}
+	name := f.Name()
+	_ = f.Close()
+	_ = os.Remove(name)
+	return true
 }
 
 func preferredBashRC(home string) string {
