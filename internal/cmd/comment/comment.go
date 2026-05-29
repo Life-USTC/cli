@@ -1,15 +1,12 @@
 package comment
 
 import (
-	"bufio"
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"os"
 	"strings"
 
 	"github.com/spf13/cobra"
-	"golang.org/x/term"
 
 	"github.com/Life-USTC/CLI/internal/api"
 	"github.com/Life-USTC/CLI/internal/cmd/cmdutil"
@@ -17,38 +14,142 @@ import (
 	"github.com/Life-USTC/CLI/internal/output"
 )
 
-func isInteractive() bool {
-	return term.IsTerminal(int(os.Stdin.Fd())) && term.IsTerminal(int(os.Stdout.Fd()))
+var targetTypes = []string{"section", "course", "teacher", "section-teacher", "homework"}
+
+type commentTarget struct {
+	targetType string
+	targetID   string
+	sectionID  string
+	teacherID  string
 }
 
-func promptText(label string) string {
-	fmt.Printf("%s: ", label)
-	s := bufio.NewScanner(os.Stdin)
-	if s.Scan() {
-		return strings.TrimSpace(s.Text())
+func validVisibility(visibility string) bool {
+	switch visibility {
+	case "public", "logged_in_only", "anonymous":
+		return true
+	default:
+		return false
 	}
-	return ""
 }
 
-func promptSelect(label string, choices []string) string {
-	fmt.Printf("%s:\n", label)
-	for i, c := range choices {
-		fmt.Printf("  %d) %s\n", i+1, c)
-	}
-	fmt.Print("Choice: ")
-	s := bufio.NewScanner(os.Stdin)
-	if s.Scan() {
-		text := strings.TrimSpace(s.Text())
-		for i, c := range choices {
-			if text == cmdutil.Itoa(i+1) || strings.EqualFold(text, c) {
-				return c
-			}
+func validCommentTargetType(targetType string) bool {
+	for _, candidate := range targetTypes {
+		if targetType == candidate {
+			return true
 		}
 	}
-	return choices[0]
+	return false
 }
 
-var targetTypes = []string{"section", "course", "teacher", "section-teacher", "homework"}
+func validateTarget(target commentTarget, requireID bool) error {
+	if !validCommentTargetType(target.targetType) {
+		return fmt.Errorf("invalid --target-type %q", target.targetType)
+	}
+	if !requireID {
+		return nil
+	}
+	if target.targetType == "section-teacher" {
+		if target.sectionID == "" || target.teacherID == "" {
+			return fmt.Errorf("--section-id and --teacher-id are required for section-teacher target")
+		}
+		return nil
+	}
+	if target.targetID == "" {
+		return fmt.Errorf("--target-id is required for this target type")
+	}
+	return nil
+}
+
+func listCommentColumns() []output.Column {
+	return []output.Column{
+		{Header: "ID", Key: "id"},
+		{Header: "Body", Key: "body"},
+		{Header: "Visibility", Key: "visibility"},
+		{Header: "Created", Key: "createdAt"},
+	}
+}
+
+func runCommentList(cmd *cobra.Command, target commentTarget) error {
+	if err := validateTarget(target, false); err != nil {
+		return err
+	}
+	c, err := api.NewTypedClient(cmdutil.ServerFromCmd(cmd), false)
+	if err != nil {
+		return err
+	}
+	params := &openapi.ListCommentsParams{
+		TargetType: openapi.ListCommentsParamsTargetType(target.targetType),
+	}
+	if target.targetID != "" {
+		params.TargetId = &target.targetID
+	}
+	if target.sectionID != "" {
+		params.SectionId = &target.sectionID
+	}
+	if target.teacherID != "" {
+		params.TeacherId = &target.teacherID
+	}
+	data, err := api.ParseResponseRaw(c.ListComments(api.Ctx(), params))
+	if err != nil {
+		return err
+	}
+	_, rows, total, pg := cmdutil.ExtractList(data, "comments")
+	return output.OutputList(data, rows, listCommentColumns(), total, pg)
+}
+
+func runCommentCreate(cmd *cobra.Command, target commentTarget, body, visibility, parentID string, anonymous bool) error {
+	if !validVisibility(visibility) {
+		return fmt.Errorf("invalid --visibility %q (use public, logged_in_only, or anonymous)", visibility)
+	}
+	if err := validateTarget(target, true); err != nil {
+		return err
+	}
+	c, err := api.NewTypedClient(cmdutil.ServerFromCmd(cmd), true)
+	if err != nil {
+		return err
+	}
+	params := &openapi.CreateCommentParams{
+		TargetType: openapi.CreateCommentParamsTargetType(target.targetType),
+	}
+	if target.targetID != "" {
+		params.TargetId = &target.targetID
+	}
+	if target.sectionID != "" {
+		params.SectionId = &target.sectionID
+	}
+	if target.teacherID != "" {
+		params.TeacherId = &target.teacherID
+	}
+
+	vis := openapi.CommentCreateRequestSchemaVisibility(visibility)
+	reqBody := openapi.CreateCommentJSONRequestBody{
+		TargetType:  openapi.CommentCreateRequestSchemaTargetType(target.targetType),
+		Body:        body,
+		Visibility:  &vis,
+		IsAnonymous: &anonymous,
+	}
+	if target.targetID != "" {
+		reqBody.TargetId = &target.targetID
+	}
+	if target.sectionID != "" {
+		reqBody.SectionId = &target.sectionID
+	}
+	if target.teacherID != "" {
+		reqBody.TeacherId = &target.teacherID
+	}
+	if parentID != "" {
+		reqBody.ParentId = &parentID
+	}
+
+	data, err := api.ParseResponseRaw(c.CreateComment(api.Ctx(), params, reqBody))
+	if err != nil {
+		return err
+	}
+	m := cmdutil.AsMap(data)
+	id, _ := m["id"].(string)
+	output.Success(fmt.Sprintf("Comment created: %s", id))
+	return nil
+}
 
 func NewCmdComment() *cobra.Command {
 	cmd := &cobra.Command{
@@ -87,26 +188,7 @@ func newCmdListFor(targetType string) *cobra.Command {
 		Short:   fmt.Sprintf("List comments for a %s", targetType),
 		Args:    cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			c, err := api.NewTypedClient(cmdutil.ServerFromCmd(cmd), false)
-			if err != nil {
-				return err
-			}
-			params := &openapi.ListCommentsParams{
-				TargetType: openapi.ListCommentsParamsTargetType(targetType),
-				TargetId:   &args[0],
-			}
-			data, err := api.ParseResponseRaw(c.ListComments(api.Ctx(), params))
-			if err != nil {
-				return err
-			}
-			_, rows, total, pg := cmdutil.ExtractList(data, "comments")
-			output.OutputList(data, rows, []output.Column{
-				{Header: "ID", Key: "id"},
-				{Header: "Body", Key: "body"},
-				{Header: "Visibility", Key: "visibility"},
-				{Header: "Created", Key: "createdAt"},
-			}, total, pg)
-			return nil
+			return runCommentList(cmd, commentTarget{targetType: targetType, targetID: args[0]})
 		},
 	}
 	return cmd
@@ -124,39 +206,12 @@ func newCmdCreateFor(targetType string) *cobra.Command {
 		Args:    cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if body == "" {
-				if !isInteractive() {
+				if !cmdutil.IsInteractive() {
 					return fmt.Errorf("--body is required in non-interactive mode")
 				}
-				body = promptText("Comment body")
+				body = cmdutil.PromptText("Comment body")
 			}
-			c, err := api.NewTypedClient(cmdutil.ServerFromCmd(cmd), true)
-			if err != nil {
-				return err
-			}
-			targetIdVal := args[0]
-			params := &openapi.CreateCommentParams{
-				TargetType: openapi.CreateCommentParamsTargetType(targetType),
-				TargetId:   &targetIdVal,
-			}
-			vis := openapi.CommentCreateRequestSchemaVisibility(visibility)
-			reqBody := openapi.CreateCommentJSONRequestBody{
-				TargetType:  openapi.CommentCreateRequestSchemaTargetType(targetType),
-				TargetId:    &targetIdVal,
-				Body:        body,
-				Visibility:  &vis,
-				IsAnonymous: &anonymous,
-			}
-			if parentID != "" {
-				reqBody.ParentId = &parentID
-			}
-			data, err := api.ParseResponseRaw(c.CreateComment(api.Ctx(), params, reqBody))
-			if err != nil {
-				return err
-			}
-			m := cmdutil.AsMap(data)
-			id, _ := m["id"].(string)
-			output.Success(fmt.Sprintf("Comment created: %s", id))
-			return nil
+			return runCommentCreate(cmd, commentTarget{targetType: targetType, targetID: args[0]}, body, visibility, parentID, anonymous)
 		},
 	}
 	cmd.Flags().StringVarP(&body, "body", "b", "", "Comment body")
@@ -178,34 +233,12 @@ func newCmdList() *cobra.Command {
 			if targetType == "" {
 				return fmt.Errorf("--target-type is required")
 			}
-			c, err := api.NewTypedClient(cmdutil.ServerFromCmd(cmd), false)
-			if err != nil {
-				return err
-			}
-			params := &openapi.ListCommentsParams{
-				TargetType: openapi.ListCommentsParamsTargetType(targetType),
-			}
-			if targetID != "" {
-				params.TargetId = &targetID
-			}
-			if sectionID != "" {
-				params.SectionId = &sectionID
-			}
-			if teacherID != "" {
-				params.TeacherId = &teacherID
-			}
-			data, err := api.ParseResponseRaw(c.ListComments(api.Ctx(), params))
-			if err != nil {
-				return err
-			}
-			_, rows, total, pg := cmdutil.ExtractList(data, "comments")
-			output.OutputList(data, rows, []output.Column{
-				{Header: "ID", Key: "id"},
-				{Header: "Body", Key: "body"},
-				{Header: "Visibility", Key: "visibility"},
-				{Header: "Created", Key: "createdAt"},
-			}, total, pg)
-			return nil
+			return runCommentList(cmd, commentTarget{
+				targetType: targetType,
+				targetID:   targetID,
+				sectionID:  sectionID,
+				teacherID:  teacherID,
+			})
 		},
 	}
 	cmd.Flags().StringVar(&targetType, "target-type", "", "Target type (section, course, teacher, section-teacher, homework)")
@@ -231,8 +264,7 @@ func newCmdView() *cobra.Command {
 				return err
 			}
 			if output.IsJSON() {
-				output.JSON(data)
-				return nil
+				return output.JSON(data)
 			}
 			m := cmdutil.AsMap(data)
 			output.KVWithTitle([]output.KVPair{
@@ -247,12 +279,7 @@ func newCmdView() *cobra.Command {
 			if replies, ok := m["replies"].([]any); ok && len(replies) > 0 {
 				fmt.Println()
 				output.Bold("  Replies")
-				var rows []map[string]any
-				for _, r := range replies {
-					if row, ok := r.(map[string]any); ok {
-						rows = append(rows, row)
-					}
-				}
+				rows := cmdutil.RowsFromAny(replies)
 				output.Table(rows, []output.Column{
 					{Header: "ID", Key: "id"},
 					{Header: "Body", Key: "body"},
@@ -277,79 +304,33 @@ func newCmdCreate() *cobra.Command {
 		Long:    "Post a comment. Prompts interactively when --target-type/--body are omitted.",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if targetType == "" || body == "" {
-				if !isInteractive() {
+				if !cmdutil.IsInteractive() {
 					return fmt.Errorf("--target-type and --body are required in non-interactive mode")
 				}
 				if targetType == "" {
-					targetType = promptSelect("Target type", targetTypes)
+					targetType = cmdutil.PromptSelect("Target type", targetTypes)
 				}
 				if targetType == "section-teacher" {
 					if sectionID == "" {
-						sectionID = promptText("Section ID")
+						sectionID = cmdutil.PromptText("Section ID")
 					}
 					if teacherID == "" {
-						teacherID = promptText("Teacher ID")
+						teacherID = cmdutil.PromptText("Teacher ID")
 					}
 				} else if targetID == "" {
-					targetID = promptText("Target ID")
+					targetID = cmdutil.PromptText("Target ID")
 				}
 				if body == "" {
-					body = promptText("Comment body")
+					body = cmdutil.PromptText("Comment body")
 				}
 			}
 
-			// Validate required IDs
-			if targetType == "section-teacher" {
-				if sectionID == "" || teacherID == "" {
-					return fmt.Errorf("--section-id and --teacher-id are required for section-teacher target")
-				}
-			} else if targetID == "" {
-				return fmt.Errorf("--target-id is required for this target type")
-			}
-
-			c, err := api.NewTypedClient(cmdutil.ServerFromCmd(cmd), true)
-			if err != nil {
-				return err
-			}
-			params := &openapi.CreateCommentParams{
-				TargetType: openapi.CreateCommentParamsTargetType(targetType),
-			}
-			if targetID != "" {
-				params.TargetId = &targetID
-			}
-			if sectionID != "" {
-				params.SectionId = &sectionID
-			}
-			if teacherID != "" {
-				params.TeacherId = &teacherID
-			}
-			vis := openapi.CommentCreateRequestSchemaVisibility(visibility)
-			reqBody := openapi.CreateCommentJSONRequestBody{
-				TargetType:  openapi.CommentCreateRequestSchemaTargetType(targetType),
-				Body:        body,
-				Visibility:  &vis,
-				IsAnonymous: &anonymous,
-			}
-			if targetID != "" {
-				reqBody.TargetId = &targetID
-			}
-			if sectionID != "" {
-				reqBody.SectionId = &sectionID
-			}
-			if teacherID != "" {
-				reqBody.TeacherId = &teacherID
-			}
-			if parentID != "" {
-				reqBody.ParentId = &parentID
-			}
-			data, err := api.ParseResponseRaw(c.CreateComment(api.Ctx(), params, reqBody))
-			if err != nil {
-				return err
-			}
-			m := cmdutil.AsMap(data)
-			id, _ := m["id"].(string)
-			output.Success(fmt.Sprintf("Comment created: %s", id))
-			return nil
+			return runCommentCreate(cmd, commentTarget{
+				targetType: targetType,
+				targetID:   targetID,
+				sectionID:  sectionID,
+				teacherID:  teacherID,
+			}, body, visibility, parentID, anonymous)
 		},
 	}
 	cmd.Flags().StringVar(&targetType, "target-type", "", "Target type")
@@ -366,10 +347,34 @@ func newCmdCreate() *cobra.Command {
 func newCmdUpdate() *cobra.Command {
 	var body, visibility string
 	cmd := &cobra.Command{
-		Use:   "update <comment-id>",
+		Use:   "update [comment-id]",
 		Short: "Edit a comment",
-		Args:  cobra.ExactArgs(1),
+		Long:  "Edit a comment. When run interactively without an ID, shows your recent comments and lets you pick one.",
+		Args:  cobra.MaximumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
+			if visibility != "" && !validVisibility(visibility) {
+				return fmt.Errorf("invalid --visibility %q (use public, logged_in_only, or anonymous)", visibility)
+			}
+			id := ""
+			if len(args) == 1 {
+				id = strings.TrimSpace(args[0])
+			}
+			if id == "" {
+				if !cmdutil.IsInteractive() {
+					return fmt.Errorf("comment id is required in non-interactive mode")
+				}
+				picked, err := promptCommentPick(cmd, "Pick a comment to edit")
+				if err != nil {
+					return err
+				}
+				if picked == nil {
+					return nil
+				}
+				id, _ = picked["id"].(string)
+				if body == "" {
+					body = cmdutil.PromptText("New body")
+				}
+			}
 			c, err := api.NewTypedClient(cmdutil.ServerFromCmd(cmd), true)
 			if err != nil {
 				return err
@@ -388,7 +393,7 @@ func newCmdUpdate() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			_, err = api.ParseResponseRaw(c.UpdateCommentWithBody(api.Ctx(), args[0], "application/json", bytes.NewReader(jsonBytes)))
+			_, err = api.ParseResponseRaw(c.UpdateCommentWithBody(api.Ctx(), id, "application/json", bytes.NewReader(jsonBytes)))
 			if err != nil {
 				return err
 			}
@@ -404,28 +409,44 @@ func newCmdUpdate() *cobra.Command {
 func newCmdDelete() *cobra.Command {
 	var yes bool
 	cmd := &cobra.Command{
-		Use:     "delete <comment-id>",
+		Use:     "delete [comment-id]",
 		Aliases: []string{"rm"},
 		Short:   "Delete a comment",
-		Args:    cobra.ExactArgs(1),
+		Long:    "Delete a comment. When run interactively without an ID, shows your recent comments and lets you pick one.",
+		Args:    cobra.MaximumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			if !yes {
-				fmt.Print("Delete this comment? (y/N) ")
-				s := bufio.NewScanner(os.Stdin)
-				if s.Scan() && strings.ToLower(strings.TrimSpace(s.Text())) != "y" {
-					output.Warning("Cancelled.")
+			id := ""
+			var row map[string]any
+			if len(args) == 1 {
+				id = strings.TrimSpace(args[0])
+			}
+			if id == "" {
+				if !cmdutil.IsInteractive() {
+					return fmt.Errorf("comment id is required in non-interactive mode")
+				}
+				picked, err := promptCommentPick(cmd, "Pick a comment to delete")
+				if err != nil {
+					return err
+				}
+				if picked == nil {
 					return nil
 				}
+				id, _ = picked["id"].(string)
+				row = picked
+			}
+			label := commentLabelFromRow(row)
+			if !cmdutil.Confirm(fmt.Sprintf("Delete %s?", label), yes) {
+				return nil
 			}
 			c, err := api.NewTypedClient(cmdutil.ServerFromCmd(cmd), true)
 			if err != nil {
 				return err
 			}
-			_, err = api.ParseResponseRaw(c.DeleteCommentWithBody(api.Ctx(), args[0], "application/json", strings.NewReader("{}")))
+			_, err = api.ParseResponseRaw(c.DeleteCommentWithBody(api.Ctx(), id, "application/json", strings.NewReader("{}")))
 			if err != nil {
 				return err
 			}
-			output.Success("Comment deleted.")
+			output.Success(fmt.Sprintf("Deleted: %s", label))
 			return nil
 		},
 	}
@@ -474,4 +495,44 @@ func newCmdReact() *cobra.Command {
 	_ = cmd.MarkFlagRequired("type")
 	cmd.Flags().BoolVar(&remove, "remove", false, "Remove reaction")
 	return cmd
+}
+
+// promptCommentPick loads the user's recent comments and lets them pick one.
+func promptCommentPick(cmd *cobra.Command, prompt string) (map[string]any, error) {
+	c, err := api.NewTypedClient(cmdutil.ServerFromCmd(cmd), true)
+	if err != nil {
+		return nil, err
+	}
+	// Fetch the user's own comments — use a general list with a limit
+	params := &openapi.ListCommentsParams{}
+	data, err := api.ParseResponseRaw(c.ListComments(api.Ctx(), params))
+	if err != nil {
+		return nil, err
+	}
+	list := cmdutil.NewListResult(data, "comments").FinalizeServerSide(20)
+	if len(list.Rows) == 0 {
+		output.Dim("  No comments found.")
+		return nil, nil
+	}
+	return cmdutil.PromptPick(list.Rows, listCommentColumns(), "id", prompt)
+}
+
+// commentLabelFromRow returns a short summary for success messages.
+func commentLabelFromRow(row map[string]any) string {
+	if row == nil {
+		return "this comment"
+	}
+	body, _ := row["body"].(string)
+	if body != "" {
+		// Truncate long bodies for readable confirm messages
+		if len(body) > 40 {
+			return body[:37] + "..."
+		}
+		return body
+	}
+	id, _ := row["id"].(string)
+	if id != "" {
+		return "comment " + id
+	}
+	return "this comment"
 }

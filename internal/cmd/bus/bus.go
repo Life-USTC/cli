@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/fatih/color"
@@ -52,7 +53,7 @@ func addBusQueryFlags(cmd *cobra.Command, origin, destination, dayType, now *str
 	cmd.Flags().StringVar(origin, "from", "", "Origin campus ID")
 	cmd.Flags().StringVar(destination, "to", "", "Destination campus ID")
 	cmd.Flags().StringVar(dayType, "day-type", "", "Day type: auto, weekday, weekend")
-	cmd.Flags().StringVar(now, "now", "", "Override current time (ISO 8601)")
+	cmd.Flags().StringVar(now, "now", "", "Override current time (RFC 3339, e.g. 2026-05-08T08:00:00+08:00)")
 	cmd.Flags().BoolVar(showDeparted, "show-departed", false, "Show already-departed trips")
 	cmd.Flags().BoolVar(includeAll, "all", false, "Include all trips (not just upcoming)")
 	cmd.Flags().IntVar(limit, "limit", 0, "Max trips to show")
@@ -64,12 +65,8 @@ func runBusQuery(cmd *cobra.Command, origin, destination, dayType, now string, s
 		return err
 	}
 	params := &openapi.QueryBusParams{}
-	if origin != "" {
-		params.OriginCampusId = &origin
-	}
-	if destination != "" {
-		params.DestinationCampusId = &destination
-	}
+	params.OriginCampusId = cmdutil.StringPtrIfSet(origin)
+	params.DestinationCampusId = cmdutil.StringPtrIfSet(destination)
 	if dayType != "" {
 		dt := openapi.QueryBusParamsDayType(dayType)
 		params.DayType = &dt
@@ -89,17 +86,13 @@ func runBusQuery(cmd *cobra.Command, origin, destination, dayType, now string, s
 		v := openapi.QueryBusParamsIncludeAllTripsTrue
 		params.IncludeAllTrips = &v
 	}
-	if limit > 0 {
-		l := cmdutil.Itoa(limit)
-		params.Limit = &l
-	}
+	params.Limit = cmdutil.IntStringPtrIfPositive(limit)
 	data, err := api.ParseResponseRaw(c.QueryBus(api.Ctx(), params))
 	if err != nil {
 		return err
 	}
 	if output.IsJSON() {
-		output.JSON(data)
-		return nil
+		return output.JSON(data)
 	}
 	renderBus(cmdutil.AsMap(data))
 	return nil
@@ -137,93 +130,69 @@ func renderBus(data map[string]any) {
 		return
 	}
 
-	rec := cmdutil.AsMap(data["recommended"])
-	if rec != nil {
-		routeName := resolveRouteName(rec)
-		fmt.Println()
-		output.Bold(fmt.Sprintf("  ★ Recommended — %s", routeName))
-		printRouteMatch(rec)
-	}
-
-	if matches, ok := data["matches"].([]any); ok {
-		for _, m := range matches {
-			match := cmdutil.AsMap(m)
-			if match == nil {
+	// Build routeId → route name lookup
+	routeNames := map[float64]string{}
+	if routes, ok := data["routes"].([]any); ok {
+		for _, r := range routes {
+			rm := cmdutil.AsMap(r)
+			if rm == nil {
 				continue
 			}
-			if isRec, _ := match["isRecommended"].(bool); isRec && rec != nil {
-				continue
+			id, _ := rm["id"].(float64)
+			name, _ := rm["nameCn"].(string)
+			if name == "" {
+				name, _ = rm["namePrimary"].(string)
 			}
-			routeName := resolveRouteName(match)
-			fmt.Println()
-			output.Bold(fmt.Sprintf("  %s", routeName))
-			printRouteMatch(match)
+			routeNames[id] = name
 		}
 	}
 
-	if rec == nil {
-		if matches, _ := data["matches"].([]any); len(matches) == 0 {
-			output.Dim("  No bus schedules found.")
+	// Group trips by routeId preserving insertion order
+	type routeGroup struct {
+		id    float64
+		name  string
+		trips []map[string]any
+	}
+	var groups []routeGroup
+	groupIdx := map[float64]int{}
+
+	if trips, ok := data["trips"].([]any); ok {
+		for _, t := range trips {
+			trip := cmdutil.AsMap(t)
+			if trip == nil {
+				continue
+			}
+			rid, _ := trip["routeId"].(float64)
+			if idx, exists := groupIdx[rid]; exists {
+				groups[idx].trips = append(groups[idx].trips, trip)
+			} else {
+				name := routeNames[rid]
+				if name == "" {
+					name = fmt.Sprintf("Route %d", int(rid))
+				}
+				groupIdx[rid] = len(groups)
+				groups = append(groups, routeGroup{id: rid, name: name, trips: []map[string]any{trip}})
+			}
+		}
+	}
+
+	if len(groups) == 0 {
+		output.Dim("  No bus schedules found.")
+	}
+
+	for _, g := range groups {
+		fmt.Println()
+		output.Bold(fmt.Sprintf("  %s", g.name))
+		for _, trip := range g.trips {
+			printTripLine(trip, false, "")
 		}
 	}
 
 	if notice := cmdutil.AsMap(data["notice"]); notice != nil {
-		if content, ok := notice["content"].(string); ok && content != "" {
+		if msg, ok := notice["message"].(string); ok && msg != "" {
 			fmt.Println()
-			output.Dim(fmt.Sprintf("  Notice: %s", content))
+			output.Dim(fmt.Sprintf("  Notice: %s", msg))
 		}
-	}
-}
-
-func resolveRouteName(match map[string]any) string {
-	if route := cmdutil.AsMap(match["route"]); route != nil {
-		if name, ok := route["nameCn"].(string); ok {
-			return name
-		}
-	}
-	return "Route"
-}
-
-func printRouteMatch(match map[string]any) {
-	nextTrip := cmdutil.AsMap(match["nextTrip"])
-	upcoming, _ := match["upcomingTrips"].([]any)
-	totalTrips := 0
-	if t, ok := match["totalTrips"].(float64); ok {
-		totalTrips = int(t)
-	}
-
-	if nextTrip != nil {
-		label := ""
-		if mins, ok := nextTrip["minutesUntilDeparture"].(float64); ok {
-			label = fmt.Sprintf("in %dmin", int(mins))
-		}
-		printTripLine(nextTrip, true, label)
-	}
-
-	nextID := ""
-	if nextTrip != nil {
-		if id, ok := nextTrip["id"].(string); ok {
-			nextID = id
-		}
-	}
-
-	for _, t := range upcoming {
-		trip := cmdutil.AsMap(t)
-		if trip == nil {
-			continue
-		}
-		if id, ok := trip["id"].(string); ok && id == nextID {
-			continue
-		}
-		printTripLine(trip, false, "")
-	}
-
-	shown := len(upcoming)
-	if nextTrip != nil {
-		shown++
-	}
-	if totalTrips > shown {
-		output.Dim(fmt.Sprintf("    … and %d more trips", totalTrips-shown))
 	}
 }
 
@@ -247,13 +216,16 @@ func printTripLine(trip map[string]any, highlight bool, label string) {
 	}
 
 	timeStr := dep
-	if dep != "" && arr != "" {
+	switch {
+	case dep != "" && arr != "":
 		timeStr = dep + " → " + arr
+	case dep == "":
+		timeStr = arr
 	}
 
 	line := fmt.Sprintf("    %s", timeStr)
 	if len(names) > 0 {
-		line += fmt.Sprintf("  (%s)", joinStrings(names, " → "))
+		line += fmt.Sprintf("  (%s)", strings.Join(names, " → "))
 	}
 	if label != "" {
 		line += "  " + color.GreenString(label)
@@ -266,39 +238,32 @@ func printTripLine(trip map[string]any, highlight bool, label string) {
 	}
 }
 
-func joinStrings(ss []string, sep string) string {
-	result := ""
-	for i, s := range ss {
-		if i > 0 {
-			result += sep
-		}
-		result += s
-	}
-	return result
-}
-
 func newCmdPreferences() *cobra.Command {
 	return &cobra.Command{
-		Use:   "preferences",
+		Use:     "preferences",
 		Aliases: []string{"prefs"},
-		Short: "Show your bus preferences",
+		Short:   "Show your bus preferences",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			c, err := api.NewTypedClient(cmdutil.ServerFromCmd(cmd), true)
 			if err != nil {
 				return err
 			}
-			data, err := api.ParseResponseRaw(c.GetBusPreferences(api.Ctx()))
+			rawData, err := api.ParseResponseRaw(c.GetBusPreferences(api.Ctx()))
 			if err != nil {
 				return err
 			}
-			output.OutputDetail(data, []output.FieldDef{
+			data := cmdutil.AsMap(rawData)
+			// API returns {"preference": {...}}; unwrap before display
+			if pref := cmdutil.AsMap(data["preference"]); pref != nil {
+				data = pref
+			}
+			return output.OutputDetail(data, []output.FieldDef{
 				{Key: "preferredOriginCampusId", Label: "Preferred origin"},
 				{Key: "preferredDestinationCampusId", Label: "Preferred destination"},
 				{Key: "favoriteCampusIds", Label: "Favorite campuses"},
 				{Key: "favoriteRouteIds", Label: "Favorite routes"},
 				{Key: "showDepartedTrips", Label: "Show departed"},
 			}, "Bus preferences")
-			return nil
 		},
 	}
 }
@@ -315,11 +280,11 @@ func newCmdSetPreferences() *cobra.Command {
 		Example: `  # Set preferred origin and destination
   life-ustc bus set-preferences --origin 1 --destination 2
 
-  # Toggle show departed trips
+  # Enable showing departed trips
   life-ustc bus set-preferences --show-departed
 
   # Set from raw JSON
-  life-ustc bus set-preferences --json '{"showDepartedTrips":true}'`,
+  life-ustc bus set-preferences --raw-json '{"showDepartedTrips":true}'`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			c, err := api.NewTypedClient(cmdutil.ServerFromCmd(cmd), true)
 			if err != nil {
@@ -342,7 +307,7 @@ func newCmdSetPreferences() *cobra.Command {
 					body["showDepartedTrips"] = showDeparted
 				}
 				if len(body) == 0 {
-					return fmt.Errorf("specify at least one flag (--origin, --destination, --show-departed) or use --json")
+					return fmt.Errorf("specify at least one flag (--origin, --destination, --show-departed) or use --raw-json")
 				}
 			}
 			bodyBytes, err := json.Marshal(body)

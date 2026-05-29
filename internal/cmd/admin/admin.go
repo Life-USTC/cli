@@ -1,10 +1,7 @@
 package admin
 
 import (
-	"bufio"
 	"fmt"
-	"os"
-	"strings"
 
 	"github.com/spf13/cobra"
 
@@ -63,30 +60,21 @@ func newCmdUserList() *cobra.Command {
 				return err
 			}
 			params := &openapi.ListAdminUsersParams{}
-			if search != "" {
-				params.Search = &search
-			}
-			if page > 0 {
-				p := cmdutil.Itoa(page)
-				params.Page = &p
-			}
-			if limit > 0 {
-				l := cmdutil.Itoa(limit)
-				params.Limit = &l
-			}
+			params.Search = cmdutil.StringPtrIfSet(search)
+			params.Page = cmdutil.IntStringPtrIfPositive(page)
+			params.Limit = cmdutil.IntStringPtrIfPositive(limit)
 			data, err := api.ParseResponseRaw(c.ListAdminUsers(api.Ctx(), params))
 			if err != nil {
 				return err
 			}
-			_, rows, total, pg := cmdutil.ExtractList(data)
-			output.OutputList(data, rows, []output.Column{
+			list := cmdutil.NewListResult(data, "data").FinalizeServerSide(limit)
+			return output.OutputList(list.Raw, list.Rows, []output.Column{
 				{Header: "ID", Key: "id"},
 				{Header: "Name", Key: "name"},
 				{Header: "Email", Key: "email"},
 				{Header: "Username", Key: "username"},
 				{Header: "Admin", Key: "isAdmin"},
-			}, total, pg)
-			return nil
+			}, list.Total, list.Page)
 		},
 	}
 	cmd.Flags().StringVar(&search, "search", "", "Search")
@@ -171,15 +159,14 @@ func newCmdSuspensionList() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			_, rows, total, pg := cmdutil.ExtractList(data)
-			output.OutputList(data, rows, []output.Column{
+			list := cmdutil.NewListResult(data, "data").FinalizeServerSide(0)
+			return output.OutputList(list.Raw, list.Rows, []output.Column{
 				{Header: "ID", Key: "id"},
 				{Header: "User", Key: "user.name"},
 				{Header: "Reason", Key: "reason"},
 				{Header: "Expires", Key: "expiresAt"},
 				{Header: "Created", Key: "createdAt"},
-			}, total, pg)
-			return nil
+			}, list.Total, list.Page)
 		},
 	}
 	return cmd
@@ -271,23 +258,19 @@ func newCmdCommentList() *cobra.Command {
 				s := openapi.ListAdminCommentsParamsStatus(status)
 				params.Status = &s
 			}
-			if limit > 0 {
-				l := cmdutil.Itoa(limit)
-				params.Limit = &l
-			}
+			params.Limit = cmdutil.IntStringPtrIfPositive(limit)
 			data, err := api.ParseResponseRaw(c.ListAdminComments(api.Ctx(), params))
 			if err != nil {
 				return err
 			}
-			_, rows, total, pg := cmdutil.ExtractList(data)
-			output.OutputList(data, rows, []output.Column{
+			list := cmdutil.NewListResult(data, "data").FinalizeServerSide(limit)
+			return output.OutputList(list.Raw, list.Rows, []output.Column{
 				{Header: "ID", Key: "id"},
 				{Header: "Body", Key: "body"},
 				{Header: "User", Key: "user.name"},
 				{Header: "Status", Key: "status"},
 				{Header: "Created", Key: "createdAt"},
-			}, total, pg)
-			return nil
+			}, list.Total, list.Page)
 		},
 	}
 	cmd.Flags().StringVar(&status, "status", "", "Status filter (active, softbanned, deleted, suspended)")
@@ -356,26 +339,20 @@ func newCmdDescriptionList() *cobra.Command {
 				h := openapi.ListAdminDescriptionsParamsHasContent(hasContent)
 				params.HasContent = &h
 			}
-			if search != "" {
-				params.Search = &search
-			}
-			if limit > 0 {
-				l := cmdutil.Itoa(limit)
-				params.Limit = &l
-			}
+			params.Search = cmdutil.StringPtrIfSet(search)
+			params.Limit = cmdutil.IntStringPtrIfPositive(limit)
 			data, err := api.ParseResponseRaw(c.ListAdminDescriptions(api.Ctx(), params))
 			if err != nil {
 				return err
 			}
-			_, rows, total, pg := cmdutil.ExtractList(data)
-			output.OutputList(data, rows, []output.Column{
+			list := cmdutil.NewListResult(data, "data").FinalizeServerSide(limit)
+			return output.OutputList(list.Raw, list.Rows, []output.Column{
 				{Header: "ID", Key: "id"},
 				{Header: "Type", Key: "targetType"},
 				{Header: "Target", Key: "targetId"},
 				{Header: "Content", Key: "content"},
 				{Header: "Updated", Key: "updatedAt"},
-			}, total, pg)
-			return nil
+			}, list.Total, list.Page)
 		},
 	}
 	cmd.Flags().StringVar(&targetType, "target-type", "", "Filter by type")
@@ -412,26 +389,20 @@ func newCmdHomeworkList() *cobra.Command {
 				s := openapi.ListAdminHomeworksParamsStatus(status)
 				params.Status = &s
 			}
-			if search != "" {
-				params.Search = &search
-			}
-			if limit > 0 {
-				l := cmdutil.Itoa(limit)
-				params.Limit = &l
-			}
+			params.Search = cmdutil.StringPtrIfSet(search)
+			params.Limit = cmdutil.IntStringPtrIfPositive(limit)
 			data, err := api.ParseResponseRaw(c.ListAdminHomeworks(api.Ctx(), params))
 			if err != nil {
 				return err
 			}
-			_, rows, total, pg := cmdutil.ExtractList(data)
-			output.OutputList(data, rows, []output.Column{
+			list := cmdutil.NewListResult(data, "data").FinalizeServerSide(limit)
+			return output.OutputList(list.Raw, list.Rows, []output.Column{
 				{Header: "ID", Key: "id"},
 				{Header: "Title", Key: "title"},
 				{Header: "Section", Key: "section.code"},
 				{Header: "Due", Key: "submissionDueAt"},
 				{Header: "Status", Key: "status"},
-			}, total, pg)
-			return nil
+			}, list.Total, list.Page)
 		},
 	}
 	cmd.Flags().StringVar(&status, "status", "", "Status (all, active, deleted)")
@@ -448,13 +419,8 @@ func newCmdHomeworkDelete() *cobra.Command {
 		Short:   "Delete a homework (admin)",
 		Args:    cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			if !yes {
-				fmt.Print("Delete this homework? (y/N) ")
-				s := bufio.NewScanner(os.Stdin)
-				if s.Scan() && strings.ToLower(strings.TrimSpace(s.Text())) != "y" {
-					output.Warning("Cancelled.")
-					return nil
-				}
+			if !cmdutil.Confirm("Delete this homework?", yes) {
+				return nil
 			}
 			c, err := api.NewTypedClient(cmdutil.ServerFromCmd(cmd), true)
 			if err != nil {
