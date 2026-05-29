@@ -1,6 +1,10 @@
 package root
 
 import (
+	"fmt"
+	"os"
+	"path/filepath"
+
 	"github.com/fatih/color"
 	"github.com/spf13/cobra"
 
@@ -9,6 +13,7 @@ import (
 	"github.com/Life-USTC/CLI/internal/cmd/authcmd"
 	"github.com/Life-USTC/CLI/internal/cmd/bus"
 	"github.com/Life-USTC/CLI/internal/cmd/calendar"
+	"github.com/Life-USTC/CLI/internal/cmd/cmdutil"
 	"github.com/Life-USTC/CLI/internal/cmd/comment"
 	"github.com/Life-USTC/CLI/internal/cmd/configcmd"
 	"github.com/Life-USTC/CLI/internal/cmd/course"
@@ -91,6 +96,9 @@ scripting, or drop down to 'life-ustc api' for raw endpoint access.`,
 			if noColor {
 				color.NoColor = true
 			}
+			if cmd.Parent() == nil && len(args) == 0 && !isCompletionCommand(cmd) {
+				maybeHintCompletion(cmd)
+			}
 		},
 		SilenceUsage:  true,
 		SilenceErrors: true,
@@ -151,4 +159,67 @@ scripting, or drop down to 'life-ustc api' for raw endpoint access.`,
 	configureHelp(cmd)
 
 	return cmd
+}
+
+func isCompletionCommand(cmd *cobra.Command) bool {
+	if cmd.Name() == "__complete" {
+		return true
+	}
+	for c := cmd; c != nil; c = c.Parent() {
+		if c.Name() == "completion" {
+			return true
+		}
+	}
+	return false
+}
+
+func maybeHintCompletion(cmd *cobra.Command) {
+	if !cmdutil.IsInteractive() || output.IsJSON() {
+		return
+	}
+	shell, ok := detectShell()
+	if !ok {
+		return
+	}
+	if completionIsInstalled(shell) {
+		return
+	}
+	output.Hint(fmt.Sprintf("tab completions not set up — run: life-ustc completion install"))
+}
+
+func completionIsInstalled(shell string) bool {
+	home, err := os.UserHomeDir()
+	if err != nil {
+		return false
+	}
+	switch shell {
+	case "bash":
+		for _, p := range []string{
+			"/usr/share/bash-completion/completions/life-ustc",
+			filepath.Join(home, ".local", "share", "bash-completion", "completions", "life-ustc"),
+		} {
+			if _, err := os.Stat(p); err == nil {
+				return true
+			}
+		}
+	case "zsh":
+		for _, p := range []string{
+			"/usr/share/zsh/site-functions/_life-ustc",
+			"/usr/local/share/zsh/site-functions/_life-ustc",
+			filepath.Join(home, ".zsh", "completions", "_life-ustc"),
+		} {
+			if _, err := os.Stat(p); err == nil {
+				return true
+			}
+		}
+	case "fish":
+		for _, p := range []string{
+			filepath.Join(home, ".config", "fish", "completions", "life-ustc.fish"),
+		} {
+			if _, err := os.Stat(p); err == nil {
+				return true
+			}
+		}
+	}
+	return false
 }
