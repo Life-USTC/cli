@@ -8,7 +8,8 @@ import (
 )
 
 func main() {
-	if err := root.NewCmdRoot().Execute(); err != nil {
+	cmd := root.NewCmdRoot()
+	if err := cmd.Execute(); err != nil {
 		output.Errorf("%s", err)
 		output.Hint("run 'life-ustc <command> --help' for usage information")
 		os.Exit(1)
