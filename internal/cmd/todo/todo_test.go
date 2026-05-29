@@ -63,13 +63,13 @@ func TestPriorityRank(t *testing.T) {
 }
 
 func TestPriorityRankOrderedCorrectly(t *testing.T) {
-	if !(priorityRank("high") > priorityRank("medium")) {
+	if priorityRank("high") <= priorityRank("medium") {
 		t.Error("high should outrank medium")
 	}
-	if !(priorityRank("medium") > priorityRank("low")) {
+	if priorityRank("medium") <= priorityRank("low") {
 		t.Error("medium should outrank low")
 	}
-	if !(priorityRank("low") > priorityRank("")) {
+	if priorityRank("low") <= priorityRank("") {
 		t.Error("low should outrank unknown/empty")
 	}
 }

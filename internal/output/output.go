@@ -146,7 +146,7 @@ func Table(rows []map[string]any, cols []Column) {
 
 func TableTo(w io.Writer, rows []map[string]any, cols []Column, emptyMsg string) {
 	if len(rows) == 0 {
-		fmt.Fprintln(w, color.New(color.Faint).Sprint(emptyMsg))
+		_, _ = fmt.Fprintln(w, color.New(color.Faint).Sprint(emptyMsg))
 		return
 	}
 
