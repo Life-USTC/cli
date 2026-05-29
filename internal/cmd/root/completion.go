@@ -80,26 +80,28 @@ shell needs an explicit source or fpath entry.`,
 				return err
 			}
 
-			if err := os.MkdirAll(filepath.Dir(install.scriptPath), 0o755); err != nil {
-				return err
-			}
-			if err := os.WriteFile(install.scriptPath, script.Bytes(), 0o644); err != nil {
+			actualPath, err := install.tryInstall(script.Bytes())
+			if err != nil {
 				return err
 			}
 
-			if install.rcPath != "" && install.rcBlock != "" {
+			if install.fallbackUsed && install.rcPath != "" && install.rcBlock != "" {
 				if err := upsertManagedBlock(install.rcPath, install.rcBlock); err != nil {
 					return err
 				}
 			}
 
 			output.Success(fmt.Sprintf("Installed %s completion.", shellName))
-			output.Info(fmt.Sprintf("Script: %s", install.scriptPath))
-			if install.rcPath != "" && install.rcBlock != "" {
+			output.Info(fmt.Sprintf("Script: %s", actualPath))
+			if install.fallbackUsed && install.rcPath != "" && install.rcBlock != "" {
 				output.Info(fmt.Sprintf("Shell profile: %s", install.rcPath))
 			}
 			if install.reloadHint != "" {
-				output.Hint(install.reloadHint)
+				if install.fallbackUsed {
+					output.Hint(fmt.Sprintf("restart your shell or run: source %s", install.rcPath))
+				} else {
+					output.Hint(install.reloadHint)
+				}
 			}
 			return nil
 		},
@@ -337,10 +339,36 @@ func completeShells(cmd *cobra.Command, args []string, toComplete string) ([]str
 }
 
 type completionInstall struct {
-	scriptPath string
-	rcPath     string
-	rcBlock    string
-	reloadHint string
+	scriptPath         string
+	fallbackScriptPath string
+	rcPath             string
+	rcBlock            string
+	reloadHint         string
+	fallbackUsed       bool
+}
+
+func (ci *completionInstall) tryInstall(script []byte) (string, error) {
+	if err := os.MkdirAll(filepath.Dir(ci.scriptPath), 0o755); err != nil {
+		return "", err
+	}
+	if err := os.WriteFile(ci.scriptPath, script, 0o644); err != nil {
+		if ci.fallbackScriptPath != "" && os.IsPermission(err) {
+			return ci.tryFallback(script)
+		}
+		return "", err
+	}
+	return ci.scriptPath, nil
+}
+
+func (ci *completionInstall) tryFallback(script []byte) (string, error) {
+	if err := os.MkdirAll(filepath.Dir(ci.fallbackScriptPath), 0o755); err != nil {
+		return "", err
+	}
+	if err := os.WriteFile(ci.fallbackScriptPath, script, 0o644); err != nil {
+		return "", err
+	}
+	ci.fallbackUsed = true
+	return ci.fallbackScriptPath, nil
 }
 
 func planCompletionInstall(shell string) (*completionInstall, error) {
@@ -351,30 +379,9 @@ func planCompletionInstall(shell string) (*completionInstall, error) {
 
 	switch shell {
 	case "bash":
-		scriptPath, rcBlock := planBashInstall(home)
-		rcPath := preferredBashRC(home)
-		reloadHint := "restart your shell"
-		if rcBlock != "" {
-			reloadHint = fmt.Sprintf("restart your shell or run: source %s", rcPath)
-		}
-		return &completionInstall{
-			scriptPath: scriptPath,
-			rcPath:     rcPath,
-			rcBlock:    rcBlock,
-			reloadHint: reloadHint,
-		}, nil
+		return planBashInstall(home), nil
 	case "zsh":
-		scriptPath, rcPath, rcBlock := planZshInstall(home)
-		reloadHint := "restart your shell"
-		if rcPath != "" {
-			reloadHint = fmt.Sprintf("restart your shell or run: source %s", rcPath)
-		}
-		return &completionInstall{
-			scriptPath: scriptPath,
-			rcPath:     rcPath,
-			rcBlock:    rcBlock,
-			reloadHint: reloadHint,
-		}, nil
+		return planZshInstall(home), nil
 	case "fish":
 		configHome := configHome(home)
 		fishConfig := filepath.Join(configHome, "fish")
@@ -395,38 +402,44 @@ func planCompletionInstall(shell string) (*completionInstall, error) {
 	}
 }
 
-func planZshInstall(home string) (scriptPath, rcPath, rcBlock string) {
-	// Prefer system site-functions directories that are already in $fpath.
-	// Installing there makes completion work instantly with zero RC changes.
+func planZshInstall(home string) *completionInstall {
+	fb := filepath.Join(home, ".zsh", "completions")
+	fbScript := filepath.Join(fb, "_life-ustc")
+	fbRCPath := filepath.Join(home, ".zshrc")
+	fbRCBlock := managedBlock(fmt.Sprintf(`fpath=(%q $fpath)
+if ! (( $+functions[compdef] )); then
+  autoload -Uz compinit
+  compinit -i
+fi`, fb))
+
 	for _, dir := range []string{
 		"/usr/local/share/zsh/site-functions",
 		"/usr/share/zsh/site-functions",
 	} {
-		if isDirWritable(dir) {
-			return filepath.Join(dir, "_life-ustc"), "", ""
+		if info, err := os.Stat(dir); err == nil && info.IsDir() {
+			return &completionInstall{
+				scriptPath:         filepath.Join(dir, "_life-ustc"),
+				fallbackScriptPath: fbScript,
+				rcPath:             fbRCPath,
+				rcBlock:            fbRCBlock,
+				reloadHint:         "restart your shell",
+			}
 		}
 	}
 
-	// Fall back to user-local completion directory with RC fpath entry.
-	compDir := filepath.Join(home, ".zsh", "completions")
-	return filepath.Join(compDir, "_life-ustc"),
-		filepath.Join(home, ".zshrc"),
-		managedBlock(fmt.Sprintf(`fpath=(%q $fpath)
-if ! (( $+functions[compdef] )); then
-  autoload -Uz compinit
-  compinit -i
-fi`, compDir))
+	return &completionInstall{
+		scriptPath: fbScript,
+		rcPath:     fbRCPath,
+		rcBlock:    fbRCBlock,
+		reloadHint: fmt.Sprintf("restart your shell or run: source %s", fbRCPath),
+	}
 }
 
-func planBashInstall(home string) (scriptPath, rcBlock string) {
+func planBashInstall(home string) *completionInstall {
 	systemScript := "/usr/share/bash-completion/completions/life-ustc"
 	userScript := filepath.Join(home, ".local", "share", "bash-completion", "completions", "life-ustc")
-
-	if isDirWritable(filepath.Dir(systemScript)) {
-		return systemScript, ""
-	}
-
-	return userScript, managedBlock(fmt.Sprintf(`for __life_ustc_bash_completion in \
+	rcPath := preferredBashRC(home)
+	rcBlock := managedBlock(fmt.Sprintf(`for __life_ustc_bash_completion in \
   /usr/share/bash-completion/bash_completion \
   /etc/bash_completion; do
   if [ -f "$__life_ustc_bash_completion" ]; then
@@ -438,17 +451,23 @@ unset __life_ustc_bash_completion
 if [ -f %q ]; then
   source %q
 fi`, userScript, userScript))
-}
 
-func isDirWritable(path string) bool {
-	f, err := os.CreateTemp(path, ".life-ustc-write-test-")
-	if err != nil {
-		return false
+	if info, err := os.Stat(filepath.Dir(systemScript)); err == nil && info.IsDir() {
+		return &completionInstall{
+			scriptPath:         systemScript,
+			fallbackScriptPath: userScript,
+			rcPath:             rcPath,
+			rcBlock:            rcBlock,
+			reloadHint:         "restart your shell",
+		}
 	}
-	name := f.Name()
-	_ = f.Close()
-	_ = os.Remove(name)
-	return true
+
+	return &completionInstall{
+		scriptPath: userScript,
+		rcPath:     rcPath,
+		rcBlock:    rcBlock,
+		reloadHint: fmt.Sprintf("restart your shell or run: source %s", rcPath),
+	}
 }
 
 func preferredBashRC(home string) string {
