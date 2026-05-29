@@ -53,14 +53,12 @@ commands.`,
 				return err
 			}
 			if output.IsJSON() {
-				output.JSON(data)
-				return nil
+				return output.JSON(data)
 			}
 
 			m, ok := data.(map[string]any)
 			if !ok {
-				output.JSON(data)
-				return nil
+				return output.JSON(data)
 			}
 
 			for _, cat := range categories {
@@ -70,12 +68,7 @@ commands.`,
 				}
 				fmt.Println()
 				output.Bold(fmt.Sprintf("  %s  (%d)", cat.name, len(items)))
-				var rows []map[string]any
-				for _, item := range items {
-					if row, ok := item.(map[string]any); ok {
-						rows = append(rows, row)
-					}
-				}
+				rows := cmdutil.RowsFromAny(items)
 				output.Table(rows, cat.cols)
 			}
 			return nil

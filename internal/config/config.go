@@ -120,7 +120,15 @@ func SaveConfig(cfg *Config) error {
 	return atomicWriteJSON(filepath.Join(Dir(), "config.json"), cfg, 0o644)
 }
 
+// GetDefaultServer returns the server URL using this precedence:
+//   1. LIFE_USTC_SERVER environment variable
+//   2. Config file server field
+//   3. Built-in DefaultServer
+// The --server flag overrides all of these at the command level.
 func GetDefaultServer() string {
+	if server := os.Getenv("LIFE_USTC_SERVER"); server != "" {
+		return server
+	}
 	cfg, err := LoadConfig()
 	if err != nil || cfg.Server == "" {
 		return DefaultServer

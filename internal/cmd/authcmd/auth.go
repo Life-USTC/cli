@@ -49,8 +49,7 @@ func runAuthStatus(cmd *cobra.Command) error {
 			data["scope"] = cred.Scope
 			data["hasRefreshToken"] = cred.RefreshToken != ""
 		}
-		output.JSON(data)
-		return nil
+		return output.JSON(data)
 	}
 	if cred == nil {
 		output.Warning(fmt.Sprintf("Not logged in to %s", server))

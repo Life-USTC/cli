@@ -22,34 +22,6 @@ type deviceAuthResponse struct {
 	Interval                int    `json:"interval"`
 }
 
-// registerDeviceClient registers a public OAuth client for the device code grant.
-func registerDeviceClient(endpoint string) (map[string]any, error) {
-	body := map[string]any{
-		"client_name":                "life-ustc-cli",
-		"redirect_uris":             []string{"http://localhost/callback"},
-		"token_endpoint_auth_method": "none",
-		"grant_types":               []string{"urn:ietf:params:oauth:grant-type:device_code", "refresh_token"},
-		"response_types":            []string{"code"},
-		"scope":                     "openid profile email offline_access",
-	}
-	data, _ := json.Marshal(body)
-	client := &http.Client{Timeout: 15 * time.Second}
-	resp, err := client.Post(endpoint, "application/json", strings.NewReader(string(data)))
-	if err != nil {
-		return nil, err
-	}
-	defer func() { _ = resp.Body.Close() }()
-	if resp.StatusCode != 200 && resp.StatusCode != 201 {
-		b, _ := io.ReadAll(resp.Body)
-		return nil, fmt.Errorf("client registration failed (%d): %s", resp.StatusCode, string(b))
-	}
-	var result map[string]any
-	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
-		return nil, fmt.Errorf("failed to decode client registration response: %w", err)
-	}
-	return result, nil
-}
-
 // LoginDeviceCode runs the RFC 8628 Device Authorization Grant flow.
 // It prints a user code for the user to enter in a browser, then polls
 // the token endpoint until approved, denied, or expired.
@@ -74,7 +46,12 @@ func LoginDeviceCode(server string) (*config.Credential, error) {
 	}
 
 	// Register client
-	clientInfo, err := registerDeviceClient(regEndpoint)
+	clientInfo, err := registerPublicClient(
+		regEndpoint,
+		[]string{"http://localhost/callback"},
+		[]string{"urn:ietf:params:oauth:grant-type:device_code", "refresh_token"},
+		[]string{"code"},
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -84,7 +61,7 @@ func LoginDeviceCode(server string) (*config.Credential, error) {
 	httpClient := &http.Client{Timeout: 15 * time.Second}
 	deviceResp, err := httpClient.PostForm(deviceEndpoint, url.Values{
 		"client_id": {clientID},
-		"scope":     {"openid profile email offline_access"},
+		"scope":     {oauthScope},
 	})
 	if err != nil {
 		return nil, fmt.Errorf("device authorization request failed: %w", err)
@@ -151,21 +128,7 @@ func LoginDeviceCode(server string) (*config.Credential, error) {
 				return nil, fmt.Errorf("failed to decode token response: %w", err)
 			}
 
-			now := float64(time.Now().Unix())
-			expiresIn := 3600.0
-			if ei, ok := tokens["expires_in"].(float64); ok {
-				expiresIn = ei
-			}
-
-			return &config.Credential{
-				ClientID:     clientID,
-				AccessToken:  tokens["access_token"].(string),
-				RefreshToken: strDefault(tokens["refresh_token"]),
-				TokenType:    strDefault(tokens["token_type"]),
-				ExpiresAt:    now + expiresIn,
-				Scope:        strDefault(tokens["scope"]),
-				Resource:     server,
-			}, nil
+			return credentialFromTokens(clientID, server, tokens, "", "")
 		}
 
 		// Parse error response

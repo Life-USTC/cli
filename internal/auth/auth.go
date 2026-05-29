@@ -2,13 +2,14 @@
 package auth
 
 import (
+	"bytes"
 	"context"
+	"crypto/rand"
 	"crypto/sha256"
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"io"
-	"math/rand"
 	"net"
 	"net/http"
 	"net/url"
@@ -20,23 +21,29 @@ import (
 	"github.com/Life-USTC/CLI/internal/config"
 )
 
+const oauthScope = "openid profile email offline_access"
+
 func b64url(data []byte) string {
 	return base64.RawURLEncoding.EncodeToString(data)
 }
 
-func generatePKCE() (verifier, challenge string) {
+func generatePKCE() (verifier, challenge string, err error) {
 	b := make([]byte, 32)
-	rand.New(rand.NewSource(time.Now().UnixNano())).Read(b)
+	if _, err := rand.Read(b); err != nil {
+		return "", "", fmt.Errorf("failed to read secure random bytes: %w", err)
+	}
 	verifier = b64url(b)
 	h := sha256.Sum256([]byte(verifier))
 	challenge = b64url(h[:])
-	return
+	return verifier, challenge, nil
 }
 
-func randomState() string {
+func randomState() (string, error) {
 	b := make([]byte, 16)
-	rand.New(rand.NewSource(time.Now().UnixNano())).Read(b)
-	return b64url(b)
+	if _, err := rand.Read(b); err != nil {
+		return "", fmt.Errorf("failed to read secure random bytes: %w", err)
+	}
+	return b64url(b), nil
 }
 
 func discoverOAuthMetadata(server string) (map[string]any, error) {
@@ -50,30 +57,32 @@ func discoverOAuthMetadata(server string) (map[string]any, error) {
 		if err != nil {
 			continue
 		}
-		defer func() { _ = resp.Body.Close() }()
 		if resp.StatusCode == 200 {
 			var meta map[string]any
-			if err := json.NewDecoder(resp.Body).Decode(&meta); err != nil {
+			decodeErr := json.NewDecoder(resp.Body).Decode(&meta)
+			_ = resp.Body.Close()
+			if decodeErr != nil {
 				continue
 			}
 			return meta, nil
 		}
+		_ = resp.Body.Close()
 	}
 	return nil, fmt.Errorf("could not discover OAuth metadata from %s", server)
 }
 
-func registerClient(endpoint, redirectURI string) (map[string]any, error) {
+func registerPublicClient(endpoint string, redirectURIs, grantTypes, responseTypes []string) (map[string]any, error) {
 	body := map[string]any{
 		"client_name":                "life-ustc-cli",
-		"redirect_uris":             []string{redirectURI},
+		"redirect_uris":              redirectURIs,
 		"token_endpoint_auth_method": "none",
-		"grant_types":               []string{"authorization_code", "refresh_token"},
-		"response_types":            []string{"code"},
-		"scope":                     "openid profile email offline_access",
+		"grant_types":                grantTypes,
+		"response_types":             responseTypes,
+		"scope":                      oauthScope,
 	}
 	data, _ := json.Marshal(body)
 	client := &http.Client{Timeout: 15 * time.Second}
-	resp, err := client.Post(endpoint, "application/json", strings.NewReader(string(data)))
+	resp, err := client.Post(endpoint, "application/json", bytes.NewReader(data))
 	if err != nil {
 		return nil, err
 	}
@@ -87,6 +96,15 @@ func registerClient(endpoint, redirectURI string) (map[string]any, error) {
 		return nil, fmt.Errorf("failed to decode client registration response: %w", err)
 	}
 	return result, nil
+}
+
+func registerClient(endpoint, redirectURI string) (map[string]any, error) {
+	return registerPublicClient(
+		endpoint,
+		[]string{redirectURI},
+		[]string{"authorization_code", "refresh_token"},
+		[]string{"code"},
+	)
 }
 
 func openBrowser(url string) error {
@@ -138,19 +156,25 @@ func Login(server string) (*config.Credential, error) {
 	clientID, _ := clientInfo["client_id"].(string)
 
 	// PKCE
-	verifier, challenge := generatePKCE()
-	state := randomState()
+	verifier, challenge, err := generatePKCE()
+	if err != nil {
+		return nil, err
+	}
+	state, err := randomState()
+	if err != nil {
+		return nil, err
+	}
 
 	// Build auth URL
 	params := url.Values{
 		"client_id":             {clientID},
-		"redirect_uri":         {redirectURI},
-		"response_type":        {"code"},
-		"scope":                {"openid profile email offline_access"},
-		"state":                {state},
-		"code_challenge":       {challenge},
+		"redirect_uri":          {redirectURI},
+		"response_type":         {"code"},
+		"scope":                 {oauthScope},
+		"state":                 {state},
+		"code_challenge":        {challenge},
 		"code_challenge_method": {"S256"},
-		"resource":             {server},
+		"resource":              {server},
 	}
 	authURL := authEndpoint + "?" + params.Encode()
 
@@ -228,21 +252,7 @@ func Login(server string) (*config.Credential, error) {
 		return nil, fmt.Errorf("failed to decode token response: %w", err)
 	}
 
-	now := float64(time.Now().Unix())
-	expiresIn := 3600.0
-	if ei, ok := tokens["expires_in"].(float64); ok {
-		expiresIn = ei
-	}
-
-	return &config.Credential{
-		ClientID:     clientID,
-		AccessToken:  tokens["access_token"].(string),
-		RefreshToken: strDefault(tokens["refresh_token"]),
-		TokenType:    strDefault(tokens["token_type"]),
-		ExpiresAt:    now + expiresIn,
-		Scope:        strDefault(tokens["scope"]),
-		Resource:     server,
-	}, nil
+	return credentialFromTokens(clientID, server, tokens, "", "")
 }
 
 // RefreshToken attempts to refresh the access token.
@@ -282,25 +292,14 @@ func RefreshToken(server string, cred *config.Credential) (*config.Credential, e
 		return nil, fmt.Errorf("failed to decode refresh response: %w", err)
 	}
 
-	now := float64(time.Now().Unix())
-	expiresIn := 3600.0
-	if ei, ok := tokens["expires_in"].(float64); ok {
-		expiresIn = ei
-	}
+	return credentialFromTokens(cred.ClientID, cred.Resource, tokens, cred.RefreshToken, cred.Scope)
+}
 
-	newCred := &config.Credential{
-		ClientID:     cred.ClientID,
-		AccessToken:  tokens["access_token"].(string),
-		RefreshToken: cred.RefreshToken,
-		TokenType:    strDefault(tokens["token_type"]),
-		ExpiresAt:    now + expiresIn,
-		Scope:        cred.Scope,
-		Resource:     cred.Resource,
+func requiredString(values map[string]any, key string) (string, error) {
+	if s, ok := values[key].(string); ok && s != "" {
+		return s, nil
 	}
-	if rt := strDefault(tokens["refresh_token"]); rt != "" {
-		newCred.RefreshToken = rt
-	}
-	return newCred, nil
+	return "", fmt.Errorf("token response missing %q", key)
 }
 
 func strDefault(v any) string {
@@ -308,4 +307,32 @@ func strDefault(v any) string {
 		return s
 	}
 	return ""
+}
+
+func credentialFromTokens(clientID, resource string, tokens map[string]any, fallbackRefresh, fallbackScope string) (*config.Credential, error) {
+	accessToken, err := requiredString(tokens, "access_token")
+	if err != nil {
+		return nil, err
+	}
+	expiresIn := 3600.0
+	if ei, ok := tokens["expires_in"].(float64); ok {
+		expiresIn = ei
+	}
+	refreshToken := strDefault(tokens["refresh_token"])
+	if refreshToken == "" {
+		refreshToken = fallbackRefresh
+	}
+	scope := strDefault(tokens["scope"])
+	if scope == "" {
+		scope = fallbackScope
+	}
+	return &config.Credential{
+		ClientID:     clientID,
+		AccessToken:  accessToken,
+		RefreshToken: refreshToken,
+		TokenType:    strDefault(tokens["token_type"]),
+		ExpiresAt:    float64(time.Now().Unix()) + expiresIn,
+		Scope:        scope,
+		Resource:     resource,
+	}, nil
 }
