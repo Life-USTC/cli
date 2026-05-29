@@ -2,6 +2,7 @@ package schedule
 
 import (
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/spf13/cobra"
@@ -11,11 +12,6 @@ import (
 	openapi "github.com/Life-USTC/CLI/internal/openapi"
 	"github.com/Life-USTC/CLI/internal/output"
 )
-
-var weekdays = map[string]string{
-	"1": "Mon", "2": "Tue", "3": "Wed", "4": "Thu",
-	"5": "Fri", "6": "Sat", "7": "Sun",
-}
 
 type scheduleListOpts struct {
 	sectionID, teacherID, roomID, dateFrom, dateTo string
@@ -60,15 +56,9 @@ func runScheduleList(cmd *cobra.Command, opts scheduleListOpts) error {
 		return err
 	}
 	params := openapi.ListSchedulesParams{}
-	if opts.sectionID != "" {
-		params.SectionId = &opts.sectionID
-	}
-	if opts.teacherID != "" {
-		params.TeacherId = &opts.teacherID
-	}
-	if opts.roomID != "" {
-		params.RoomId = &opts.roomID
-	}
+	params.SectionId = cmdutil.StringPtrIfSet(opts.sectionID)
+	params.TeacherId = cmdutil.StringPtrIfSet(opts.teacherID)
+	params.RoomId = cmdutil.StringPtrIfSet(opts.roomID)
 	if opts.dateFrom != "" {
 		t, err := time.Parse(time.DateOnly, opts.dateFrom)
 		if err != nil {
@@ -84,48 +74,46 @@ func runScheduleList(cmd *cobra.Command, opts scheduleListOpts) error {
 		params.DateTo = &t
 	}
 	if opts.weekday > 0 {
-		w := cmdutil.Itoa(opts.weekday)
-		params.Weekday = &w
+		params.Weekday = cmdutil.IntStringPtrIfPositive(opts.weekday)
 	}
-	if opts.page > 0 {
-		p := cmdutil.Itoa(opts.page)
-		params.Page = &p
-	}
-	if opts.limit > 0 {
-		l := cmdutil.Itoa(opts.limit)
-		params.Limit = &l
-	}
+	params.Page = cmdutil.IntStringPtrIfPositive(opts.page)
+	params.Limit = cmdutil.IntStringPtrIfPositive(opts.limit)
 	data, err := api.ParseResponseRaw(c.ListSchedules(api.Ctx(), &params))
 	if err != nil {
 		return err
 	}
-	raw, rows, total, pg := cmdutil.ExtractList(data)
+	list := cmdutil.NewListResult(data, "data").FinalizeServerSide(opts.limit)
 
-	for _, row := range rows {
-		if wd, ok := row["weekday"]; ok {
-			if s, ok := wd.(string); ok {
-				if name, ok := weekdays[s]; ok {
-					row["weekday"] = name
-				}
-			}
-			if f, ok := wd.(float64); ok {
-				if name, ok := weekdays[cmdutil.Itoa(int(f))]; ok {
-					row["weekday"] = name
-				}
+	for _, row := range list.Rows {
+		normalizeScheduleListRow(row)
+	}
+
+	return output.OutputList(list.Raw, list.Rows, []output.Column{
+		{Header: "Course", Key: "section.course.namePrimary"},
+		{Header: "Section", Key: "section.code"},
+		{Header: "Day", Key: "weekday"},
+		{Header: "Time", Key: "timeRange"},
+		{Header: "Place", Key: "customPlace"},
+		{Header: "ID", Key: "id"},
+	}, list.Total, list.Page)
+}
+
+func normalizeScheduleListRow(row map[string]any) {
+	start, startOK := cmdutil.FormatHHMM(row["startTime"])
+	end, endOK := cmdutil.FormatHHMM(row["endTime"])
+	if startOK || endOK {
+		row["timeRange"] = strings.Trim(start+"-"+end, "-")
+	}
+	if name, ok := cmdutil.FormatWeekday(row["weekday"]); ok {
+		row["weekday"] = name
+	}
+	if row["customPlace"] == nil {
+		if room := cmdutil.AsMap(row["room"]); room != nil {
+			if name, _ := room["namePrimary"].(string); name != "" {
+				row["customPlace"] = name
 			}
 		}
 	}
-
-	output.OutputList(raw, rows, []output.Column{
-		{Header: "ID", Key: "id"},
-		{Header: "Course", Key: "course.namePrimary"},
-		{Header: "Code", Key: "section.code"},
-		{Header: "Day", Key: "weekday"},
-		{Header: "Start", Key: "startTime"},
-		{Header: "End", Key: "endTime"},
-		{Header: "Place", Key: "place"},
-	}, total, pg)
-	return nil
 }
 
 func newCmdList() *cobra.Command {

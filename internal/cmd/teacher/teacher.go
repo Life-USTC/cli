@@ -11,6 +11,7 @@ import (
 	"github.com/Life-USTC/CLI/internal/cmd/description"
 	openapi "github.com/Life-USTC/CLI/internal/openapi"
 	"github.com/Life-USTC/CLI/internal/output"
+	"github.com/Life-USTC/CLI/internal/tui"
 )
 
 func NewCmdTeacher() *cobra.Command {
@@ -24,6 +25,9 @@ func NewCmdTeacher() *cobra.Command {
 
   # Search teachers by name
   life-ustc teacher -s "zhang"
+
+  # Open teacher search TUI in an interactive terminal
+  life-ustc teacher
 
   # View a specific teacher
   life-ustc teacher view <teacher-id>`,
@@ -41,50 +45,85 @@ func NewCmdTeacher() *cobra.Command {
 }
 
 type teacherListOpts struct {
-	departmentID string
-	search       string
-	page         int
-	limit        int
+	departmentID  string
+	search        string
+	interactive   bool
+	noInteractive bool
+	page          int
+	limit         int
 }
 
 func runTeacherList(cmd *cobra.Command, opts teacherListOpts) error {
+	useInteractive, err := cmdutil.ShouldUseInteractive(cmd, opts.interactive, opts.noInteractive, "department-id", "search", "page", "limit")
+	if err != nil {
+		return err
+	}
+	if useInteractive {
+		c, err := api.NewTypedClient(cmdutil.ServerFromCmd(cmd), false)
+		if err != nil {
+			return err
+		}
+		return tui.RunSearchTable(tui.SearchTable{
+			Form: tui.SearchForm{
+				Title:       "Teacher Search",
+				Description: "Search by teacher name, code, department, or leave blank for recent results.",
+				SearchLabel: "Teacher",
+				Search:      opts.search,
+				Limit:       opts.limit,
+			},
+			Columns: teacherListColumns(),
+			Fetch: func(result tui.SearchResult) (tui.TableResult, error) {
+				next := opts
+				next.search = result.Search
+				next.limit = result.Limit
+				next.page = result.Page
+				list, err := fetchTeacherList(c, next)
+				if err != nil {
+					return tui.TableResult{}, err
+				}
+				return tui.TableResult{Rows: list.Rows, Total: list.Total, Page: list.Page}, nil
+			},
+			EmptyMessage: "No teachers found. Try a broader search.",
+		})
+	}
 	c, err := api.NewTypedClient(cmdutil.ServerFromCmd(cmd), false)
 	if err != nil {
 		return err
 	}
-	params := openapi.ListTeachersParams{}
-	if opts.departmentID != "" {
-		params.DepartmentId = &opts.departmentID
-	}
-	if opts.search != "" {
-		params.Search = &opts.search
-	}
-	if opts.page > 0 {
-		p := cmdutil.Itoa(opts.page)
-		params.Page = &p
-	}
-	if opts.limit > 0 {
-		l := cmdutil.Itoa(opts.limit)
-		params.Limit = &l
-	}
-	data, err := api.ParseResponseRaw(c.ListTeachers(api.Ctx(), &params))
+	list, err := fetchTeacherList(c, opts)
 	if err != nil {
 		return err
 	}
-	raw, rows, total, pg := cmdutil.ExtractList(data)
-	output.OutputList(raw, rows, []output.Column{
-		{Header: "ID", Key: "id"},
-		{Header: "Code", Key: "code"},
+	return output.OutputList(list.Raw, list.Rows, teacherListColumns(), list.Total, list.Page)
+}
+
+func fetchTeacherList(c *api.TypedClient, opts teacherListOpts) (cmdutil.ListResult, error) {
+	params := openapi.ListTeachersParams{}
+	params.DepartmentId = cmdutil.StringPtrIfSet(opts.departmentID)
+	params.Search = cmdutil.StringPtrIfSet(opts.search)
+	params.Page = cmdutil.IntStringPtrIfPositive(opts.page)
+	params.Limit = cmdutil.IntStringPtrIfPositive(opts.limit)
+	data, err := api.ParseResponseRaw(c.ListTeachers(api.Ctx(), &params))
+	if err != nil {
+		return cmdutil.ListResult{}, err
+	}
+	return cmdutil.NewListResult(data, "data").FinalizeServerSide(opts.limit), nil
+}
+
+func teacherListColumns() []output.Column {
+	return []output.Column{
 		{Header: "Name", Key: "namePrimary"},
-		{Header: "Name (EN)", Key: "nameSecondary"},
 		{Header: "Department", Key: "department.name"},
-	}, total, pg)
-	return nil
+		{Header: "Code", Key: "code"},
+		{Header: "ID", Key: "id"},
+	}
 }
 
 func addTeacherListFlags(cmd *cobra.Command, opts *teacherListOpts) {
 	cmd.Flags().StringVar(&opts.departmentID, "department-id", "", "Department ID")
 	cmd.Flags().StringVarP(&opts.search, "search", "s", "", "Search query")
+	cmd.Flags().BoolVarP(&opts.interactive, "interactive", "i", false, "Open the interactive search form")
+	cmd.Flags().BoolVar(&opts.noInteractive, "no-interactive", false, "Skip the interactive search form")
 	cmdutil.AddListFlags(cmd, &opts.page, &opts.limit)
 }
 
@@ -118,8 +157,7 @@ func newCmdView() *cobra.Command {
 				return err
 			}
 			if output.IsJSON() {
-				output.JSON(data)
-				return nil
+				return output.JSON(data)
 			}
 			m := cmdutil.AsMap(data)
 			output.KVWithTitle([]output.KVPair{
@@ -134,12 +172,7 @@ func newCmdView() *cobra.Command {
 			if sections, ok := m["sections"].([]any); ok && len(sections) > 0 {
 				fmt.Println()
 				output.Bold("  Sections")
-				var rows []map[string]any
-				for _, s := range sections {
-					if row, ok := s.(map[string]any); ok {
-						rows = append(rows, row)
-					}
-				}
+				rows := cmdutil.RowsFromAny(sections)
 				output.Table(rows, []output.Column{
 					{Header: "ID", Key: "id"},
 					{Header: "Code", Key: "code"},

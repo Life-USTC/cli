@@ -14,7 +14,20 @@ import (
 	"github.com/Life-USTC/CLI/internal/cmd/homework"
 	openapi "github.com/Life-USTC/CLI/internal/openapi"
 	"github.com/Life-USTC/CLI/internal/output"
+	"github.com/Life-USTC/CLI/internal/tui"
 )
+
+// normalizeScheduleRow converts raw integer fields to display-friendly strings.
+func normalizeScheduleRow(row map[string]any) {
+	if name, ok := cmdutil.FormatWeekday(row["weekday"]); ok {
+		row["weekday"] = name
+	}
+	for _, k := range []string{"startTime", "endTime"} {
+		if formatted, ok := cmdutil.FormatHHMM(row[k]); ok {
+			row[k] = formatted
+		}
+	}
+}
 
 func NewCmdSection() *cobra.Command {
 	var opts sectionListOpts
@@ -27,6 +40,9 @@ func NewCmdSection() *cobra.Command {
 
   # Search sections by keyword
   life-ustc section -s "calculus"
+
+  # Open section search TUI in an interactive terminal
+  life-ustc section
 
   # View a specific section
   life-ustc section view <jw-id>`,
@@ -49,64 +65,88 @@ func NewCmdSection() *cobra.Command {
 
 type sectionListOpts struct {
 	courseID      string
-	semesterID   string
-	campusID     string
-	departmentID string
-	teacherID    string
-	search       string
-	ids          string
-	page         int
-	limit        int
+	semesterID    string
+	campusID      string
+	departmentID  string
+	teacherID     string
+	search        string
+	ids           string
+	interactive   bool
+	noInteractive bool
+	page          int
+	limit         int
 }
 
 func runSectionList(cmd *cobra.Command, opts sectionListOpts) error {
+	useInteractive, err := cmdutil.ShouldUseInteractive(cmd, opts.interactive, opts.noInteractive, "course-id", "semester-id", "campus-id", "department-id", "teacher-id", "search", "ids", "page", "limit")
+	if err != nil {
+		return err
+	}
+	if useInteractive {
+		c, err := api.NewTypedClient(cmdutil.ServerFromCmd(cmd), false)
+		if err != nil {
+			return err
+		}
+		return tui.RunSearchTable(tui.SearchTable{
+			Form: tui.SearchForm{
+				Title:       "Section Search",
+				Description: "Search by course name, section code, teacher, or leave blank for recent results.",
+				SearchLabel: "Section",
+				Search:      opts.search,
+				Limit:       opts.limit,
+			},
+			Columns: sectionListColumns(),
+			Fetch: func(result tui.SearchResult) (tui.TableResult, error) {
+				next := opts
+				next.search = result.Search
+				next.limit = result.Limit
+				next.page = result.Page
+				list, err := fetchSectionList(c, next)
+				if err != nil {
+					return tui.TableResult{}, err
+				}
+				return tui.TableResult{Rows: list.Rows, Total: list.Total, Page: list.Page}, nil
+			},
+			EmptyMessage: "No sections found. Try a broader search.",
+		})
+	}
 	c, err := api.NewTypedClient(cmdutil.ServerFromCmd(cmd), false)
 	if err != nil {
 		return err
 	}
-	params := openapi.ListSectionsParams{}
-	if opts.courseID != "" {
-		params.CourseId = &opts.courseID
-	}
-	if opts.semesterID != "" {
-		params.SemesterId = &opts.semesterID
-	}
-	if opts.campusID != "" {
-		params.CampusId = &opts.campusID
-	}
-	if opts.departmentID != "" {
-		params.DepartmentId = &opts.departmentID
-	}
-	if opts.teacherID != "" {
-		params.TeacherId = &opts.teacherID
-	}
-	if opts.search != "" {
-		params.Search = &opts.search
-	}
-	if opts.ids != "" {
-		params.Ids = &opts.ids
-	}
-	if opts.page > 0 {
-		p := cmdutil.Itoa(opts.page)
-		params.Page = &p
-	}
-	if opts.limit > 0 {
-		l := cmdutil.Itoa(opts.limit)
-		params.Limit = &l
-	}
-	data, err := api.ParseResponseRaw(c.ListSections(api.Ctx(), &params))
+	list, err := fetchSectionList(c, opts)
 	if err != nil {
 		return err
 	}
-	raw, rows, total, pg := cmdutil.ExtractList(data)
-	output.OutputList(raw, rows, []output.Column{
-		{Header: "ID", Key: "id"},
+	return output.OutputList(list.Raw, list.Rows, sectionListColumns(), list.Total, list.Page)
+}
+
+func fetchSectionList(c *api.TypedClient, opts sectionListOpts) (cmdutil.ListResult, error) {
+	params := openapi.ListSectionsParams{}
+	params.CourseId = cmdutil.StringPtrIfSet(opts.courseID)
+	params.SemesterId = cmdutil.StringPtrIfSet(opts.semesterID)
+	params.CampusId = cmdutil.StringPtrIfSet(opts.campusID)
+	params.DepartmentId = cmdutil.StringPtrIfSet(opts.departmentID)
+	params.TeacherId = cmdutil.StringPtrIfSet(opts.teacherID)
+	params.Search = cmdutil.StringPtrIfSet(opts.search)
+	params.Ids = cmdutil.StringPtrIfSet(opts.ids)
+	params.Page = cmdutil.IntStringPtrIfPositive(opts.page)
+	params.Limit = cmdutil.IntStringPtrIfPositive(opts.limit)
+	data, err := api.ParseResponseRaw(c.ListSections(api.Ctx(), &params))
+	if err != nil {
+		return cmdutil.ListResult{}, err
+	}
+	return cmdutil.NewListResult(data, "data").FinalizeServerSide(opts.limit), nil
+}
+
+func sectionListColumns() []output.Column {
+	return []output.Column{
 		{Header: "Code", Key: "code"},
 		{Header: "Course", Key: "course.namePrimary"},
 		{Header: "Semester", Key: "semester.name"},
 		{Header: "Campus", Key: "campus.name"},
-	}, total, pg)
-	return nil
+		{Header: "ID", Key: "id"},
+	}
 }
 
 func addSectionListFlags(cmd *cobra.Command, opts *sectionListOpts) {
@@ -117,6 +157,8 @@ func addSectionListFlags(cmd *cobra.Command, opts *sectionListOpts) {
 	cmd.Flags().StringVar(&opts.teacherID, "teacher-id", "", "Teacher ID")
 	cmd.Flags().StringVarP(&opts.search, "search", "s", "", "Search query")
 	cmd.Flags().StringVar(&opts.ids, "ids", "", "Comma-separated section IDs")
+	cmd.Flags().BoolVarP(&opts.interactive, "interactive", "i", false, "Open the interactive search form")
+	cmd.Flags().BoolVar(&opts.noInteractive, "no-interactive", false, "Skip the interactive search form")
 	cmdutil.AddListFlags(cmd, &opts.page, &opts.limit)
 }
 
@@ -150,8 +192,7 @@ func newCmdView() *cobra.Command {
 				return err
 			}
 			if output.IsJSON() {
-				output.JSON(data)
-				return nil
+				return output.JSON(data)
 			}
 			m := cmdutil.AsMap(data)
 			output.KVWithTitle([]output.KVPair{
@@ -165,12 +206,7 @@ func newCmdView() *cobra.Command {
 			if teachers, ok := m["teachers"].([]any); ok && len(teachers) > 0 {
 				fmt.Println()
 				output.Bold("  Teachers")
-				var rows []map[string]any
-				for _, t := range teachers {
-					if row, ok := t.(map[string]any); ok {
-						rows = append(rows, row)
-					}
-				}
+				rows := cmdutil.RowsFromAny(teachers)
 				output.Table(rows, []output.Column{
 					{Header: "ID", Key: "id"},
 					{Header: "Name", Key: "namePrimary"},
@@ -182,18 +218,16 @@ func newCmdView() *cobra.Command {
 			if schedules, ok := m["schedules"].([]any); ok && len(schedules) > 0 {
 				fmt.Println()
 				output.Bold("  Schedules")
-				var rows []map[string]any
-				for _, s := range schedules {
-					if row, ok := s.(map[string]any); ok {
-						rows = append(rows, row)
-					}
+				rows := cmdutil.RowsFromAny(schedules)
+				for _, row := range rows {
+					normalizeScheduleRow(row)
 				}
 				output.Table(rows, []output.Column{
 					{Header: "ID", Key: "id"},
 					{Header: "Day", Key: "weekday"},
 					{Header: "Start", Key: "startTime"},
 					{Header: "End", Key: "endTime"},
-					{Header: "Place", Key: "place"},
+					{Header: "Place", Key: "customPlace"},
 				})
 			}
 			return nil
@@ -216,14 +250,16 @@ func newCmdSchedules() *cobra.Command {
 				return err
 			}
 			_, rows, total, pg := cmdutil.ExtractList(data)
-			output.OutputList(data, rows, []output.Column{
+			for _, row := range rows {
+				normalizeScheduleRow(row)
+			}
+			return output.OutputList(data, rows, []output.Column{
 				{Header: "ID", Key: "id"},
 				{Header: "Day", Key: "weekday"},
 				{Header: "Start", Key: "startTime"},
 				{Header: "End", Key: "endTime"},
-				{Header: "Place", Key: "place"},
+				{Header: "Place", Key: "customPlace"},
 			}, total, pg)
-			return nil
 		},
 	}
 }
@@ -285,16 +321,17 @@ func newCmdMatchCodes() *cobra.Command {
 				return err
 			}
 			if output.IsJSON() {
-				output.JSON(data)
-				return nil
+				return output.JSON(data)
 			}
 			_, rows, total, pg := cmdutil.ExtractList(data, "sections")
-			output.OutputList(data, rows, []output.Column{
+			if err := output.OutputList(data, rows, []output.Column{
 				{Header: "ID", Key: "id"},
 				{Header: "Code", Key: "code"},
 				{Header: "Course", Key: "course.nameCn"},
 				{Header: "Semester", Key: "semester.nameCn"},
-			}, total, pg)
+			}, total, pg); err != nil {
+				return err
+			}
 			m := cmdutil.AsMap(data)
 			if unmatched, ok := m["unmatchedCodes"].([]any); ok && len(unmatched) > 0 {
 				fmt.Println()

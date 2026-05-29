@@ -7,7 +7,17 @@ import (
 	"github.com/Life-USTC/CLI/internal/cmd/cmdutil"
 	openapi "github.com/Life-USTC/CLI/internal/openapi"
 	"github.com/Life-USTC/CLI/internal/output"
+	"github.com/Life-USTC/CLI/internal/timeutil"
 )
+
+// semesterDateOnly trims an ISO timestamp to a plain date string (YYYY-MM-DD).
+func semesterDateOnly(m map[string]any) {
+	for _, k := range []string{"startDate", "endDate"} {
+		if s, ok := m[k].(string); ok && len(s) >= 10 {
+			m[k] = timeutil.DateOnlyString(s)
+		}
+	}
+}
 
 type semesterListOpts struct {
 	page, limit int
@@ -41,27 +51,23 @@ func runSemesterList(cmd *cobra.Command, opts semesterListOpts) error {
 		return err
 	}
 	params := &openapi.ListSemestersParams{}
-	if opts.page > 0 {
-		p := cmdutil.Itoa(opts.page)
-		params.Page = &p
-	}
-	if opts.limit > 0 {
-		l := cmdutil.Itoa(opts.limit)
-		params.Limit = &l
-	}
+	params.Page = cmdutil.IntStringPtrIfPositive(opts.page)
+	params.Limit = cmdutil.IntStringPtrIfPositive(opts.limit)
 	data, err := api.ParseResponseRaw(c.ListSemesters(api.Ctx(), params))
 	if err != nil {
 		return err
 	}
-	raw, rows, total, pg := cmdutil.ExtractList(data)
-	output.OutputList(raw, rows, []output.Column{
-		{Header: "ID", Key: "id"},
-		{Header: "Code", Key: "code"},
+	list := cmdutil.NewListResult(data, "data").FinalizeServerSide(opts.limit)
+	for _, row := range list.Rows {
+		semesterDateOnly(row)
+	}
+	return output.OutputList(list.Raw, list.Rows, []output.Column{
 		{Header: "Name", Key: "nameCn"},
+		{Header: "Code", Key: "code"},
 		{Header: "Start", Key: "startDate"},
 		{Header: "End", Key: "endDate"},
-	}, total, pg)
-	return nil
+		{Header: "ID", Key: "id"},
+	}, list.Total, list.Page)
 }
 
 func newCmdList() *cobra.Command {
@@ -91,14 +97,16 @@ func newCmdCurrent() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			output.OutputDetail(data, []output.FieldDef{
+			if m, ok := data.(map[string]any); ok {
+				semesterDateOnly(m)
+			}
+			return output.OutputDetail(data, []output.FieldDef{
 				{Key: "id", Label: "ID"},
 				{Key: "code", Label: "Code"},
 				{Key: "nameCn", Label: "Name"},
 				{Key: "startDate", Label: "Start"},
 				{Key: "endDate", Label: "End"},
 			}, "Current semester")
-			return nil
 		},
 	}
 }

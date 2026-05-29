@@ -11,6 +11,7 @@ import (
 	"github.com/Life-USTC/CLI/internal/cmd/description"
 	openapi "github.com/Life-USTC/CLI/internal/openapi"
 	"github.com/Life-USTC/CLI/internal/output"
+	"github.com/Life-USTC/CLI/internal/tui"
 )
 
 func NewCmdCourse() *cobra.Command {
@@ -24,6 +25,9 @@ func NewCmdCourse() *cobra.Command {
 
   # Search courses by keyword
   life-ustc course -s "linear algebra"
+
+  # Open course search TUI in an interactive terminal
+  life-ustc course
 
   # View a specific course
   life-ustc course view <jw-id>`,
@@ -45,49 +49,78 @@ type courseListOpts struct {
 	educationLevelID string
 	categoryID       string
 	classTypeID      string
+	interactive      bool
+	noInteractive    bool
 	page             int
 	limit            int
 }
 
 func runCourseList(cmd *cobra.Command, opts courseListOpts) error {
+	useInteractive, err := cmdutil.ShouldUseInteractive(cmd, opts.interactive, opts.noInteractive, "search", "education-level-id", "category-id", "class-type-id", "page", "limit")
+	if err != nil {
+		return err
+	}
+	if useInteractive {
+		c, err := api.NewTypedClient(cmdutil.ServerFromCmd(cmd), false)
+		if err != nil {
+			return err
+		}
+		return tui.RunSearchTable(tui.SearchTable{
+			Form: tui.SearchForm{
+				Title:       "Course Search",
+				Description: "Search by course name, code, category, or leave blank for recent results.",
+				SearchLabel: "Course",
+				Search:      opts.search,
+				Limit:       opts.limit,
+			},
+			Columns: courseListColumns(),
+			Fetch: func(result tui.SearchResult) (tui.TableResult, error) {
+				next := opts
+				next.search = result.Search
+				next.limit = result.Limit
+				next.page = result.Page
+				list, err := fetchCourseList(c, next)
+				if err != nil {
+					return tui.TableResult{}, err
+				}
+				return tui.TableResult{Rows: list.Rows, Total: list.Total, Page: list.Page}, nil
+			},
+			EmptyMessage: "No courses found. Try a broader search.",
+		})
+	}
 	c, err := api.NewTypedClient(cmdutil.ServerFromCmd(cmd), false)
 	if err != nil {
 		return err
 	}
-	params := openapi.ListCoursesParams{}
-	if opts.search != "" {
-		params.Search = &opts.search
-	}
-	if opts.educationLevelID != "" {
-		params.EducationLevelId = &opts.educationLevelID
-	}
-	if opts.categoryID != "" {
-		params.CategoryId = &opts.categoryID
-	}
-	if opts.classTypeID != "" {
-		params.ClassTypeId = &opts.classTypeID
-	}
-	if opts.page > 0 {
-		p := cmdutil.Itoa(opts.page)
-		params.Page = &p
-	}
-	if opts.limit > 0 {
-		l := cmdutil.Itoa(opts.limit)
-		params.Limit = &l
-	}
-	data, err := api.ParseResponseRaw(c.ListCourses(api.Ctx(), &params))
+	list, err := fetchCourseList(c, opts)
 	if err != nil {
 		return err
 	}
-	raw, rows, total, pg := cmdutil.ExtractList(data)
-	output.OutputList(raw, rows, []output.Column{
-		{Header: "ID", Key: "id"},
+	return output.OutputList(list.Raw, list.Rows, courseListColumns(), list.Total, list.Page)
+}
+
+func fetchCourseList(c *api.TypedClient, opts courseListOpts) (cmdutil.ListResult, error) {
+	params := openapi.ListCoursesParams{}
+	params.Search = cmdutil.StringPtrIfSet(opts.search)
+	params.EducationLevelId = cmdutil.StringPtrIfSet(opts.educationLevelID)
+	params.CategoryId = cmdutil.StringPtrIfSet(opts.categoryID)
+	params.ClassTypeId = cmdutil.StringPtrIfSet(opts.classTypeID)
+	params.Page = cmdutil.IntStringPtrIfPositive(opts.page)
+	params.Limit = cmdutil.IntStringPtrIfPositive(opts.limit)
+	data, err := api.ParseResponseRaw(c.ListCourses(api.Ctx(), &params))
+	if err != nil {
+		return cmdutil.ListResult{}, err
+	}
+	return cmdutil.NewListResult(data, "data").FinalizeServerSide(opts.limit), nil
+}
+
+func courseListColumns() []output.Column {
+	return []output.Column{
 		{Header: "Code", Key: "code"},
 		{Header: "Name", Key: "namePrimary"},
-		{Header: "Name (EN)", Key: "nameSecondary"},
 		{Header: "Level", Key: "educationLevel.name"},
-	}, total, pg)
-	return nil
+		{Header: "ID", Key: "id"},
+	}
 }
 
 func addCourseListFlags(cmd *cobra.Command, opts *courseListOpts) {
@@ -95,6 +128,8 @@ func addCourseListFlags(cmd *cobra.Command, opts *courseListOpts) {
 	cmd.Flags().StringVar(&opts.educationLevelID, "education-level-id", "", "Education level ID")
 	cmd.Flags().StringVar(&opts.categoryID, "category-id", "", "Category ID")
 	cmd.Flags().StringVar(&opts.classTypeID, "class-type-id", "", "Class type ID")
+	cmd.Flags().BoolVarP(&opts.interactive, "interactive", "i", false, "Open the interactive search form")
+	cmd.Flags().BoolVar(&opts.noInteractive, "no-interactive", false, "Skip the interactive search form")
 	cmdutil.AddListFlags(cmd, &opts.page, &opts.limit)
 }
 
@@ -128,8 +163,7 @@ func newCmdView() *cobra.Command {
 				return err
 			}
 			if output.IsJSON() {
-				output.JSON(data)
-				return nil
+				return output.JSON(data)
 			}
 			m := cmdutil.AsMap(data)
 			output.KVWithTitle([]output.KVPair{
@@ -141,18 +175,13 @@ func newCmdView() *cobra.Command {
 				{Key: "Category", Value: output.Resolve(m, "category.name")},
 				{Key: "Class type", Value: output.Resolve(m, "classType.name")},
 				{Key: "Gradation", Value: output.Resolve(m, "gradation.name")},
-				{Key: "Course type", Value: output.Resolve(m, "courseType.name")},
+				{Key: "Course type", Value: output.Resolve(m, "type.name")},
 			}, "Course")
 
 			if sections, ok := m["sections"].([]any); ok && len(sections) > 0 {
 				fmt.Println()
 				output.Bold("  Sections")
-				var rows []map[string]any
-				for _, s := range sections {
-					if row, ok := s.(map[string]any); ok {
-						rows = append(rows, row)
-					}
-				}
+				rows := cmdutil.RowsFromAny(sections)
 				output.Table(rows, []output.Column{
 					{Header: "ID", Key: "id"},
 					{Header: "Code", Key: "code"},
