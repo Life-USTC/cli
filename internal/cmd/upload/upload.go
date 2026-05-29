@@ -1,7 +1,6 @@
 package upload
 
 import (
-	"bufio"
 	"fmt"
 	"io"
 	"net/http"
@@ -43,28 +42,25 @@ func runUploadList(cmd *cobra.Command) error {
 	if err != nil {
 		return err
 	}
-	if output.IsJSON() {
-		output.JSON(data)
-		return nil
-	}
-	m := cmdutil.AsMap(data)
-	_, rows, _, _ := cmdutil.ExtractList(data, "uploads")
+	list := cmdutil.NewListResult(data, "uploads").FinalizeServerSide(0)
 
-	if m != nil {
-		used, _ := m["usedBytes"].(float64)
-		quota, _ := m["quotaBytes"].(float64)
-		if quota > 0 {
-			output.Dim(fmt.Sprintf("  Usage: %s / %s", humanSize(int64(used)), humanSize(int64(quota))))
+	if !output.IsJSON() {
+		m := cmdutil.AsMap(data)
+		if m != nil {
+			used, _ := m["usedBytes"].(float64)
+			quota, _ := m["quotaBytes"].(float64)
+			if quota > 0 {
+				output.Dim(fmt.Sprintf("  Usage: %s / %s", humanSize(int64(used)), humanSize(int64(quota))))
+			}
 		}
 	}
 
-	output.Table(rows, []output.Column{
+	return output.OutputList(list.Raw, list.Rows, []output.Column{
 		{Header: "ID", Key: "id"},
 		{Header: "Filename", Key: "filename"},
 		{Header: "Type", Key: "contentType"},
 		{Header: "Size", Key: "size"},
-	})
-	return nil
+	}, list.Total, list.Page)
 }
 
 func newCmdList() *cobra.Command {
@@ -195,24 +191,42 @@ func newCmdRename() *cobra.Command {
 func newCmdDelete() *cobra.Command {
 	var yes bool
 	cmd := &cobra.Command{
-		Use:     "delete <upload-id>",
+		Use:     "delete [upload-id]",
 		Aliases: []string{"rm"},
 		Short:   "Delete an upload",
-		Args:    cobra.ExactArgs(1),
+		Long:    "Delete an upload. When run interactively without an ID, shows your uploads and lets you pick one.",
+		Args:    cobra.MaximumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			if !yes {
-				fmt.Print("Delete this upload? (y/N) ")
-				s := bufio.NewScanner(os.Stdin)
-				if s.Scan() && strings.ToLower(strings.TrimSpace(s.Text())) != "y" {
-					output.Warning("Cancelled.")
+			id := ""
+			var row map[string]any
+			if len(args) == 1 {
+				id = strings.TrimSpace(args[0])
+			}
+			if id == "" {
+				if !cmdutil.IsInteractive() {
+					return fmt.Errorf("upload id is required in non-interactive mode")
+				}
+				picked, err := promptUploadPick(cmd, "Pick an upload to delete")
+				if err != nil {
+					return err
+				}
+				if picked == nil {
 					return nil
 				}
+				id, _ = picked["id"].(string)
+				row = picked
+			} else {
+				row = map[string]any{"id": id}
+			}
+			label := uploadLabelFromRow(row)
+			if !cmdutil.Confirm(fmt.Sprintf("Delete %s?", label), yes) {
+				return nil
 			}
 			c, err := api.NewTypedClient(cmdutil.ServerFromCmd(cmd), true)
 			if err != nil {
 				return err
 			}
-			_, err = api.ParseResponseRaw(c.DeleteUploadWithBody(api.Ctx(), args[0], "application/json", strings.NewReader("{}")))
+			_, err = api.ParseResponseRaw(c.DeleteUploadWithBody(api.Ctx(), id, "application/json", strings.NewReader("{}")))
 			if err != nil {
 				return err
 			}
@@ -262,6 +276,44 @@ func newCmdDownload() *cobra.Command {
 	}
 	cmd.Flags().StringVarP(&outFile, "output", "o", "", "Save to file")
 	return cmd
+}
+
+// promptUploadPick loads the user's uploads and lets them pick one.
+func promptUploadPick(cmd *cobra.Command, prompt string) (map[string]any, error) {
+	c, err := api.NewTypedClient(cmdutil.ServerFromCmd(cmd), true)
+	if err != nil {
+		return nil, err
+	}
+	data, err := api.ParseResponseRaw(c.ListUploads(api.Ctx()))
+	if err != nil {
+		return nil, err
+	}
+	_, rows, _, _ := cmdutil.ExtractList(data, "uploads")
+	if len(rows) == 0 {
+		output.Dim("  No uploads found.")
+		return nil, nil
+	}
+	return cmdutil.PromptPick(rows, []output.Column{
+		{Header: "Filename", Key: "filename"},
+		{Header: "Size", Key: "size"},
+		{Header: "ID", Key: "id"},
+	}, "id", prompt)
+}
+
+// uploadLabelFromRow returns a short summary for confirm messages.
+func uploadLabelFromRow(row map[string]any) string {
+	if row == nil {
+		return "this upload"
+	}
+	filename, _ := row["filename"].(string)
+	if filename != "" {
+		return filename
+	}
+	id, _ := row["id"].(string)
+	if id != "" {
+		return "upload " + id
+	}
+	return "this upload"
 }
 
 func humanSize(b int64) string {

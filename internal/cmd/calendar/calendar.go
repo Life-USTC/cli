@@ -36,8 +36,7 @@ func runCalendarGet(cmd *cobra.Command) error {
 		return err
 	}
 	if output.IsJSON() {
-		output.JSON(data)
-		return nil
+		return output.JSON(data)
 	}
 
 	// API returns {"subscription": {...}} — unwrap
@@ -51,19 +50,14 @@ func runCalendarGet(cmd *cobra.Command) error {
 	calURL, _ := sub["calendarUrl"].(string)
 	note, _ := sub["note"].(string)
 	output.KVWithTitle([]output.KVPair{
-		{Key: "URL", Value: calURL},
+		{Key: "URL", Value: output.Hyperlink(calURL, calURL)},
 		{Key: "Note", Value: note},
 	}, "Calendar subscription")
 
 	if sections, ok := sub["sections"].([]any); ok && len(sections) > 0 {
 		fmt.Println()
 		output.Bold("  Sections")
-		var rows []map[string]any
-		for _, s := range sections {
-			if row, ok := s.(map[string]any); ok {
-				rows = append(rows, row)
-			}
-		}
+		rows := cmdutil.RowsFromAny(sections)
 		output.Table(rows, []output.Column{
 			{Header: "ID", Key: "id"},
 			{Header: "Code", Key: "code"},
