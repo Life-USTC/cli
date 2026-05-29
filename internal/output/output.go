@@ -12,6 +12,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Life-USTC/CLI/internal/timeutil"
 	"github.com/fatih/color"
 	"github.com/itchyny/gojq"
 	"github.com/mattn/go-runewidth"
@@ -31,6 +32,16 @@ var Current = &Opts{Format: "table"}
 func IsJSON() bool      { return Current.Format == "json" || Current.JQ != "" }
 func IsTTY() bool       { return term.IsTerminal(int(os.Stdout.Fd())) }
 func Writer() io.Writer { return os.Stdout }
+
+func Hyperlink(text, target string) string {
+	if text == "" {
+		text = target
+	}
+	if target == "" || Current.NoColor || color.NoColor || !IsTTY() || os.Getenv("TERM") == "dumb" {
+		return text
+	}
+	return "\x1b]8;;" + target + "\x1b\\" + text + "\x1b]8;;\x1b\\"
+}
 
 // --- Logging helpers ---
 
@@ -85,17 +96,14 @@ func ApplyJQ(data any, expr string) error {
 
 // --- JSON output ---
 
-func JSON(data any) {
+func JSON(data any) error {
 	if Current.JQ != "" {
-		if err := ApplyJQ(data, Current.JQ); err != nil {
-			Errorf("%s", err)
-		}
-		return
+		return ApplyJQ(data, Current.JQ)
 	}
 	enc := json.NewEncoder(os.Stdout)
 	enc.SetIndent("", "  ")
 	enc.SetEscapeHTML(false)
-	_ = enc.Encode(data)
+	return enc.Encode(data)
 }
 
 // --- Table output ---
@@ -138,7 +146,7 @@ func Table(rows []map[string]any, cols []Column) {
 
 func TableTo(w io.Writer, rows []map[string]any, cols []Column, emptyMsg string) {
 	if len(rows) == 0 {
-		Dim(emptyMsg)
+		fmt.Fprintln(w, color.New(color.Faint).Sprint(emptyMsg))
 		return
 	}
 
@@ -181,14 +189,25 @@ func TableTo(w io.Writer, rows []map[string]any, cols []Column, emptyMsg string)
 		}
 	}
 	if totalWidth > tw && len(colWidths) > 1 {
-		available := tw
-		for i := 0; i < len(colWidths)-1; i++ {
-			available -= colWidths[i] + gap
+		// Proportionally shrink all columns to fit.
+		// Compute available space (subtract inter-column gaps).
+		available := tw - (len(colWidths)-1)*gap
+		if available < len(colWidths)*4 {
+			available = len(colWidths) * 4
 		}
-		if available < 4 {
-			available = 4
+		// Proportional shrink, preserving relative ratios.
+		sum := 0
+		for _, cw := range colWidths {
+			sum += cw
 		}
-		colWidths[len(colWidths)-1] = available
+		for i := range colWidths {
+			if sum > 0 {
+				colWidths[i] = colWidths[i] * available / sum
+			}
+			if colWidths[i] < 4 {
+				colWidths[i] = 4
+			}
+		}
 	}
 
 	// Print header
@@ -202,16 +221,15 @@ func TableTo(w io.Writer, rows []map[string]any, cols []Column, emptyMsg string)
 	for _, cells := range formatted {
 		parts := make([]string, len(cols))
 		for i, cell := range cells {
-			if i == len(cols)-1 {
-				// Last column: truncate if wider than allowed
-				if displayWidth(cell) > colWidths[i] {
-					plain := ansiRe.ReplaceAllString(cell, "")
-					cell = runewidth.Truncate(plain, colWidths[i]-1, "…")
-				}
-				parts[i] = cell
-			} else {
-				parts[i] = padRight(cell, colWidths[i])
+			dw := displayWidth(cell)
+			if dw > colWidths[i] {
+				plain := ansiRe.ReplaceAllString(cell, "")
+				cell = runewidth.Truncate(plain, colWidths[i]-1, "…")
 			}
+			if i < len(cols)-1 {
+				cell = padRight(cell, colWidths[i])
+			}
+			parts[i] = cell
 		}
 		_, _ = fmt.Fprintln(w, strings.Join(parts, strings.Repeat(" ", gap)))
 	}
@@ -231,8 +249,8 @@ func KVWithTitle(pairs []KVPair, title string) {
 
 	maxKey := 0
 	for _, p := range pairs {
-		if len(p.Key) > maxKey {
-			maxKey = len(p.Key)
+		if dw := displayWidth(p.Key); dw > maxKey {
+			maxKey = dw
 		}
 	}
 
@@ -253,17 +271,13 @@ type KVPair struct {
 
 // --- High-level helpers ---
 
-func OutputList(raw any, rows []map[string]any, cols []Column, total, page int) {
+func OutputList(raw any, rows []map[string]any, cols []Column, total, page int) error {
 	// --jq: pipe raw data through jq filter
 	if Current.JQ != "" {
-		if err := ApplyJQ(raw, Current.JQ); err != nil {
-			Errorf("%s", err)
-		}
-		return
+		return ApplyJQ(raw, Current.JQ)
 	}
 	if Current.Format == "json" {
-		JSON(raw)
-		return
+		return JSON(raw)
 	}
 
 	// Pagination header
@@ -291,22 +305,19 @@ func OutputList(raw any, rows []map[string]any, cols []Column, total, page int) 
 			Dim("  No results found.")
 			Hint("try adjusting your filters, or run without filters to see all items")
 		}
-		return
+		return nil
 	}
 
 	Table(rows, cols)
+	return nil
 }
 
-func OutputDetail(raw any, fields []FieldDef, title string) {
+func OutputDetail(raw any, fields []FieldDef, title string) error {
 	if Current.JQ != "" {
-		if err := ApplyJQ(raw, Current.JQ); err != nil {
-			Errorf("%s", err)
-		}
-		return
+		return ApplyJQ(raw, Current.JQ)
 	}
 	if Current.Format == "json" {
-		JSON(raw)
-		return
+		return JSON(raw)
 	}
 	data, _ := raw.(map[string]any)
 	pairs := make([]KVPair, 0, len(fields))
@@ -318,6 +329,7 @@ func OutputDetail(raw any, fields []FieldDef, title string) {
 		})
 	}
 	KVWithTitle(pairs, title)
+	return nil
 }
 
 type FieldDef struct {
@@ -335,23 +347,106 @@ func Info(msg string)    { Dim("  " + msg) }
 func Bold(msg string)    { fmt.Println(color.New(color.Bold).Sprint(msg)) }
 func Dim(msg string)     { fmt.Println(color.New(color.Faint).Sprint(msg)) }
 
+func Panel(title string, lines ...string) {
+	width := displayWidth(title)
+	for _, line := range lines {
+		if w := displayWidth(line); w > width {
+			width = w
+		}
+	}
+	if width < 8 {
+		width = 8
+	}
+
+	border := "+" + strings.Repeat("-", width+2) + "+"
+	fmt.Println(color.New(color.Faint).Sprint(border))
+	if title != "" {
+		fmt.Printf("%s %s%s %s\n",
+			color.New(color.Faint).Sprint("|"),
+			color.New(color.Bold).Sprint(title),
+			strings.Repeat(" ", width-displayWidth(title)),
+			color.New(color.Faint).Sprint("|"),
+		)
+		if len(lines) > 0 {
+			fmt.Println(color.New(color.Faint).Sprint("| " + strings.Repeat("-", width) + " |"))
+		}
+	}
+	for _, line := range lines {
+		fmt.Printf("%s %s%s %s\n",
+			color.New(color.Faint).Sprint("|"),
+			line,
+			strings.Repeat(" ", width-displayWidth(line)),
+			color.New(color.Faint).Sprint("|"),
+		)
+	}
+	fmt.Println(color.New(color.Faint).Sprint(border))
+}
+
 // --- Formatting helpers ---
 
 func Resolve(m map[string]any, key string) any {
 	parts := strings.Split(key, ".")
 	var cur any = m
 	for _, p := range parts {
-		if mm, ok := cur.(map[string]any); ok {
-			cur = mm[p]
-			// Fallback: if "name" resolved to nil, try "nameCn" (API convention)
-			if cur == nil && p == "name" {
-				cur = mm["nameCn"]
+		mm, ok := cur.(map[string]any)
+		if !ok {
+			return nil
+		}
+		val, exists := mm[p]
+		if exists {
+			cur = val
+			continue
+		}
+		switch p {
+		case "name", "namePrimary":
+			if v, ok := mm["nameCn"]; ok {
+				cur = v
+			} else if v, ok := mm["nameEn"]; ok {
+				cur = v
+			} else {
+				return nil
 			}
-		} else {
+		case "nameSecondary":
+			if v, ok := mm["nameEn"]; ok {
+				cur = v
+			} else if v, ok := mm["nameCn"]; ok {
+				cur = v
+			} else {
+				return nil
+			}
+		default:
 			return nil
 		}
 	}
 	return cur
+}
+
+// FormatCellPlain formats a cell value without ANSI colors or timestamp
+// rewriting. It is intended for TUI rendering where colors are applied later
+// and timestamps should display as-is.
+func FormatCellPlain(v any) string {
+	if v == nil {
+		return "-"
+	}
+	switch val := v.(type) {
+	case bool:
+		if val {
+			return "yes"
+		}
+		return "no"
+	case float64:
+		if val == float64(int64(val)) {
+			return fmt.Sprintf("%d", int64(val))
+		}
+		return fmt.Sprintf("%g", val)
+	case string:
+		if val == "" {
+			return "-"
+		}
+		return val
+	default:
+		return fmt.Sprint(v)
+	}
 }
 
 func FormatCell(v any) string {
@@ -370,7 +465,7 @@ func FormatCell(v any) string {
 		}
 		return fmt.Sprintf("%g", val)
 	case string:
-		if t, ok := parseISO(val); ok {
+		if t, ok := timeutil.ParseAPI(val); ok {
 			return t.Format("2006-01-02 15:04")
 		}
 		return val
@@ -379,24 +474,8 @@ func FormatCell(v any) string {
 	}
 }
 
-func parseISO(s string) (time.Time, bool) {
-	if len(s) < 19 || s[4] != '-' || s[7] != '-' || s[10] != 'T' || s[13] != ':' {
-		return time.Time{}, false
-	}
-	for _, layout := range []string{
-		time.RFC3339Nano,
-		time.RFC3339,
-		"2006-01-02T15:04:05",
-	} {
-		if t, err := time.Parse(layout, s); err == nil {
-			return t, true
-		}
-	}
-	return time.Time{}, false
-}
-
 func FormatRelativeTime(s string) string {
-	t, ok := parseISO(s)
+	t, ok := timeutil.ParseAPI(s)
 	if !ok {
 		return s
 	}
