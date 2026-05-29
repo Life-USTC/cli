@@ -2,13 +2,13 @@
 package api
 
 import (
-	"bytes"
-	"encoding/json"
+	"context"
 	"fmt"
 	"io"
 	"net/http"
 	"net/url"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/Life-USTC/CLI/internal/auth"
@@ -18,13 +18,32 @@ import (
 
 // Client wraps net/http with automatic auth header injection and token refresh.
 type Client struct {
-	Server     string
-	Cred       *config.Credential
+	Server string
+
 	HTTPClient *http.Client
+}
+
+type refreshTokenFunc func(server string, cred *config.Credential) (*config.Credential, error)
+
+// authTransport implements http.RoundTripper.
+// It injects the Bearer token and retries once on 401 after a token refresh.
+type authTransport struct {
+	mu      sync.Mutex
+	server  string
+	cred    *config.Credential
+	base    http.RoundTripper
+	refresh refreshTokenFunc
 }
 
 // NewClient creates a client, optionally requiring auth.
 func NewClient(server string, requireAuth bool) (*Client, error) {
+	return NewClientWithRefresh(server, requireAuth, nil)
+}
+
+// NewClientWithRefresh creates a Client with a custom token refresh function.
+// Pass nil for refresh to use the default auth.RefreshToken; this is intended
+// for tests that want to inject a mock refresh without hitting the real server.
+func NewClientWithRefresh(server string, requireAuth bool, refresh refreshTokenFunc) (*Client, error) {
 	server = strings.TrimRight(server, "/")
 	cred, err := config.LoadCredentials(server)
 	if err != nil {
@@ -33,74 +52,33 @@ func NewClient(server string, requireAuth bool) (*Client, error) {
 	if requireAuth && cred == nil {
 		return nil, fmt.Errorf("not logged in. Run `life-ustc auth login` first")
 	}
-
-	c := &Client{
-		Server: server,
-		Cred:   cred,
-		HTTPClient: &http.Client{
-			Timeout: 30 * time.Second,
+	httpClient := &http.Client{
+		Timeout: 30 * time.Second,
+		Transport: &authTransport{
+			server:  server,
+			cred:    cred,
+			base:    http.DefaultTransport,
+			refresh: refresh,
 		},
 	}
-	c.ensureToken()
-	return c, nil
+	return &Client{Server: server, HTTPClient: httpClient}, nil
 }
 
-func (c *Client) ensureToken() {
-	if c.Cred == nil || !config.IsTokenExpired(c.Cred) {
-		return
-	}
-	newCred, err := auth.RefreshToken(c.Server, c.Cred)
-	if err != nil || newCred == nil {
-		return
-	}
-	c.Cred = newCred
-	_ = config.SaveCredentials(c.Server, newCred)
-}
+func (t *authTransport) RoundTrip(req *http.Request) (*http.Response, error) {
+	refreshed := t.ensureToken()
 
-func (c *Client) headers() http.Header {
-	h := make(http.Header)
-	if c.Cred != nil {
-		h.Set("Authorization", "Bearer "+c.Cred.AccessToken)
-	}
-	return h
-}
+	t.mu.Lock()
+	cred := t.cred
+	t.mu.Unlock()
 
-// APIError represents a non-2xx response.
-type APIError struct {
-	Status  int
-	Method  string
-	Path    string
-	Message string
-}
-
-func (e *APIError) Error() string {
-	if e.Message != "" {
-		return fmt.Sprintf("%s %s → %d: %s", e.Method, e.Path, e.Status, e.Message)
-	}
-	return fmt.Sprintf("%s %s → %d", e.Method, e.Path, e.Status)
-}
-
-func (c *Client) do(method, path string, params url.Values, body io.Reader, contentType string) (*http.Response, error) {
-	u := c.Server + path
-	if len(params) > 0 {
-		u += "?" + params.Encode()
+	if cred != nil {
+		req.Header.Set("Authorization", "Bearer "+cred.AccessToken)
 	}
 
-	output.VerboseF("→ %s %s", method, u)
+	output.VerboseF("→ %s %s", req.Method, req.URL)
 	start := time.Now()
 
-	req, err := http.NewRequest(method, u, body)
-	if err != nil {
-		return nil, err
-	}
-	for k, v := range c.headers() {
-		req.Header[k] = v
-	}
-	if contentType != "" {
-		req.Header.Set("Content-Type", contentType)
-	}
-
-	resp, err := c.HTTPClient.Do(req)
+	resp, err := t.base.RoundTrip(req)
 	if err != nil {
 		output.VerboseF("← error: %s (%dms)", err, time.Since(start).Milliseconds())
 		return nil, err
@@ -108,32 +86,37 @@ func (c *Client) do(method, path string, params url.Values, body io.Reader, cont
 
 	output.VerboseF("← %d %s (%dms)", resp.StatusCode, http.StatusText(resp.StatusCode), time.Since(start).Milliseconds())
 
-	// Retry once on 401
-	if resp.StatusCode == 401 && c.Cred != nil {
+	if resp.StatusCode == 401 && cred != nil {
 		_ = resp.Body.Close()
-		newCred, err := auth.RefreshToken(c.Server, c.Cred)
-		if err == nil && newCred != nil {
-			c.Cred = newCred
-			_ = config.SaveCredentials(c.Server, newCred)
+		if refreshed {
+			return nil, fmt.Errorf("session expired. Please run `life-ustc auth login` again")
+		}
+		t.mu.Lock()
+		newCred, refreshErr := t.refreshToken()
+		if refreshErr == nil && newCred != nil {
+			t.cred = newCred
+			_ = config.SaveCredentials(t.server, newCred)
+		}
+		t.mu.Unlock()
+		if refreshErr != nil || newCred == nil {
+			return nil, fmt.Errorf("session expired while refreshing token. Please run `life-ustc auth login` again")
+		}
 
-			// Re-read body if possible
-			if body != nil {
-				if seeker, ok := body.(io.ReadSeeker); ok {
-					_, _ = seeker.Seek(0, io.SeekStart)
-				}
+		// Clone the request with a fresh body and the new token.
+		req2 := req.Clone(req.Context())
+		if req.GetBody != nil {
+			body, bodyErr := req.GetBody()
+			if bodyErr != nil {
+				return nil, bodyErr
 			}
-
-			req2, _ := http.NewRequest(method, u, body)
-			for k, v := range c.headers() {
-				req2.Header[k] = v
-			}
-			if contentType != "" {
-				req2.Header.Set("Content-Type", contentType)
-			}
-			resp, err = c.HTTPClient.Do(req2)
-			if err != nil {
-				return nil, err
-			}
+			req2.Body = body
+		} else if req.Body != nil {
+			return nil, fmt.Errorf("session expired while sending a non-replayable request body; please retry")
+		}
+		req2.Header.Set("Authorization", "Bearer "+t.cred.AccessToken)
+		resp, err = t.base.RoundTrip(req2)
+		if err != nil {
+			return nil, err
 		}
 		if resp.StatusCode == 401 {
 			_ = resp.Body.Close()
@@ -144,110 +127,45 @@ func (c *Client) do(method, path string, params url.Values, body io.Reader, cont
 	return resp, nil
 }
 
-func (c *Client) request(method, path string, params url.Values, jsonBody any) (any, error) {
-	var body io.Reader
-	ct := ""
-	if jsonBody != nil {
-		b, err := json.Marshal(jsonBody)
-		if err != nil {
-			return nil, err
-		}
-		body = bytes.NewReader(b)
-		ct = "application/json"
+func (t *authTransport) ensureToken() bool {
+	t.mu.Lock()
+	defer t.mu.Unlock()
+	if t.cred == nil || !config.IsTokenExpired(t.cred) {
+		return false
+	}
+	newCred, err := t.refreshToken()
+	if err != nil || newCred == nil {
+		return false
+	}
+	t.cred = newCred
+	_ = config.SaveCredentials(t.server, newCred)
+	return true
+}
+
+func (t *authTransport) refreshToken() (*config.Credential, error) {
+	refresh := t.refresh
+	if refresh == nil {
+		refresh = auth.RefreshToken
+	}
+	return refresh(t.server, t.cred)
+}
+
+// DoRaw performs an HTTP request and returns the raw response.
+func (c *Client) DoRaw(ctx context.Context, method, path string, params url.Values, body io.Reader, contentType string, headers http.Header) (*http.Response, error) {
+	u := c.Server + path
+	if len(params) > 0 {
+		u += "?" + params.Encode()
 	}
 
-	resp, err := c.do(method, path, params, body, ct)
+	req, err := http.NewRequestWithContext(ctx, method, u, body)
 	if err != nil {
 		return nil, err
 	}
-	defer func() { _ = resp.Body.Close() }()
-
-	respBody, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
+	for k, v := range headers {
+		req.Header[k] = append([]string(nil), v...)
 	}
-
-	if resp.StatusCode >= 400 {
-		msg := ""
-		var parsed map[string]any
-		if json.Unmarshal(respBody, &parsed) == nil {
-			if m, ok := parsed["message"].(string); ok {
-				msg = m
-			} else if e, ok := parsed["error"].(string); ok {
-				msg = e
-			}
-		}
-		if msg == "" && len(respBody) > 0 {
-			msg = string(respBody)
-			if len(msg) > 200 {
-				msg = msg[:200]
-			}
-		}
-		return nil, &APIError{Status: resp.StatusCode, Method: method, Path: path, Message: msg}
+	if contentType != "" {
+		req.Header.Set("Content-Type", contentType)
 	}
-
-	ct = resp.Header.Get("Content-Type")
-	if strings.HasPrefix(ct, "application/json") {
-		var result any
-		if err := json.Unmarshal(respBody, &result); err != nil {
-			return nil, err
-		}
-		return result, nil
-	}
-	return string(respBody), nil
-}
-
-// Get performs a GET request with optional query params.
-func (c *Client) Get(path string, params url.Values) (any, error) {
-	return c.request("GET", path, params, nil)
-}
-
-// Post performs a POST request with a JSON body.
-func (c *Client) Post(path string, body any) (any, error) {
-	return c.request("POST", path, nil, body)
-}
-
-// Patch performs a PATCH request with a JSON body.
-func (c *Client) Patch(path string, body any) (any, error) {
-	return c.request("PATCH", path, nil, body)
-}
-
-// Put performs a PUT request with a JSON body.
-func (c *Client) Put(path string, body any) (any, error) {
-	return c.request("PUT", path, nil, body)
-}
-
-// Delete performs a DELETE request with optional query params.
-func (c *Client) Delete(path string, params url.Values) (any, error) {
-	return c.request("DELETE", path, params, nil)
-}
-
-// GetRaw performs a GET and returns the raw http.Response.
-func (c *Client) GetRaw(path string, params url.Values) (*http.Response, error) {
-	return c.do("GET", path, params, nil, "")
-}
-
-// PostForm posts form-encoded data.
-func (c *Client) PostForm(endpoint string, data url.Values) (map[string]any, error) {
-	body := strings.NewReader(data.Encode())
-	resp, err := c.do("POST", endpoint, nil, body, "application/x-www-form-urlencoded")
-	if err != nil {
-		return nil, err
-	}
-	defer func() { _ = resp.Body.Close() }()
-
-	respBody, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
-
-	if resp.StatusCode >= 400 {
-		return nil, fmt.Errorf("POST %s → %d: %s", endpoint, resp.StatusCode, string(respBody))
-	}
-
-	var result map[string]any
-	if err := json.Unmarshal(respBody, &result); err != nil {
-		return nil, err
-	}
-	return result, nil
+	return c.HTTPClient.Do(req)
 }
