@@ -416,7 +416,7 @@ func fetchBlackboardCalendarEvents(ctx context.Context, client *http.Client, cal
 	if err != nil {
 		return nil, fmt.Errorf("fetch Blackboard homework: %w", err)
 	}
-	defer res.Body.Close()
+	defer func() { _ = res.Body.Close() }()
 	if res.StatusCode >= 300 {
 		return nil, responseError(res)
 	}
@@ -438,7 +438,7 @@ func fetchBlackboardCourseIDs(ctx context.Context, client *http.Client) (map[str
 	if err != nil {
 		return nil, fmt.Errorf("fetch Blackboard portal courses: %w", err)
 	}
-	defer res.Body.Close()
+	defer func() { _ = res.Body.Close() }()
 	if res.StatusCode >= 300 {
 		return nil, responseError(res)
 	}
@@ -480,7 +480,7 @@ func fetchBlackboardGradeStatuses(ctx context.Context, client *http.Client, cour
 	if err != nil {
 		return nil, fmt.Errorf("fetch Blackboard grades: %w", err)
 	}
-	defer res.Body.Close()
+	defer func() { _ = res.Body.Close() }()
 	if res.StatusCode >= 300 {
 		return nil, responseError(res)
 	}
@@ -593,7 +593,7 @@ func fetchStudentID(ctx context.Context, client *http.Client) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("fetch course table page: %w", err)
 	}
-	defer res.Body.Close()
+	defer func() { _ = res.Body.Close() }()
 	if res.StatusCode >= 300 {
 		return "", responseError(res)
 	}
@@ -610,7 +610,7 @@ func fetchCurrentCourseTable(ctx context.Context, client *http.Client, semesterI
 	if err != nil {
 		return nil, nil, fmt.Errorf("fetch course table data: %w", err)
 	}
-	defer res.Body.Close()
+	defer func() { _ = res.Body.Close() }()
 	if res.StatusCode >= 300 {
 		return nil, nil, responseError(res)
 	}
@@ -664,12 +664,12 @@ func fetchCatalogLessons(ctx context.Context, client *http.Client, semesterID in
 		}
 		if res.StatusCode >= 300 {
 			err := responseError(res)
-			res.Body.Close()
+			_ = res.Body.Close()
 			return nil, err
 		}
 
 		body, err := io.ReadAll(res.Body)
-		res.Body.Close()
+		_ = res.Body.Close()
 		if err != nil {
 			return nil, fmt.Errorf("read catalog lessons: %w", err)
 		}
@@ -828,7 +828,7 @@ func fetchJSON[T any](ctx context.Context, client *http.Client, rawURL string, q
 	if err != nil {
 		return err
 	}
-	defer res.Body.Close()
+	defer func() { _ = res.Body.Close() }()
 	if res.StatusCode >= 300 {
 		return responseError(res)
 	}

@@ -370,7 +370,7 @@ func postGraduateYJS1FormJSON(ctx context.Context, client *http.Client, appPageU
 	if err != nil {
 		return err
 	}
-	defer res.Body.Close()
+	defer func() { _ = res.Body.Close() }()
 
 	if res.StatusCode < http.StatusOK || res.StatusCode >= http.StatusMultipleChoices {
 		return responseError(res)
@@ -390,7 +390,7 @@ func fetchGraduateYJS1UserID(ctx context.Context, client *http.Client, appPageUR
 	if err != nil {
 		return "", err
 	}
-	defer res.Body.Close()
+	defer func() { _ = res.Body.Close() }()
 
 	if res.StatusCode < http.StatusOK || res.StatusCode >= http.StatusMultipleChoices {
 		return "", responseError(res)
