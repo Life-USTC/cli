@@ -21,6 +21,7 @@ import (
 	"github.com/Life-USTC/CLI/internal/cmd/me"
 	"github.com/Life-USTC/CLI/internal/cmd/metadata"
 	"github.com/Life-USTC/CLI/internal/cmd/schedule"
+	schoolcmd "github.com/Life-USTC/CLI/internal/cmd/school"
 	"github.com/Life-USTC/CLI/internal/cmd/section"
 	"github.com/Life-USTC/CLI/internal/cmd/semester"
 	"github.com/Life-USTC/CLI/internal/cmd/teacher"
@@ -141,6 +142,7 @@ scripting, or drop down to 'life-ustc api' for raw endpoint access.`,
 		grouped(groupBrowse, semester.NewCmdSemester()),
 		grouped(groupBrowse, schedule.NewCmdSchedule()),
 		grouped(groupBrowse, bus.NewCmdBus()),
+		grouped(groupBrowse, schoolcmd.NewCmdSchool()),
 
 		grouped(groupCommunity, comment.NewCmdComment()),
 		grouped(groupCommunity, description.NewCmdDescription()),
