@@ -104,10 +104,6 @@ func newAuthenticatedClientForTargets(ctx context.Context, creds Credentials, ta
 	return nil, lastErr
 }
 
-func openAuthenticatedClient(ctx context.Context, creds Credentials, target loginTarget) (*http.Client, error) {
-	return openAuthenticatedClientForTargets(ctx, creds, []loginTarget{target})
-}
-
 func openAuthenticatedClientForTargets(ctx context.Context, creds Credentials, targets []loginTarget) (*http.Client, error) {
 	client, err := newSchoolHTTPClient()
 	if err != nil {
@@ -170,7 +166,7 @@ func fetchCASLoginPage(ctx context.Context, client *http.Client, loginURL string
 	if err != nil {
 		return casLoginPage{}, fmt.Errorf("open login page: %w", err)
 	}
-	defer res.Body.Close()
+	defer func() { _ = res.Body.Close() }()
 	if res.StatusCode >= 300 {
 		return casLoginPage{}, responseError(res)
 	}
@@ -239,7 +235,7 @@ func submitCASLogin(ctx context.Context, client *http.Client, page casLoginPage,
 	if err != nil {
 		return nil, nil, fmt.Errorf("submit login form: %w", err)
 	}
-	defer res.Body.Close()
+	defer func() { _ = res.Body.Close() }()
 
 	body, err := io.ReadAll(res.Body)
 	if err != nil {
@@ -306,14 +302,14 @@ func primeAuthenticatedSession(ctx context.Context, client *http.Client, urls []
 		}
 		if res.StatusCode >= 300 {
 			err = responseError(res)
-			res.Body.Close()
+			_ = res.Body.Close()
 			return err
 		}
 		if _, readErr := io.Copy(io.Discard, res.Body); readErr != nil {
-			res.Body.Close()
+			_ = res.Body.Close()
 			return fmt.Errorf("read %s: %w", rawURL, readErr)
 		}
-		res.Body.Close()
+		_ = res.Body.Close()
 	}
 	return nil
 }

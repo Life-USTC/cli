@@ -813,7 +813,7 @@ func flattenScoreItems(items []scoreAPIItem, defaultSemesterID int, defaultSemes
 }
 
 func fetchJSON[T any](ctx context.Context, client *http.Client, rawURL string, query url.Values, out *T) error {
-	if query != nil && len(query) > 0 {
+	if len(query) > 0 {
 		rawURL += "?" + query.Encode()
 	}
 
@@ -823,30 +823,6 @@ func fetchJSON[T any](ctx context.Context, client *http.Client, rawURL string, q
 	}
 	req.Header.Set("Accept", "application/json, text/plain, */*")
 	req.Header.Set("User-Agent", schoolUserAgent)
-
-	res, err := client.Do(req)
-	if err != nil {
-		return err
-	}
-	defer res.Body.Close()
-	if res.StatusCode >= 300 {
-		return responseError(res)
-	}
-	if err := json.NewDecoder(res.Body).Decode(out); err != nil {
-		return fmt.Errorf("decode %s: %w", rawURL, err)
-	}
-	return nil
-}
-
-func postFormJSON[T any](ctx context.Context, client *http.Client, rawURL string, form url.Values, out *T) error {
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, rawURL, strings.NewReader(form.Encode()))
-	if err != nil {
-		return err
-	}
-	req.Header.Set("Accept", "application/json, text/plain, */*")
-	req.Header.Set("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8")
-	req.Header.Set("User-Agent", schoolUserAgent)
-	req.Header.Set("X-Requested-With", "XMLHttpRequest")
 
 	res, err := client.Do(req)
 	if err != nil {

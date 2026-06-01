@@ -1,9 +1,6 @@
 package school
 
-import (
-	"fmt"
-	"time"
-)
+import "time"
 
 var debugf func(format string, args ...any)
 
@@ -26,10 +23,6 @@ func debugStep(name string) func() {
 	return func() {
 		debugLog("done %s (%s)", name, time.Since(start).Round(time.Millisecond))
 	}
-}
-
-func debugStepf(format string, args ...any) func() {
-	return debugStep(fmt.Sprintf(format, args...))
 }
 
 func withSchoolDebugStep(name string, fn func() error) error {
