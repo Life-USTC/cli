@@ -122,6 +122,42 @@ func (e AdminModeratedCommentResponseSchemaCommentVisibility) Valid() bool {
 	}
 }
 
+// Defines values for BusQueryResponseSchemaLocale.
+const (
+	BusQueryResponseSchemaLocaleEnUs BusQueryResponseSchemaLocale = "en-us"
+	BusQueryResponseSchemaLocaleZhCn BusQueryResponseSchemaLocale = "zh-cn"
+)
+
+// Valid indicates whether the value is a known member of the BusQueryResponseSchemaLocale enum.
+func (e BusQueryResponseSchemaLocale) Valid() bool {
+	switch e {
+	case BusQueryResponseSchemaLocaleEnUs:
+		return true
+	case BusQueryResponseSchemaLocaleZhCn:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for BusQueryResponseSchemaTripsDayType.
+const (
+	Weekday BusQueryResponseSchemaTripsDayType = "weekday"
+	Weekend BusQueryResponseSchemaTripsDayType = "weekend"
+)
+
+// Valid indicates whether the value is a known member of the BusQueryResponseSchemaTripsDayType enum.
+func (e BusQueryResponseSchemaTripsDayType) Valid() bool {
+	switch e {
+	case Weekday:
+		return true
+	case Weekend:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for CommentCreateRequestSchemaTargetType.
 const (
 	CommentCreateRequestSchemaTargetTypeCourse         CommentCreateRequestSchemaTargetType = "course"
@@ -289,16 +325,16 @@ func (e HomeworksListResponseSchemaAuditLogsAction) Valid() bool {
 
 // Defines values for LocaleUpdateRequestSchemaLocale.
 const (
-	EnUs LocaleUpdateRequestSchemaLocale = "en-us"
-	ZhCn LocaleUpdateRequestSchemaLocale = "zh-cn"
+	LocaleUpdateRequestSchemaLocaleEnUs LocaleUpdateRequestSchemaLocale = "en-us"
+	LocaleUpdateRequestSchemaLocaleZhCn LocaleUpdateRequestSchemaLocale = "zh-cn"
 )
 
 // Valid indicates whether the value is a known member of the LocaleUpdateRequestSchemaLocale enum.
 func (e LocaleUpdateRequestSchemaLocale) Valid() bool {
 	switch e {
-	case EnUs:
+	case LocaleUpdateRequestSchemaLocaleEnUs:
 		return true
-	case ZhCn:
+	case LocaleUpdateRequestSchemaLocaleZhCn:
 		return true
 	default:
 		return false
@@ -473,63 +509,6 @@ func (e ListAdminHomeworksParamsStatus) Valid() bool {
 	case All:
 		return true
 	case Deleted:
-		return true
-	default:
-		return false
-	}
-}
-
-// Defines values for QueryBusParamsDayType.
-const (
-	Auto    QueryBusParamsDayType = "auto"
-	Weekday QueryBusParamsDayType = "weekday"
-	Weekend QueryBusParamsDayType = "weekend"
-)
-
-// Valid indicates whether the value is a known member of the QueryBusParamsDayType enum.
-func (e QueryBusParamsDayType) Valid() bool {
-	switch e {
-	case Auto:
-		return true
-	case Weekday:
-		return true
-	case Weekend:
-		return true
-	default:
-		return false
-	}
-}
-
-// Defines values for QueryBusParamsShowDepartedTrips.
-const (
-	QueryBusParamsShowDepartedTripsFalse QueryBusParamsShowDepartedTrips = "false"
-	QueryBusParamsShowDepartedTripsTrue  QueryBusParamsShowDepartedTrips = "true"
-)
-
-// Valid indicates whether the value is a known member of the QueryBusParamsShowDepartedTrips enum.
-func (e QueryBusParamsShowDepartedTrips) Valid() bool {
-	switch e {
-	case QueryBusParamsShowDepartedTripsFalse:
-		return true
-	case QueryBusParamsShowDepartedTripsTrue:
-		return true
-	default:
-		return false
-	}
-}
-
-// Defines values for QueryBusParamsIncludeAllTrips.
-const (
-	QueryBusParamsIncludeAllTripsFalse QueryBusParamsIncludeAllTrips = "false"
-	QueryBusParamsIncludeAllTripsTrue  QueryBusParamsIncludeAllTrips = "true"
-)
-
-// Valid indicates whether the value is a known member of the QueryBusParamsIncludeAllTrips enum.
-func (e QueryBusParamsIncludeAllTrips) Valid() bool {
-	switch e {
-	case QueryBusParamsIncludeAllTripsFalse:
-		return true
-	case QueryBusParamsIncludeAllTripsTrue:
 		return true
 	default:
 		return false
@@ -817,14 +796,24 @@ type AdminCommentsResponseSchema struct {
 		ParentId       *string    `json:"parentId"`
 		RootId         *string    `json:"rootId"`
 		Section        *struct {
-			Code string `json:"code"`
-			JwId int    `json:"jwId"`
+			Code   string `json:"code"`
+			Course struct {
+				Code   string `json:"code"`
+				JwId   int    `json:"jwId"`
+				NameCn string `json:"nameCn"`
+			} `json:"course"`
+			JwId int `json:"jwId"`
 		} `json:"section"`
 		SectionId      *int `json:"sectionId"`
 		SectionTeacher *struct {
 			Section struct {
-				Code string `json:"code"`
-				JwId int    `json:"jwId"`
+				Code   string `json:"code"`
+				Course struct {
+					Code   string `json:"code"`
+					JwId   int    `json:"jwId"`
+					NameCn string `json:"nameCn"`
+				} `json:"course"`
+				JwId int `json:"jwId"`
 			} `json:"section"`
 			Teacher struct {
 				NameCn string `json:"nameCn"`
@@ -861,10 +850,97 @@ type AdminCreateSuspensionRequestSchema struct {
 }
 
 // AdminDescriptionsResponseSchema defines model for adminDescriptionsResponseSchema.
-type AdminDescriptionsResponseSchema = interface{}
+type AdminDescriptionsResponseSchema struct {
+	Descriptions []struct {
+		Content string `json:"content"`
+		Course  *struct {
+			Code   string `json:"code"`
+			JwId   int    `json:"jwId"`
+			NameCn string `json:"nameCn"`
+		} `json:"course"`
+		CourseId  *int      `json:"courseId"`
+		CreatedAt time.Time `json:"createdAt"`
+		Homework  *struct {
+			Id      string `json:"id"`
+			Section *struct {
+				Code   *string `json:"code"`
+				Course *struct {
+					Code   string `json:"code"`
+					JwId   int    `json:"jwId"`
+					NameCn string `json:"nameCn"`
+				} `json:"course"`
+				JwId *int `json:"jwId"`
+			} `json:"section"`
+			Title string `json:"title"`
+		} `json:"homework"`
+		HomeworkId   *string    `json:"homeworkId"`
+		Id           string     `json:"id"`
+		LastEditedAt *time.Time `json:"lastEditedAt"`
+		LastEditedBy *struct {
+			Id       string  `json:"id"`
+			Image    *string `json:"image"`
+			Name     *string `json:"name"`
+			Username *string `json:"username"`
+		} `json:"lastEditedBy"`
+		LastEditedById *string `json:"lastEditedById"`
+		Section        *struct {
+			Code   *string `json:"code"`
+			Course *struct {
+				Code   string `json:"code"`
+				JwId   int    `json:"jwId"`
+				NameCn string `json:"nameCn"`
+			} `json:"course"`
+			JwId *int `json:"jwId"`
+		} `json:"section"`
+		SectionId *int `json:"sectionId"`
+		Teacher   *struct {
+			Id     int    `json:"id"`
+			NameCn string `json:"nameCn"`
+		} `json:"teacher"`
+		TeacherId *int      `json:"teacherId"`
+		UpdatedAt time.Time `json:"updatedAt"`
+	} `json:"descriptions"`
+}
 
 // AdminHomeworksResponseSchema defines model for adminHomeworksResponseSchema.
-type AdminHomeworksResponseSchema = interface{}
+type AdminHomeworksResponseSchema struct {
+	Homeworks []struct {
+		CreatedAt time.Time `json:"createdAt"`
+		CreatedBy *struct {
+			Id       string  `json:"id"`
+			Image    *string `json:"image"`
+			Name     *string `json:"name"`
+			Username *string `json:"username"`
+		} `json:"createdBy"`
+		DeletedAt *time.Time `json:"deletedAt"`
+		DeletedBy *struct {
+			Id       string  `json:"id"`
+			Image    *string `json:"image"`
+			Name     *string `json:"name"`
+			Username *string `json:"username"`
+		} `json:"deletedBy"`
+		Id      string `json:"id"`
+		Section *struct {
+			Code   *string `json:"code"`
+			Course struct {
+				Code   string `json:"code"`
+				JwId   int    `json:"jwId"`
+				NameCn string `json:"nameCn"`
+			} `json:"course"`
+			Id   int  `json:"id"`
+			JwId *int `json:"jwId"`
+		} `json:"section"`
+		SubmissionDueAt *time.Time `json:"submissionDueAt"`
+		Title           string     `json:"title"`
+		UpdatedAt       time.Time  `json:"updatedAt"`
+		UpdatedBy       *struct {
+			Id       string  `json:"id"`
+			Image    *string `json:"image"`
+			Name     *string `json:"name"`
+			Username *string `json:"username"`
+		} `json:"updatedBy"`
+	} `json:"homeworks"`
+}
 
 // AdminModerateCommentRequestSchema defines model for adminModerateCommentRequestSchema.
 type AdminModerateCommentRequestSchema struct {
@@ -984,18 +1060,110 @@ type AdminUsersResponseSchema struct {
 
 // BusPreferenceRequestSchema defines model for busPreferenceRequestSchema.
 type BusPreferenceRequestSchema struct {
-	FavoriteCampusIds            []int `json:"favoriteCampusIds"`
-	FavoriteRouteIds             []int `json:"favoriteRouteIds"`
-	PreferredDestinationCampusId *int  `json:"preferredDestinationCampusId"`
-	PreferredOriginCampusId      *int  `json:"preferredOriginCampusId"`
-	ShowDepartedTrips            bool  `json:"showDepartedTrips"`
+	PreferredDestinationCampusId *int `json:"preferredDestinationCampusId"`
+	PreferredOriginCampusId      *int `json:"preferredOriginCampusId"`
+	ShowDepartedTrips            bool `json:"showDepartedTrips"`
 }
 
 // BusPreferenceResponseSchema defines model for busPreferenceResponseSchema.
-type BusPreferenceResponseSchema = interface{}
+type BusPreferenceResponseSchema struct {
+	Preference struct {
+		PreferredDestinationCampusId *int `json:"preferredDestinationCampusId"`
+		PreferredOriginCampusId      *int `json:"preferredOriginCampusId"`
+		ShowDepartedTrips            bool `json:"showDepartedTrips"`
+	} `json:"preference"`
+}
 
 // BusQueryResponseSchema defines model for busQueryResponseSchema.
-type BusQueryResponseSchema = interface{}
+type BusQueryResponseSchema struct {
+	AvailableVersions []struct {
+		EffectiveFrom  *time.Time `json:"effectiveFrom"`
+		EffectiveUntil *time.Time `json:"effectiveUntil"`
+		Id             int        `json:"id"`
+		ImportedAt     time.Time  `json:"importedAt"`
+		Key            string     `json:"key"`
+		Notice         *struct {
+			Message *string `json:"message"`
+			Url     *string `json:"url"`
+		} `json:"notice"`
+		Title string `json:"title"`
+	} `json:"availableVersions"`
+	Campuses []struct {
+		Id            int     `json:"id"`
+		Latitude      float32 `json:"latitude"`
+		Longitude     float32 `json:"longitude"`
+		NameCn        string  `json:"nameCn"`
+		NameEn        *string `json:"nameEn"`
+		NamePrimary   string  `json:"namePrimary"`
+		NameSecondary *string `json:"nameSecondary"`
+	} `json:"campuses"`
+	FetchedAt time.Time                    `json:"fetchedAt"`
+	Locale    BusQueryResponseSchemaLocale `json:"locale"`
+	Notice    *struct {
+		Message *string `json:"message"`
+		Url     *string `json:"url"`
+	} `json:"notice"`
+	Preferences *struct {
+		PreferredDestinationCampusId *int `json:"preferredDestinationCampusId"`
+		PreferredOriginCampusId      *int `json:"preferredOriginCampusId"`
+		ShowDepartedTrips            bool `json:"showDepartedTrips"`
+	} `json:"preferences"`
+	Routes []struct {
+		DescriptionPrimary   string  `json:"descriptionPrimary"`
+		DescriptionSecondary *string `json:"descriptionSecondary"`
+		Id                   int     `json:"id"`
+		NameCn               string  `json:"nameCn"`
+		NameEn               *string `json:"nameEn"`
+		Stops                []struct {
+			Campus struct {
+				Id            int     `json:"id"`
+				Latitude      float32 `json:"latitude"`
+				Longitude     float32 `json:"longitude"`
+				NameCn        string  `json:"nameCn"`
+				NameEn        *string `json:"nameEn"`
+				NamePrimary   string  `json:"namePrimary"`
+				NameSecondary *string `json:"nameSecondary"`
+			} `json:"campus"`
+			StopOrder int `json:"stopOrder"`
+		} `json:"stops"`
+	} `json:"routes"`
+	Trips []struct {
+		ArrivalMinutes   *int                               `json:"arrivalMinutes"`
+		ArrivalTime      *string                            `json:"arrivalTime"`
+		DayType          BusQueryResponseSchemaTripsDayType `json:"dayType"`
+		DepartureMinutes *int                               `json:"departureMinutes"`
+		DepartureTime    *string                            `json:"departureTime"`
+		Id               int                                `json:"id"`
+		Position         int                                `json:"position"`
+		RouteId          int                                `json:"routeId"`
+		StopTimes        []struct {
+			CampusId             int     `json:"campusId"`
+			CampusName           string  `json:"campusName"`
+			IsPassThrough        bool    `json:"isPassThrough"`
+			MinutesSinceMidnight *int    `json:"minutesSinceMidnight"`
+			StopOrder            int     `json:"stopOrder"`
+			Time                 *string `json:"time"`
+		} `json:"stopTimes"`
+	} `json:"trips"`
+	Version *struct {
+		EffectiveFrom  *time.Time `json:"effectiveFrom"`
+		EffectiveUntil *time.Time `json:"effectiveUntil"`
+		Id             int        `json:"id"`
+		ImportedAt     time.Time  `json:"importedAt"`
+		Key            string     `json:"key"`
+		Notice         *struct {
+			Message *string `json:"message"`
+			Url     *string `json:"url"`
+		} `json:"notice"`
+		Title string `json:"title"`
+	} `json:"version"`
+}
+
+// BusQueryResponseSchemaLocale defines model for BusQueryResponseSchema.Locale.
+type BusQueryResponseSchemaLocale string
+
+// BusQueryResponseSchemaTripsDayType defines model for BusQueryResponseSchema.Trips.DayType.
+type BusQueryResponseSchemaTripsDayType string
 
 // CalendarSubscriptionCreateRequestSchema defines model for calendarSubscriptionCreateRequestSchema.
 type CalendarSubscriptionCreateRequestSchema struct {
@@ -1848,33 +2016,25 @@ type DescriptionUpsertResponseSchema struct {
 // DescriptionsResponseSchema defines model for descriptionsResponseSchema.
 type DescriptionsResponseSchema struct {
 	Description struct {
-		Content      string      `json:"content"`
-		CourseId     *int        `json:"courseId"`
-		CreatedAt    interface{} `json:"createdAt"`
-		HomeworkId   *string     `json:"homeworkId"`
-		Id           *string     `json:"id"`
-		LastEditedAt *time.Time  `json:"lastEditedAt"`
+		Content      string     `json:"content"`
+		Id           *string    `json:"id"`
+		LastEditedAt *time.Time `json:"lastEditedAt"`
 		LastEditedBy *struct {
 			Id       string  `json:"id"`
 			Image    *string `json:"image"`
 			Name     *string `json:"name"`
 			Username *string `json:"username"`
 		} `json:"lastEditedBy"`
-		LastEditedById *string    `json:"lastEditedById"`
-		SectionId      *int       `json:"sectionId"`
-		TeacherId      *int       `json:"teacherId"`
-		UpdatedAt      *time.Time `json:"updatedAt"`
+		UpdatedAt time.Time `json:"updatedAt"`
 	} `json:"description"`
 	History []struct {
-		CreatedAt     time.Time `json:"createdAt"`
-		DescriptionId string    `json:"descriptionId"`
-		Editor        *struct {
+		CreatedAt time.Time `json:"createdAt"`
+		Editor    *struct {
 			Id       string  `json:"id"`
 			Image    *string `json:"image"`
 			Name     *string `json:"name"`
 			Username *string `json:"username"`
 		} `json:"editor"`
-		EditorId        *string `json:"editorId"`
 		Id              string  `json:"id"`
 		NextContent     string  `json:"nextContent"`
 		PreviousContent *string `json:"previousContent"`
@@ -3394,7 +3554,7 @@ type UploadsListResponseSchema struct {
 // ListAdminCommentsParams defines parameters for ListAdminComments.
 type ListAdminCommentsParams struct {
 	Status *ListAdminCommentsParamsStatus `form:"status,omitempty" json:"status,omitempty"`
-	Limit  *string                        `form:"limit,omitempty" json:"limit,omitempty"`
+	Limit  *int64                         `form:"limit,omitempty" json:"limit,omitempty"`
 }
 
 // ListAdminCommentsParamsStatus defines parameters for ListAdminComments.
@@ -3405,7 +3565,7 @@ type ListAdminDescriptionsParams struct {
 	TargetType *ListAdminDescriptionsParamsTargetType `form:"targetType,omitempty" json:"targetType,omitempty"`
 	HasContent *ListAdminDescriptionsParamsHasContent `form:"hasContent,omitempty" json:"hasContent,omitempty"`
 	Search     *string                                `form:"search,omitempty" json:"search,omitempty"`
-	Limit      *string                                `form:"limit,omitempty" json:"limit,omitempty"`
+	Limit      *int64                                 `form:"limit,omitempty" json:"limit,omitempty"`
 }
 
 // ListAdminDescriptionsParamsTargetType defines parameters for ListAdminDescriptions.
@@ -3418,7 +3578,7 @@ type ListAdminDescriptionsParamsHasContent string
 type ListAdminHomeworksParams struct {
 	Status *ListAdminHomeworksParamsStatus `form:"status,omitempty" json:"status,omitempty"`
 	Search *string                         `form:"search,omitempty" json:"search,omitempty"`
-	Limit  *string                         `form:"limit,omitempty" json:"limit,omitempty"`
+	Limit  *int64                          `form:"limit,omitempty" json:"limit,omitempty"`
 }
 
 // ListAdminHomeworksParamsStatus defines parameters for ListAdminHomeworks.
@@ -3427,39 +3587,21 @@ type ListAdminHomeworksParamsStatus string
 // ListAdminUsersParams defines parameters for ListAdminUsers.
 type ListAdminUsersParams struct {
 	Search *string `form:"search,omitempty" json:"search,omitempty"`
-	Page   *string `form:"page,omitempty" json:"page,omitempty"`
-	Limit  *string `form:"limit,omitempty" json:"limit,omitempty"`
+	Page   *int64  `form:"page,omitempty" json:"page,omitempty"`
+	Limit  *int64  `form:"limit,omitempty" json:"limit,omitempty"`
 }
 
 // QueryBusParams defines parameters for QueryBus.
 type QueryBusParams struct {
-	Now                 *time.Time                       `form:"now,omitempty" json:"now,omitempty"`
-	DayType             *QueryBusParamsDayType           `form:"dayType,omitempty" json:"dayType,omitempty"`
-	OriginCampusId      *string                          `form:"originCampusId,omitempty" json:"originCampusId,omitempty"`
-	DestinationCampusId *string                          `form:"destinationCampusId,omitempty" json:"destinationCampusId,omitempty"`
-	FavoriteRouteIds    *string                          `form:"favoriteRouteIds,omitempty" json:"favoriteRouteIds,omitempty"`
-	FavoriteCampusIds   *string                          `form:"favoriteCampusIds,omitempty" json:"favoriteCampusIds,omitempty"`
-	ShowDepartedTrips   *QueryBusParamsShowDepartedTrips `form:"showDepartedTrips,omitempty" json:"showDepartedTrips,omitempty"`
-	IncludeAllTrips     *QueryBusParamsIncludeAllTrips   `form:"includeAllTrips,omitempty" json:"includeAllTrips,omitempty"`
-	Limit               *string                          `form:"limit,omitempty" json:"limit,omitempty"`
-	VersionKey          *string                          `form:"versionKey,omitempty" json:"versionKey,omitempty"`
+	VersionKey *string `form:"versionKey,omitempty" json:"versionKey,omitempty"`
 }
-
-// QueryBusParamsDayType defines parameters for QueryBus.
-type QueryBusParamsDayType string
-
-// QueryBusParamsShowDepartedTrips defines parameters for QueryBus.
-type QueryBusParamsShowDepartedTrips string
-
-// QueryBusParamsIncludeAllTrips defines parameters for QueryBus.
-type QueryBusParamsIncludeAllTrips string
 
 // ListCommentsParams defines parameters for ListComments.
 type ListCommentsParams struct {
 	TargetType ListCommentsParamsTargetType `form:"targetType" json:"targetType"`
 	TargetId   *string                      `form:"targetId,omitempty" json:"targetId,omitempty"`
-	SectionId  *string                      `form:"sectionId,omitempty" json:"sectionId,omitempty"`
-	TeacherId  *string                      `form:"teacherId,omitempty" json:"teacherId,omitempty"`
+	SectionId  *int64                       `form:"sectionId,omitempty" json:"sectionId,omitempty"`
+	TeacherId  *int64                       `form:"teacherId,omitempty" json:"teacherId,omitempty"`
 }
 
 // ListCommentsParamsTargetType defines parameters for ListComments.
@@ -3469,8 +3611,8 @@ type ListCommentsParamsTargetType string
 type CreateCommentParams struct {
 	TargetType CreateCommentParamsTargetType `form:"targetType" json:"targetType"`
 	TargetId   *string                       `form:"targetId,omitempty" json:"targetId,omitempty"`
-	SectionId  *string                       `form:"sectionId,omitempty" json:"sectionId,omitempty"`
-	TeacherId  *string                       `form:"teacherId,omitempty" json:"teacherId,omitempty"`
+	SectionId  *int64                        `form:"sectionId,omitempty" json:"sectionId,omitempty"`
+	TeacherId  *int64                        `form:"teacherId,omitempty" json:"teacherId,omitempty"`
 }
 
 // CreateCommentParamsTargetType defines parameters for CreateComment.
@@ -3487,11 +3629,11 @@ type RemoveCommentReactionParamsType string
 // ListCoursesParams defines parameters for ListCourses.
 type ListCoursesParams struct {
 	Search           *string `form:"search,omitempty" json:"search,omitempty"`
-	EducationLevelId *string `form:"educationLevelId,omitempty" json:"educationLevelId,omitempty"`
-	CategoryId       *string `form:"categoryId,omitempty" json:"categoryId,omitempty"`
-	ClassTypeId      *string `form:"classTypeId,omitempty" json:"classTypeId,omitempty"`
-	Page             *string `form:"page,omitempty" json:"page,omitempty"`
-	Limit            *string `form:"limit,omitempty" json:"limit,omitempty"`
+	EducationLevelId *int64  `form:"educationLevelId,omitempty" json:"educationLevelId,omitempty"`
+	CategoryId       *int64  `form:"categoryId,omitempty" json:"categoryId,omitempty"`
+	ClassTypeId      *int64  `form:"classTypeId,omitempty" json:"classTypeId,omitempty"`
+	Page             *int64  `form:"page,omitempty" json:"page,omitempty"`
+	Limit            *int64  `form:"limit,omitempty" json:"limit,omitempty"`
 }
 
 // VisitDashboardLinkParams defines parameters for VisitDashboardLink.
@@ -3524,7 +3666,7 @@ type UpsertDescriptionParamsTargetType string
 
 // ListHomeworksParams defines parameters for ListHomeworks.
 type ListHomeworksParams struct {
-	SectionId      *string                            `form:"sectionId,omitempty" json:"sectionId,omitempty"`
+	SectionId      *int64                             `form:"sectionId,omitempty" json:"sectionId,omitempty"`
 	SectionIds     *string                            `form:"sectionIds,omitempty" json:"sectionIds,omitempty"`
 	IncludeDeleted *ListHomeworksParamsIncludeDeleted `form:"includeDeleted,omitempty" json:"includeDeleted,omitempty"`
 }
@@ -3534,7 +3676,7 @@ type ListHomeworksParamsIncludeDeleted string
 
 // CreateHomeworkParams defines parameters for CreateHomework.
 type CreateHomeworkParams struct {
-	SectionId      *string                             `form:"sectionId,omitempty" json:"sectionId,omitempty"`
+	SectionId      *int64                              `form:"sectionId,omitempty" json:"sectionId,omitempty"`
 	SectionIds     *string                             `form:"sectionIds,omitempty" json:"sectionIds,omitempty"`
 	IncludeDeleted *CreateHomeworkParamsIncludeDeleted `form:"includeDeleted,omitempty" json:"includeDeleted,omitempty"`
 }
@@ -3544,27 +3686,35 @@ type CreateHomeworkParamsIncludeDeleted string
 
 // ListSchedulesParams defines parameters for ListSchedules.
 type ListSchedulesParams struct {
-	SectionId *string    `form:"sectionId,omitempty" json:"sectionId,omitempty"`
-	TeacherId *string    `form:"teacherId,omitempty" json:"teacherId,omitempty"`
-	RoomId    *string    `form:"roomId,omitempty" json:"roomId,omitempty"`
-	Weekday   *string    `form:"weekday,omitempty" json:"weekday,omitempty"`
-	DateFrom  *time.Time `form:"dateFrom,omitempty" json:"dateFrom,omitempty"`
-	DateTo    *time.Time `form:"dateTo,omitempty" json:"dateTo,omitempty"`
-	Page      *string    `form:"page,omitempty" json:"page,omitempty"`
-	Limit     *string    `form:"limit,omitempty" json:"limit,omitempty"`
+	SectionId   *int64     `form:"sectionId,omitempty" json:"sectionId,omitempty"`
+	SectionJwId *int64     `form:"sectionJwId,omitempty" json:"sectionJwId,omitempty"`
+	SectionCode *string    `form:"sectionCode,omitempty" json:"sectionCode,omitempty"`
+	TeacherId   *int64     `form:"teacherId,omitempty" json:"teacherId,omitempty"`
+	TeacherCode *string    `form:"teacherCode,omitempty" json:"teacherCode,omitempty"`
+	RoomId      *int64     `form:"roomId,omitempty" json:"roomId,omitempty"`
+	RoomJwId    *int64     `form:"roomJwId,omitempty" json:"roomJwId,omitempty"`
+	Weekday     *int64     `form:"weekday,omitempty" json:"weekday,omitempty"`
+	DateFrom    *time.Time `form:"dateFrom,omitempty" json:"dateFrom,omitempty"`
+	DateTo      *time.Time `form:"dateTo,omitempty" json:"dateTo,omitempty"`
+	Page        *int64     `form:"page,omitempty" json:"page,omitempty"`
+	Limit       *int64     `form:"limit,omitempty" json:"limit,omitempty"`
 }
 
 // ListSectionsParams defines parameters for ListSections.
 type ListSectionsParams struct {
-	CourseId     *string `form:"courseId,omitempty" json:"courseId,omitempty"`
-	SemesterId   *string `form:"semesterId,omitempty" json:"semesterId,omitempty"`
-	CampusId     *string `form:"campusId,omitempty" json:"campusId,omitempty"`
-	DepartmentId *string `form:"departmentId,omitempty" json:"departmentId,omitempty"`
-	TeacherId    *string `form:"teacherId,omitempty" json:"teacherId,omitempty"`
+	CourseId     *int64  `form:"courseId,omitempty" json:"courseId,omitempty"`
+	CourseJwId   *int64  `form:"courseJwId,omitempty" json:"courseJwId,omitempty"`
+	SemesterId   *int64  `form:"semesterId,omitempty" json:"semesterId,omitempty"`
+	SemesterJwId *int64  `form:"semesterJwId,omitempty" json:"semesterJwId,omitempty"`
+	CampusId     *int64  `form:"campusId,omitempty" json:"campusId,omitempty"`
+	DepartmentId *int64  `form:"departmentId,omitempty" json:"departmentId,omitempty"`
+	TeacherId    *int64  `form:"teacherId,omitempty" json:"teacherId,omitempty"`
+	TeacherCode  *string `form:"teacherCode,omitempty" json:"teacherCode,omitempty"`
 	Search       *string `form:"search,omitempty" json:"search,omitempty"`
 	Ids          *string `form:"ids,omitempty" json:"ids,omitempty"`
-	Page         *string `form:"page,omitempty" json:"page,omitempty"`
-	Limit        *string `form:"limit,omitempty" json:"limit,omitempty"`
+	JwIds        *string `form:"jwIds,omitempty" json:"jwIds,omitempty"`
+	Page         *int64  `form:"page,omitempty" json:"page,omitempty"`
+	Limit        *int64  `form:"limit,omitempty" json:"limit,omitempty"`
 }
 
 // GetSectionsCalendarParams defines parameters for GetSectionsCalendar.
@@ -3574,16 +3724,16 @@ type GetSectionsCalendarParams struct {
 
 // ListSemestersParams defines parameters for ListSemesters.
 type ListSemestersParams struct {
-	Page  *string `form:"page,omitempty" json:"page,omitempty"`
-	Limit *string `form:"limit,omitempty" json:"limit,omitempty"`
+	Page  *int64 `form:"page,omitempty" json:"page,omitempty"`
+	Limit *int64 `form:"limit,omitempty" json:"limit,omitempty"`
 }
 
 // ListTeachersParams defines parameters for ListTeachers.
 type ListTeachersParams struct {
-	DepartmentId *string `form:"departmentId,omitempty" json:"departmentId,omitempty"`
+	DepartmentId *int64  `form:"departmentId,omitempty" json:"departmentId,omitempty"`
 	Search       *string `form:"search,omitempty" json:"search,omitempty"`
-	Page         *string `form:"page,omitempty" json:"page,omitempty"`
-	Limit        *string `form:"limit,omitempty" json:"limit,omitempty"`
+	Page         *int64  `form:"page,omitempty" json:"page,omitempty"`
+	Limit        *int64  `form:"limit,omitempty" json:"limit,omitempty"`
 }
 
 // ListTodosParams defines parameters for ListTodos.
@@ -3689,8 +3839,8 @@ type CompleteUploadJSONRequestBody = UploadCompleteRequestSchema
 // DeleteUploadJSONRequestBody defines body for DeleteUpload for application/json ContentType.
 type DeleteUploadJSONRequestBody = UploadRenameRequestSchema
 
-// RenameUploadJSONRequestBody defines body for RenameUpload for application/json ContentType.
-type RenameUploadJSONRequestBody = UploadRenameRequestSchema
+// UpdateUploadJSONRequestBody defines body for UpdateUpload for application/json ContentType.
+type UpdateUploadJSONRequestBody = UploadRenameRequestSchema
 
 // RequestEditorFn  is the function signature for the RequestEditor callback function
 type RequestEditorFn func(ctx context.Context, req *http.Request) error
@@ -3855,7 +4005,7 @@ type ClientInterface interface {
 	ListCourses(ctx context.Context, params *ListCoursesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// GetCourse request
-	GetCourse(ctx context.Context, jwId string, reqEditors ...RequestEditorFn) (*http.Response, error)
+	GetCourse(ctx context.Context, jwId int64, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// PinDashboardLinkWithBody request with any body
 	PinDashboardLinkWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -3933,16 +4083,16 @@ type ClientInterface interface {
 	MatchSectionCodes(ctx context.Context, body MatchSectionCodesJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// GetSection request
-	GetSection(ctx context.Context, jwId string, reqEditors ...RequestEditorFn) (*http.Response, error)
+	GetSection(ctx context.Context, jwId int64, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// GetSectionCalendar request
-	GetSectionCalendar(ctx context.Context, jwId string, reqEditors ...RequestEditorFn) (*http.Response, error)
+	GetSectionCalendar(ctx context.Context, jwId int64, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// GetSectionScheduleGroups request
-	GetSectionScheduleGroups(ctx context.Context, jwId string, reqEditors ...RequestEditorFn) (*http.Response, error)
+	GetSectionScheduleGroups(ctx context.Context, jwId int64, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// GetSectionSchedules request
-	GetSectionSchedules(ctx context.Context, jwId string, reqEditors ...RequestEditorFn) (*http.Response, error)
+	GetSectionSchedules(ctx context.Context, jwId int64, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// ListSemesters request
 	ListSemesters(ctx context.Context, params *ListSemestersParams, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -3992,10 +4142,10 @@ type ClientInterface interface {
 
 	DeleteUpload(ctx context.Context, id string, body DeleteUploadJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// RenameUploadWithBody request with any body
-	RenameUploadWithBody(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// UpdateUploadWithBody request with any body
+	UpdateUploadWithBody(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	RenameUpload(ctx context.Context, id string, body RenameUploadJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+	UpdateUpload(ctx context.Context, id string, body UpdateUploadJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// DownloadUpload request
 	DownloadUpload(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -4400,7 +4550,7 @@ func (c *Client) ListCourses(ctx context.Context, params *ListCoursesParams, req
 	return c.Client.Do(req)
 }
 
-func (c *Client) GetCourse(ctx context.Context, jwId string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+func (c *Client) GetCourse(ctx context.Context, jwId int64, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewGetCourseRequest(c.Server, jwId)
 	if err != nil {
 		return nil, err
@@ -4748,7 +4898,7 @@ func (c *Client) MatchSectionCodes(ctx context.Context, body MatchSectionCodesJS
 	return c.Client.Do(req)
 }
 
-func (c *Client) GetSection(ctx context.Context, jwId string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+func (c *Client) GetSection(ctx context.Context, jwId int64, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewGetSectionRequest(c.Server, jwId)
 	if err != nil {
 		return nil, err
@@ -4760,7 +4910,7 @@ func (c *Client) GetSection(ctx context.Context, jwId string, reqEditors ...Requ
 	return c.Client.Do(req)
 }
 
-func (c *Client) GetSectionCalendar(ctx context.Context, jwId string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+func (c *Client) GetSectionCalendar(ctx context.Context, jwId int64, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewGetSectionCalendarRequest(c.Server, jwId)
 	if err != nil {
 		return nil, err
@@ -4772,7 +4922,7 @@ func (c *Client) GetSectionCalendar(ctx context.Context, jwId string, reqEditors
 	return c.Client.Do(req)
 }
 
-func (c *Client) GetSectionScheduleGroups(ctx context.Context, jwId string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+func (c *Client) GetSectionScheduleGroups(ctx context.Context, jwId int64, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewGetSectionScheduleGroupsRequest(c.Server, jwId)
 	if err != nil {
 		return nil, err
@@ -4784,7 +4934,7 @@ func (c *Client) GetSectionScheduleGroups(ctx context.Context, jwId string, reqE
 	return c.Client.Do(req)
 }
 
-func (c *Client) GetSectionSchedules(ctx context.Context, jwId string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+func (c *Client) GetSectionSchedules(ctx context.Context, jwId int64, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewGetSectionSchedulesRequest(c.Server, jwId)
 	if err != nil {
 		return nil, err
@@ -5012,8 +5162,8 @@ func (c *Client) DeleteUpload(ctx context.Context, id string, body DeleteUploadJ
 	return c.Client.Do(req)
 }
 
-func (c *Client) RenameUploadWithBody(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewRenameUploadRequestWithBody(c.Server, id, contentType, body)
+func (c *Client) UpdateUploadWithBody(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateUploadRequestWithBody(c.Server, id, contentType, body)
 	if err != nil {
 		return nil, err
 	}
@@ -5024,8 +5174,8 @@ func (c *Client) RenameUploadWithBody(ctx context.Context, id string, contentTyp
 	return c.Client.Do(req)
 }
 
-func (c *Client) RenameUpload(ctx context.Context, id string, body RenameUploadJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewRenameUploadRequest(c.Server, id, body)
+func (c *Client) UpdateUpload(ctx context.Context, id string, body UpdateUploadJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateUploadRequest(c.Server, id, body)
 	if err != nil {
 		return nil, err
 	}
@@ -5100,7 +5250,7 @@ func NewListAdminCommentsRequest(server string, params *ListAdminCommentsParams)
 
 		if params.Limit != nil {
 
-			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "limit", *params.Limit, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "limit", *params.Limit, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "integer", Format: "int64"}); err != nil {
 				return nil, err
 			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
 				return nil, err
@@ -5244,7 +5394,7 @@ func NewListAdminDescriptionsRequest(server string, params *ListAdminDescription
 
 		if params.Limit != nil {
 
-			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "limit", *params.Limit, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "limit", *params.Limit, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "integer", Format: "int64"}); err != nil {
 				return nil, err
 			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
 				return nil, err
@@ -5325,7 +5475,7 @@ func NewListAdminHomeworksRequest(server string, params *ListAdminHomeworksParam
 
 		if params.Limit != nil {
 
-			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "limit", *params.Limit, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "limit", *params.Limit, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "integer", Format: "int64"}); err != nil {
 				return nil, err
 			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
 				return nil, err
@@ -5525,7 +5675,7 @@ func NewListAdminUsersRequest(server string, params *ListAdminUsersParams) (*htt
 
 		if params.Page != nil {
 
-			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "page", *params.Page, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "page", *params.Page, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "integer", Format: "int64"}); err != nil {
 				return nil, err
 			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
 				return nil, err
@@ -5541,7 +5691,7 @@ func NewListAdminUsersRequest(server string, params *ListAdminUsersParams) (*htt
 
 		if params.Limit != nil {
 
-			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "limit", *params.Limit, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "limit", *params.Limit, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "integer", Format: "int64"}); err != nil {
 				return nil, err
 			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
 				return nil, err
@@ -5634,150 +5784,6 @@ func NewQueryBusRequest(server string, params *QueryBusParams) (*http.Request, e
 
 	if params != nil {
 		queryValues := queryURL.Query()
-
-		if params.Now != nil {
-
-			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "now", *params.Now, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: "date-time"}); err != nil {
-				return nil, err
-			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
-				return nil, err
-			} else {
-				for k, v := range parsed {
-					for _, v2 := range v {
-						queryValues.Add(k, v2)
-					}
-				}
-			}
-
-		}
-
-		if params.DayType != nil {
-
-			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "dayType", *params.DayType, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
-				return nil, err
-			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
-				return nil, err
-			} else {
-				for k, v := range parsed {
-					for _, v2 := range v {
-						queryValues.Add(k, v2)
-					}
-				}
-			}
-
-		}
-
-		if params.OriginCampusId != nil {
-
-			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "originCampusId", *params.OriginCampusId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
-				return nil, err
-			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
-				return nil, err
-			} else {
-				for k, v := range parsed {
-					for _, v2 := range v {
-						queryValues.Add(k, v2)
-					}
-				}
-			}
-
-		}
-
-		if params.DestinationCampusId != nil {
-
-			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "destinationCampusId", *params.DestinationCampusId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
-				return nil, err
-			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
-				return nil, err
-			} else {
-				for k, v := range parsed {
-					for _, v2 := range v {
-						queryValues.Add(k, v2)
-					}
-				}
-			}
-
-		}
-
-		if params.FavoriteRouteIds != nil {
-
-			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "favoriteRouteIds", *params.FavoriteRouteIds, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
-				return nil, err
-			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
-				return nil, err
-			} else {
-				for k, v := range parsed {
-					for _, v2 := range v {
-						queryValues.Add(k, v2)
-					}
-				}
-			}
-
-		}
-
-		if params.FavoriteCampusIds != nil {
-
-			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "favoriteCampusIds", *params.FavoriteCampusIds, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
-				return nil, err
-			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
-				return nil, err
-			} else {
-				for k, v := range parsed {
-					for _, v2 := range v {
-						queryValues.Add(k, v2)
-					}
-				}
-			}
-
-		}
-
-		if params.ShowDepartedTrips != nil {
-
-			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "showDepartedTrips", *params.ShowDepartedTrips, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
-				return nil, err
-			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
-				return nil, err
-			} else {
-				for k, v := range parsed {
-					for _, v2 := range v {
-						queryValues.Add(k, v2)
-					}
-				}
-			}
-
-		}
-
-		if params.IncludeAllTrips != nil {
-
-			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "includeAllTrips", *params.IncludeAllTrips, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
-				return nil, err
-			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
-				return nil, err
-			} else {
-				for k, v := range parsed {
-					for _, v2 := range v {
-						queryValues.Add(k, v2)
-					}
-				}
-			}
-
-		}
-
-		if params.Limit != nil {
-
-			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "limit", *params.Limit, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
-				return nil, err
-			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
-				return nil, err
-			} else {
-				for k, v := range parsed {
-					for _, v2 := range v {
-						queryValues.Add(k, v2)
-					}
-				}
-			}
-
-		}
 
 		if params.VersionKey != nil {
 
@@ -5992,7 +5998,7 @@ func NewListCommentsRequest(server string, params *ListCommentsParams) (*http.Re
 
 		if params.SectionId != nil {
 
-			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "sectionId", *params.SectionId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "sectionId", *params.SectionId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "integer", Format: "int64"}); err != nil {
 				return nil, err
 			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
 				return nil, err
@@ -6008,7 +6014,7 @@ func NewListCommentsRequest(server string, params *ListCommentsParams) (*http.Re
 
 		if params.TeacherId != nil {
 
-			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "teacherId", *params.TeacherId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "teacherId", *params.TeacherId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "integer", Format: "int64"}); err != nil {
 				return nil, err
 			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
 				return nil, err
@@ -6096,7 +6102,7 @@ func NewCreateCommentRequestWithBody(server string, params *CreateCommentParams,
 
 		if params.SectionId != nil {
 
-			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "sectionId", *params.SectionId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "sectionId", *params.SectionId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "integer", Format: "int64"}); err != nil {
 				return nil, err
 			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
 				return nil, err
@@ -6112,7 +6118,7 @@ func NewCreateCommentRequestWithBody(server string, params *CreateCommentParams,
 
 		if params.TeacherId != nil {
 
-			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "teacherId", *params.TeacherId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "teacherId", *params.TeacherId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "integer", Format: "int64"}); err != nil {
 				return nil, err
 			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
 				return nil, err
@@ -6419,7 +6425,7 @@ func NewListCoursesRequest(server string, params *ListCoursesParams) (*http.Requ
 
 		if params.EducationLevelId != nil {
 
-			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "educationLevelId", *params.EducationLevelId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "educationLevelId", *params.EducationLevelId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "integer", Format: "int64"}); err != nil {
 				return nil, err
 			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
 				return nil, err
@@ -6435,7 +6441,7 @@ func NewListCoursesRequest(server string, params *ListCoursesParams) (*http.Requ
 
 		if params.CategoryId != nil {
 
-			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "categoryId", *params.CategoryId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "categoryId", *params.CategoryId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "integer", Format: "int64"}); err != nil {
 				return nil, err
 			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
 				return nil, err
@@ -6451,7 +6457,7 @@ func NewListCoursesRequest(server string, params *ListCoursesParams) (*http.Requ
 
 		if params.ClassTypeId != nil {
 
-			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "classTypeId", *params.ClassTypeId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "classTypeId", *params.ClassTypeId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "integer", Format: "int64"}); err != nil {
 				return nil, err
 			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
 				return nil, err
@@ -6467,7 +6473,7 @@ func NewListCoursesRequest(server string, params *ListCoursesParams) (*http.Requ
 
 		if params.Page != nil {
 
-			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "page", *params.Page, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "page", *params.Page, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "integer", Format: "int64"}); err != nil {
 				return nil, err
 			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
 				return nil, err
@@ -6483,7 +6489,7 @@ func NewListCoursesRequest(server string, params *ListCoursesParams) (*http.Requ
 
 		if params.Limit != nil {
 
-			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "limit", *params.Limit, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "limit", *params.Limit, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "integer", Format: "int64"}); err != nil {
 				return nil, err
 			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
 				return nil, err
@@ -6509,12 +6515,12 @@ func NewListCoursesRequest(server string, params *ListCoursesParams) (*http.Requ
 }
 
 // NewGetCourseRequest generates requests for GetCourse
-func NewGetCourseRequest(server string, jwId string) (*http.Request, error) {
+func NewGetCourseRequest(server string, jwId int64) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
 
-	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "jwId", jwId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "jwId", jwId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "integer", Format: "int64"})
 	if err != nil {
 		return nil, err
 	}
@@ -6836,7 +6842,7 @@ func NewListHomeworksRequest(server string, params *ListHomeworksParams) (*http.
 
 		if params.SectionId != nil {
 
-			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "sectionId", *params.SectionId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "sectionId", *params.SectionId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "integer", Format: "int64"}); err != nil {
 				return nil, err
 			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
 				return nil, err
@@ -6928,7 +6934,7 @@ func NewCreateHomeworkRequestWithBody(server string, params *CreateHomeworkParam
 
 		if params.SectionId != nil {
 
-			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "sectionId", *params.SectionId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "sectionId", *params.SectionId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "integer", Format: "int64"}); err != nil {
 				return nil, err
 			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
 				return nil, err
@@ -7300,7 +7306,39 @@ func NewListSchedulesRequest(server string, params *ListSchedulesParams) (*http.
 
 		if params.SectionId != nil {
 
-			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "sectionId", *params.SectionId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "sectionId", *params.SectionId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "integer", Format: "int64"}); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.SectionJwId != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "sectionJwId", *params.SectionJwId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "integer", Format: "int64"}); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.SectionCode != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "sectionCode", *params.SectionCode, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
 				return nil, err
 			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
 				return nil, err
@@ -7316,7 +7354,23 @@ func NewListSchedulesRequest(server string, params *ListSchedulesParams) (*http.
 
 		if params.TeacherId != nil {
 
-			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "teacherId", *params.TeacherId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "teacherId", *params.TeacherId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "integer", Format: "int64"}); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.TeacherCode != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "teacherCode", *params.TeacherCode, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
 				return nil, err
 			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
 				return nil, err
@@ -7332,7 +7386,23 @@ func NewListSchedulesRequest(server string, params *ListSchedulesParams) (*http.
 
 		if params.RoomId != nil {
 
-			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "roomId", *params.RoomId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "roomId", *params.RoomId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "integer", Format: "int64"}); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.RoomJwId != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "roomJwId", *params.RoomJwId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "integer", Format: "int64"}); err != nil {
 				return nil, err
 			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
 				return nil, err
@@ -7348,7 +7418,7 @@ func NewListSchedulesRequest(server string, params *ListSchedulesParams) (*http.
 
 		if params.Weekday != nil {
 
-			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "weekday", *params.Weekday, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "weekday", *params.Weekday, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "integer", Format: "int64"}); err != nil {
 				return nil, err
 			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
 				return nil, err
@@ -7396,7 +7466,7 @@ func NewListSchedulesRequest(server string, params *ListSchedulesParams) (*http.
 
 		if params.Page != nil {
 
-			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "page", *params.Page, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "page", *params.Page, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "integer", Format: "int64"}); err != nil {
 				return nil, err
 			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
 				return nil, err
@@ -7412,7 +7482,7 @@ func NewListSchedulesRequest(server string, params *ListSchedulesParams) (*http.
 
 		if params.Limit != nil {
 
-			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "limit", *params.Limit, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "limit", *params.Limit, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "integer", Format: "int64"}); err != nil {
 				return nil, err
 			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
 				return nil, err
@@ -7461,7 +7531,23 @@ func NewListSectionsRequest(server string, params *ListSectionsParams) (*http.Re
 
 		if params.CourseId != nil {
 
-			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "courseId", *params.CourseId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "courseId", *params.CourseId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "integer", Format: "int64"}); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.CourseJwId != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "courseJwId", *params.CourseJwId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "integer", Format: "int64"}); err != nil {
 				return nil, err
 			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
 				return nil, err
@@ -7477,7 +7563,23 @@ func NewListSectionsRequest(server string, params *ListSectionsParams) (*http.Re
 
 		if params.SemesterId != nil {
 
-			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "semesterId", *params.SemesterId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "semesterId", *params.SemesterId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "integer", Format: "int64"}); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.SemesterJwId != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "semesterJwId", *params.SemesterJwId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "integer", Format: "int64"}); err != nil {
 				return nil, err
 			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
 				return nil, err
@@ -7493,7 +7595,7 @@ func NewListSectionsRequest(server string, params *ListSectionsParams) (*http.Re
 
 		if params.CampusId != nil {
 
-			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "campusId", *params.CampusId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "campusId", *params.CampusId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "integer", Format: "int64"}); err != nil {
 				return nil, err
 			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
 				return nil, err
@@ -7509,7 +7611,7 @@ func NewListSectionsRequest(server string, params *ListSectionsParams) (*http.Re
 
 		if params.DepartmentId != nil {
 
-			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "departmentId", *params.DepartmentId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "departmentId", *params.DepartmentId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "integer", Format: "int64"}); err != nil {
 				return nil, err
 			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
 				return nil, err
@@ -7525,7 +7627,23 @@ func NewListSectionsRequest(server string, params *ListSectionsParams) (*http.Re
 
 		if params.TeacherId != nil {
 
-			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "teacherId", *params.TeacherId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "teacherId", *params.TeacherId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "integer", Format: "int64"}); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.TeacherCode != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "teacherCode", *params.TeacherCode, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
 				return nil, err
 			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
 				return nil, err
@@ -7571,9 +7689,25 @@ func NewListSectionsRequest(server string, params *ListSectionsParams) (*http.Re
 
 		}
 
+		if params.JwIds != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "jwIds", *params.JwIds, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
 		if params.Page != nil {
 
-			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "page", *params.Page, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "page", *params.Page, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "integer", Format: "int64"}); err != nil {
 				return nil, err
 			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
 				return nil, err
@@ -7589,7 +7723,7 @@ func NewListSectionsRequest(server string, params *ListSectionsParams) (*http.Re
 
 		if params.Limit != nil {
 
-			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "limit", *params.Limit, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "limit", *params.Limit, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "integer", Format: "int64"}); err != nil {
 				return nil, err
 			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
 				return nil, err
@@ -7700,12 +7834,12 @@ func NewMatchSectionCodesRequestWithBody(server string, contentType string, body
 }
 
 // NewGetSectionRequest generates requests for GetSection
-func NewGetSectionRequest(server string, jwId string) (*http.Request, error) {
+func NewGetSectionRequest(server string, jwId int64) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
 
-	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "jwId", jwId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "jwId", jwId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "integer", Format: "int64"})
 	if err != nil {
 		return nil, err
 	}
@@ -7734,12 +7868,12 @@ func NewGetSectionRequest(server string, jwId string) (*http.Request, error) {
 }
 
 // NewGetSectionCalendarRequest generates requests for GetSectionCalendar
-func NewGetSectionCalendarRequest(server string, jwId string) (*http.Request, error) {
+func NewGetSectionCalendarRequest(server string, jwId int64) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
 
-	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "jwId", jwId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "jwId", jwId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "integer", Format: "int64"})
 	if err != nil {
 		return nil, err
 	}
@@ -7768,12 +7902,12 @@ func NewGetSectionCalendarRequest(server string, jwId string) (*http.Request, er
 }
 
 // NewGetSectionScheduleGroupsRequest generates requests for GetSectionScheduleGroups
-func NewGetSectionScheduleGroupsRequest(server string, jwId string) (*http.Request, error) {
+func NewGetSectionScheduleGroupsRequest(server string, jwId int64) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
 
-	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "jwId", jwId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "jwId", jwId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "integer", Format: "int64"})
 	if err != nil {
 		return nil, err
 	}
@@ -7802,12 +7936,12 @@ func NewGetSectionScheduleGroupsRequest(server string, jwId string) (*http.Reque
 }
 
 // NewGetSectionSchedulesRequest generates requests for GetSectionSchedules
-func NewGetSectionSchedulesRequest(server string, jwId string) (*http.Request, error) {
+func NewGetSectionSchedulesRequest(server string, jwId int64) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
 
-	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "jwId", jwId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "jwId", jwId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "integer", Format: "int64"})
 	if err != nil {
 		return nil, err
 	}
@@ -7859,7 +7993,7 @@ func NewListSemestersRequest(server string, params *ListSemestersParams) (*http.
 
 		if params.Page != nil {
 
-			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "page", *params.Page, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "page", *params.Page, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "integer", Format: "int64"}); err != nil {
 				return nil, err
 			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
 				return nil, err
@@ -7875,7 +8009,7 @@ func NewListSemestersRequest(server string, params *ListSemestersParams) (*http.
 
 		if params.Limit != nil {
 
-			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "limit", *params.Limit, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "limit", *params.Limit, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "integer", Format: "int64"}); err != nil {
 				return nil, err
 			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
 				return nil, err
@@ -7951,7 +8085,7 @@ func NewListTeachersRequest(server string, params *ListTeachersParams) (*http.Re
 
 		if params.DepartmentId != nil {
 
-			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "departmentId", *params.DepartmentId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "departmentId", *params.DepartmentId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "integer", Format: "int64"}); err != nil {
 				return nil, err
 			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
 				return nil, err
@@ -7983,7 +8117,7 @@ func NewListTeachersRequest(server string, params *ListTeachersParams) (*http.Re
 
 		if params.Page != nil {
 
-			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "page", *params.Page, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "page", *params.Page, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "integer", Format: "int64"}); err != nil {
 				return nil, err
 			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
 				return nil, err
@@ -7999,7 +8133,7 @@ func NewListTeachersRequest(server string, params *ListTeachersParams) (*http.Re
 
 		if params.Limit != nil {
 
-			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "limit", *params.Limit, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "limit", *params.Limit, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "integer", Format: "int64"}); err != nil {
 				return nil, err
 			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
 				return nil, err
@@ -8513,19 +8647,19 @@ func NewDeleteUploadRequestWithBody(server string, id string, contentType string
 	return req, nil
 }
 
-// NewRenameUploadRequest calls the generic RenameUpload builder with application/json body
-func NewRenameUploadRequest(server string, id string, body RenameUploadJSONRequestBody) (*http.Request, error) {
+// NewUpdateUploadRequest calls the generic UpdateUpload builder with application/json body
+func NewUpdateUploadRequest(server string, id string, body UpdateUploadJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
 	buf, err := json.Marshal(body)
 	if err != nil {
 		return nil, err
 	}
 	bodyReader = bytes.NewReader(buf)
-	return NewRenameUploadRequestWithBody(server, id, "application/json", bodyReader)
+	return NewUpdateUploadRequestWithBody(server, id, "application/json", bodyReader)
 }
 
-// NewRenameUploadRequestWithBody generates requests for RenameUpload with any type of body
-func NewRenameUploadRequestWithBody(server string, id string, contentType string, body io.Reader) (*http.Request, error) {
+// NewUpdateUploadRequestWithBody generates requests for UpdateUpload with any type of body
+func NewUpdateUploadRequestWithBody(server string, id string, contentType string, body io.Reader) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
@@ -8761,7 +8895,7 @@ type ClientWithResponsesInterface interface {
 	ListCoursesWithResponse(ctx context.Context, params *ListCoursesParams, reqEditors ...RequestEditorFn) (*ListCoursesResponse, error)
 
 	// GetCourseWithResponse request
-	GetCourseWithResponse(ctx context.Context, jwId string, reqEditors ...RequestEditorFn) (*GetCourseResponse, error)
+	GetCourseWithResponse(ctx context.Context, jwId int64, reqEditors ...RequestEditorFn) (*GetCourseResponse, error)
 
 	// PinDashboardLinkWithBodyWithResponse request with any body
 	PinDashboardLinkWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PinDashboardLinkResponse, error)
@@ -8839,16 +8973,16 @@ type ClientWithResponsesInterface interface {
 	MatchSectionCodesWithResponse(ctx context.Context, body MatchSectionCodesJSONRequestBody, reqEditors ...RequestEditorFn) (*MatchSectionCodesResponse, error)
 
 	// GetSectionWithResponse request
-	GetSectionWithResponse(ctx context.Context, jwId string, reqEditors ...RequestEditorFn) (*GetSectionResponse, error)
+	GetSectionWithResponse(ctx context.Context, jwId int64, reqEditors ...RequestEditorFn) (*GetSectionResponse, error)
 
 	// GetSectionCalendarWithResponse request
-	GetSectionCalendarWithResponse(ctx context.Context, jwId string, reqEditors ...RequestEditorFn) (*GetSectionCalendarResponse, error)
+	GetSectionCalendarWithResponse(ctx context.Context, jwId int64, reqEditors ...RequestEditorFn) (*GetSectionCalendarResponse, error)
 
 	// GetSectionScheduleGroupsWithResponse request
-	GetSectionScheduleGroupsWithResponse(ctx context.Context, jwId string, reqEditors ...RequestEditorFn) (*GetSectionScheduleGroupsResponse, error)
+	GetSectionScheduleGroupsWithResponse(ctx context.Context, jwId int64, reqEditors ...RequestEditorFn) (*GetSectionScheduleGroupsResponse, error)
 
 	// GetSectionSchedulesWithResponse request
-	GetSectionSchedulesWithResponse(ctx context.Context, jwId string, reqEditors ...RequestEditorFn) (*GetSectionSchedulesResponse, error)
+	GetSectionSchedulesWithResponse(ctx context.Context, jwId int64, reqEditors ...RequestEditorFn) (*GetSectionSchedulesResponse, error)
 
 	// ListSemestersWithResponse request
 	ListSemestersWithResponse(ctx context.Context, params *ListSemestersParams, reqEditors ...RequestEditorFn) (*ListSemestersResponse, error)
@@ -8898,10 +9032,10 @@ type ClientWithResponsesInterface interface {
 
 	DeleteUploadWithResponse(ctx context.Context, id string, body DeleteUploadJSONRequestBody, reqEditors ...RequestEditorFn) (*DeleteUploadResponse, error)
 
-	// RenameUploadWithBodyWithResponse request with any body
-	RenameUploadWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*RenameUploadResponse, error)
+	// UpdateUploadWithBodyWithResponse request with any body
+	UpdateUploadWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateUploadResponse, error)
 
-	RenameUploadWithResponse(ctx context.Context, id string, body RenameUploadJSONRequestBody, reqEditors ...RequestEditorFn) (*RenameUploadResponse, error)
+	UpdateUploadWithResponse(ctx context.Context, id string, body UpdateUploadJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateUploadResponse, error)
 
 	// DownloadUploadWithResponse request
 	DownloadUploadWithResponse(ctx context.Context, id string, reqEditors ...RequestEditorFn) (*DownloadUploadResponse, error)
@@ -10261,7 +10395,7 @@ func (r DeleteUploadResponse) StatusCode() int {
 	return 0
 }
 
-type RenameUploadResponse struct {
+type UpdateUploadResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *UploadRenameResponseSchema
@@ -10271,7 +10405,7 @@ type RenameUploadResponse struct {
 }
 
 // Status returns HTTPResponse.Status
-func (r RenameUploadResponse) Status() string {
+func (r UpdateUploadResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -10279,7 +10413,7 @@ func (r RenameUploadResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r RenameUploadResponse) StatusCode() int {
+func (r UpdateUploadResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -10621,7 +10755,7 @@ func (c *ClientWithResponses) ListCoursesWithResponse(ctx context.Context, param
 }
 
 // GetCourseWithResponse request returning *GetCourseResponse
-func (c *ClientWithResponses) GetCourseWithResponse(ctx context.Context, jwId string, reqEditors ...RequestEditorFn) (*GetCourseResponse, error) {
+func (c *ClientWithResponses) GetCourseWithResponse(ctx context.Context, jwId int64, reqEditors ...RequestEditorFn) (*GetCourseResponse, error) {
 	rsp, err := c.GetCourse(ctx, jwId, reqEditors...)
 	if err != nil {
 		return nil, err
@@ -10873,7 +11007,7 @@ func (c *ClientWithResponses) MatchSectionCodesWithResponse(ctx context.Context,
 }
 
 // GetSectionWithResponse request returning *GetSectionResponse
-func (c *ClientWithResponses) GetSectionWithResponse(ctx context.Context, jwId string, reqEditors ...RequestEditorFn) (*GetSectionResponse, error) {
+func (c *ClientWithResponses) GetSectionWithResponse(ctx context.Context, jwId int64, reqEditors ...RequestEditorFn) (*GetSectionResponse, error) {
 	rsp, err := c.GetSection(ctx, jwId, reqEditors...)
 	if err != nil {
 		return nil, err
@@ -10882,7 +11016,7 @@ func (c *ClientWithResponses) GetSectionWithResponse(ctx context.Context, jwId s
 }
 
 // GetSectionCalendarWithResponse request returning *GetSectionCalendarResponse
-func (c *ClientWithResponses) GetSectionCalendarWithResponse(ctx context.Context, jwId string, reqEditors ...RequestEditorFn) (*GetSectionCalendarResponse, error) {
+func (c *ClientWithResponses) GetSectionCalendarWithResponse(ctx context.Context, jwId int64, reqEditors ...RequestEditorFn) (*GetSectionCalendarResponse, error) {
 	rsp, err := c.GetSectionCalendar(ctx, jwId, reqEditors...)
 	if err != nil {
 		return nil, err
@@ -10891,7 +11025,7 @@ func (c *ClientWithResponses) GetSectionCalendarWithResponse(ctx context.Context
 }
 
 // GetSectionScheduleGroupsWithResponse request returning *GetSectionScheduleGroupsResponse
-func (c *ClientWithResponses) GetSectionScheduleGroupsWithResponse(ctx context.Context, jwId string, reqEditors ...RequestEditorFn) (*GetSectionScheduleGroupsResponse, error) {
+func (c *ClientWithResponses) GetSectionScheduleGroupsWithResponse(ctx context.Context, jwId int64, reqEditors ...RequestEditorFn) (*GetSectionScheduleGroupsResponse, error) {
 	rsp, err := c.GetSectionScheduleGroups(ctx, jwId, reqEditors...)
 	if err != nil {
 		return nil, err
@@ -10900,7 +11034,7 @@ func (c *ClientWithResponses) GetSectionScheduleGroupsWithResponse(ctx context.C
 }
 
 // GetSectionSchedulesWithResponse request returning *GetSectionSchedulesResponse
-func (c *ClientWithResponses) GetSectionSchedulesWithResponse(ctx context.Context, jwId string, reqEditors ...RequestEditorFn) (*GetSectionSchedulesResponse, error) {
+func (c *ClientWithResponses) GetSectionSchedulesWithResponse(ctx context.Context, jwId int64, reqEditors ...RequestEditorFn) (*GetSectionSchedulesResponse, error) {
 	rsp, err := c.GetSectionSchedules(ctx, jwId, reqEditors...)
 	if err != nil {
 		return nil, err
@@ -11064,21 +11198,21 @@ func (c *ClientWithResponses) DeleteUploadWithResponse(ctx context.Context, id s
 	return ParseDeleteUploadResponse(rsp)
 }
 
-// RenameUploadWithBodyWithResponse request with arbitrary body returning *RenameUploadResponse
-func (c *ClientWithResponses) RenameUploadWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*RenameUploadResponse, error) {
-	rsp, err := c.RenameUploadWithBody(ctx, id, contentType, body, reqEditors...)
+// UpdateUploadWithBodyWithResponse request with arbitrary body returning *UpdateUploadResponse
+func (c *ClientWithResponses) UpdateUploadWithBodyWithResponse(ctx context.Context, id string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateUploadResponse, error) {
+	rsp, err := c.UpdateUploadWithBody(ctx, id, contentType, body, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParseRenameUploadResponse(rsp)
+	return ParseUpdateUploadResponse(rsp)
 }
 
-func (c *ClientWithResponses) RenameUploadWithResponse(ctx context.Context, id string, body RenameUploadJSONRequestBody, reqEditors ...RequestEditorFn) (*RenameUploadResponse, error) {
-	rsp, err := c.RenameUpload(ctx, id, body, reqEditors...)
+func (c *ClientWithResponses) UpdateUploadWithResponse(ctx context.Context, id string, body UpdateUploadJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateUploadResponse, error) {
+	rsp, err := c.UpdateUpload(ctx, id, body, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParseRenameUploadResponse(rsp)
+	return ParseUpdateUploadResponse(rsp)
 }
 
 // DownloadUploadWithResponse request returning *DownloadUploadResponse
@@ -12995,15 +13129,15 @@ func ParseDeleteUploadResponse(rsp *http.Response) (*DeleteUploadResponse, error
 	return response, nil
 }
 
-// ParseRenameUploadResponse parses an HTTP response from a RenameUploadWithResponse call
-func ParseRenameUploadResponse(rsp *http.Response) (*RenameUploadResponse, error) {
+// ParseUpdateUploadResponse parses an HTTP response from a UpdateUploadWithResponse call
+func ParseUpdateUploadResponse(rsp *http.Response) (*UpdateUploadResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
 	defer func() { _ = rsp.Body.Close() }()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &RenameUploadResponse{
+	response := &UpdateUploadResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}

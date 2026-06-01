@@ -15,9 +15,18 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Checkout server OpenAPI source
+        uses: actions/checkout@v4
+        with:
+          repository: Life-USTC/server-nextjs
+          path: server-nextjs
+
       - uses: actions/setup-go@v5
         with:
           go-version-file: go.mod
+
+      - name: OpenAPI spec is synced with server
+        run: make check-openapi-sync OPENAPI_SOURCE=server-nextjs/public/openapi.generated.json
 
       - name: Build
         run: make build

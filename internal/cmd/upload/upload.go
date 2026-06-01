@@ -175,7 +175,7 @@ func newCmdRename() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			_, err = api.ParseResponseRaw(c.RenameUpload(api.Ctx(), args[0], openapi.RenameUploadJSONRequestBody{Filename: filename}))
+			_, err = api.ParseResponseRaw(c.UpdateUpload(api.Ctx(), args[0], openapi.UpdateUploadJSONRequestBody{Filename: filename}))
 			if err != nil {
 				return err
 			}

@@ -101,12 +101,19 @@ func runCourseList(cmd *cobra.Command, opts courseListOpts) error {
 
 func fetchCourseList(c *api.TypedClient, opts courseListOpts) (cmdutil.ListResult, error) {
 	params := openapi.ListCoursesParams{}
+	var err error
 	params.Search = cmdutil.StringPtrIfSet(opts.search)
-	params.EducationLevelId = cmdutil.StringPtrIfSet(opts.educationLevelID)
-	params.CategoryId = cmdutil.StringPtrIfSet(opts.categoryID)
-	params.ClassTypeId = cmdutil.StringPtrIfSet(opts.classTypeID)
-	params.Page = cmdutil.IntStringPtrIfPositive(opts.page)
-	params.Limit = cmdutil.IntStringPtrIfPositive(opts.limit)
+	if params.EducationLevelId, err = cmdutil.Int64PtrIfSet(opts.educationLevelID); err != nil {
+		return cmdutil.ListResult{}, err
+	}
+	if params.CategoryId, err = cmdutil.Int64PtrIfSet(opts.categoryID); err != nil {
+		return cmdutil.ListResult{}, err
+	}
+	if params.ClassTypeId, err = cmdutil.Int64PtrIfSet(opts.classTypeID); err != nil {
+		return cmdutil.ListResult{}, err
+	}
+	params.Page = cmdutil.Int64PtrIfPositive(opts.page)
+	params.Limit = cmdutil.Int64PtrIfPositive(opts.limit)
 	data, err := api.ParseResponseRaw(c.ListCourses(api.Ctx(), &params))
 	if err != nil {
 		return cmdutil.ListResult{}, err
@@ -158,7 +165,11 @@ func newCmdView() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			data, err := api.ParseResponseRaw(c.GetCourse(api.Ctx(), args[0]))
+			jwID, err := cmdutil.Int64PtrIfSet(args[0])
+			if err != nil {
+				return err
+			}
+			data, err := api.ParseResponseRaw(c.GetCourse(api.Ctx(), *jwID))
 			if err != nil {
 				return err
 			}

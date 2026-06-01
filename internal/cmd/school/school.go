@@ -385,7 +385,7 @@ func newCmdSchoolHomeworkSync() *cobra.Command {
 			if err := withDebugStep("Life@USTC list semesters", func() error {
 				var err error
 				lifeSemesterRaw, err = api.ParseResponseRaw(apiClient.ListSemesters(cmd.Context(), &openapi.ListSemestersParams{
-					Limit: stringPtr("200"),
+					Limit: int64Ptr(200),
 				}))
 				return err
 			}); err != nil {
@@ -469,7 +469,7 @@ func newCmdSchoolSync() *cobra.Command {
 			}
 
 			lifeSemesterRaw, err := api.ParseResponseRaw(apiClient.ListSemesters(cmd.Context(), &openapi.ListSemestersParams{
-				Limit: stringPtr("200"),
+				Limit: int64Ptr(200),
 			}))
 			if err != nil {
 				return err
@@ -1215,8 +1215,12 @@ func sectionsByCourseName(curriculum []ustcschool.CurriculumItem, byCode map[str
 
 func fetchLifeHomeworksForSection(cmd *cobra.Command, apiClient *api.TypedClient, sectionID string) ([]map[string]any, error) {
 	includeDeleted := openapi.ListHomeworksParamsIncludeDeletedFalse
+	parsedSectionID, err := cmdutil.Int64PtrIfSet(sectionID)
+	if err != nil {
+		return nil, err
+	}
 	raw, err := api.ParseResponseRaw(apiClient.ListHomeworks(cmd.Context(), &openapi.ListHomeworksParams{
-		SectionId:      &sectionID,
+		SectionId:      parsedSectionID,
 		IncludeDeleted: &includeDeleted,
 	}))
 	if err != nil {
@@ -1456,6 +1460,10 @@ func anyString(value any) string {
 }
 
 func stringPtr(value string) *string {
+	return &value
+}
+
+func int64Ptr(value int64) *int64 {
 	return &value
 }
 

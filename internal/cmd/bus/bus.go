@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"strconv"
 	"strings"
 	"time"
 
@@ -65,37 +66,39 @@ func runBusQuery(cmd *cobra.Command, origin, destination, dayType, now string, s
 		return err
 	}
 	params := &openapi.QueryBusParams{}
-	params.OriginCampusId = cmdutil.StringPtrIfSet(origin)
-	params.DestinationCampusId = cmdutil.StringPtrIfSet(destination)
-	if dayType != "" {
-		dt := openapi.QueryBusParamsDayType(dayType)
-		params.DayType = &dt
-	}
-	if now != "" {
-		t, err := time.Parse(time.RFC3339, now)
-		if err != nil {
-			return fmt.Errorf("invalid time format (expected RFC 3339): %w", err)
-		}
-		params.Now = &t
-	}
-	if showDeparted {
-		v := openapi.QueryBusParamsShowDepartedTripsTrue
-		params.ShowDepartedTrips = &v
-	}
-	if includeAll {
-		v := openapi.QueryBusParamsIncludeAllTripsTrue
-		params.IncludeAllTrips = &v
-	}
-	params.Limit = cmdutil.IntStringPtrIfPositive(limit)
 	data, err := api.ParseResponseRaw(c.QueryBus(api.Ctx(), params))
 	if err != nil {
 		return err
 	}
+	dataMap := cmdutil.AsMap(data)
+	if dataMap != nil {
+		if err := filterBusData(dataMap, busQueryFilter{
+			origin:       origin,
+			destination:  destination,
+			dayType:      dayType,
+			now:          now,
+			showDeparted: showDeparted,
+			includeAll:   includeAll,
+			limit:        limit,
+		}); err != nil {
+			return err
+		}
+	}
 	if output.IsJSON() {
 		return output.JSON(data)
 	}
-	renderBus(cmdutil.AsMap(data))
+	renderBus(dataMap)
 	return nil
+}
+
+type busQueryFilter struct {
+	origin       string
+	destination  string
+	dayType      string
+	now          string
+	showDeparted bool
+	includeAll   bool
+	limit        int
 }
 
 func newCmdQuery() *cobra.Command {
@@ -122,6 +125,175 @@ func newCmdQuery() *cobra.Command {
 	}
 	addBusQueryFlags(cmd, &origin, &destination, &dayType, &now, &showDeparted, &includeAll, &limit)
 	return cmd
+}
+
+func filterBusData(data map[string]any, filter busQueryFilter) error {
+	originID, err := parseOptionalBusCampusID(filter.origin)
+	if err != nil {
+		return err
+	}
+	destinationID, err := parseOptionalBusCampusID(filter.destination)
+	if err != nil {
+		return err
+	}
+	resolvedDayType, err := resolveBusQueryDayType(filter.dayType, filter.now)
+	if err != nil {
+		return err
+	}
+	nowMinutes, err := busNowMinutes(filter.now)
+	if err != nil {
+		return err
+	}
+
+	routeIDs := filteredBusRouteIDs(data["routes"], originID, destinationID)
+	filteredTrips := make([]any, 0)
+	for _, item := range anySlice(data["trips"]) {
+		trip := cmdutil.AsMap(item)
+		if trip == nil {
+			continue
+		}
+		routeID, ok := intFromAny(trip["routeId"])
+		if !ok || !routeIDs[routeID] {
+			continue
+		}
+		if resolvedDayType != "" && trip["dayType"] != resolvedDayType {
+			continue
+		}
+		if !filter.includeAll && !filter.showDeparted {
+			departure, ok := intFromAny(trip["departureMinutes"])
+			if ok && departure < nowMinutes {
+				continue
+			}
+		}
+		filteredTrips = append(filteredTrips, item)
+		if filter.limit > 0 && len(filteredTrips) >= filter.limit {
+			break
+		}
+	}
+	data["trips"] = filteredTrips
+	return nil
+}
+
+func parseOptionalBusCampusID(value string) (*int, error) {
+	if value == "" {
+		return nil, nil
+	}
+	parsed, err := strconv.Atoi(value)
+	if err != nil || parsed <= 0 {
+		return nil, fmt.Errorf("invalid campus ID %q", value)
+	}
+	return &parsed, nil
+}
+
+func resolveBusQueryDayType(value, now string) (string, error) {
+	switch value {
+	case "", "all":
+		return "", nil
+	case "weekday", "weekend":
+		return value, nil
+	case "auto":
+		t, err := parseBusNow(now)
+		if err != nil {
+			return "", err
+		}
+		if t.Weekday() == time.Saturday || t.Weekday() == time.Sunday {
+			return "weekend", nil
+		}
+		return "weekday", nil
+	default:
+		return "", fmt.Errorf("invalid --day-type %q (use auto, weekday, or weekend)", value)
+	}
+}
+
+func busNowMinutes(value string) (int, error) {
+	t, err := parseBusNow(value)
+	if err != nil {
+		return 0, err
+	}
+	return t.Hour()*60 + t.Minute(), nil
+}
+
+func parseBusNow(value string) (time.Time, error) {
+	if value == "" {
+		return time.Now(), nil
+	}
+	t, err := time.Parse(time.RFC3339, value)
+	if err != nil {
+		return time.Time{}, fmt.Errorf("invalid time format (expected RFC 3339): %w", err)
+	}
+	return t, nil
+}
+
+func filteredBusRouteIDs(raw any, originID, destinationID *int) map[int]bool {
+	out := map[int]bool{}
+	for _, item := range anySlice(raw) {
+		route := cmdutil.AsMap(item)
+		if route == nil {
+			continue
+		}
+		id, ok := intFromAny(route["id"])
+		if !ok {
+			continue
+		}
+		if busRouteMatches(route, originID, destinationID) {
+			out[id] = true
+		}
+	}
+	return out
+}
+
+func busRouteMatches(route map[string]any, originID, destinationID *int) bool {
+	if originID == nil && destinationID == nil {
+		return true
+	}
+	originOrder := -1
+	destinationOrder := -1
+	for _, item := range anySlice(route["stops"]) {
+		stop := cmdutil.AsMap(item)
+		campus := cmdutil.AsMap(stop["campus"])
+		campusID, ok := intFromAny(campus["id"])
+		if !ok {
+			continue
+		}
+		order, _ := intFromAny(stop["stopOrder"])
+		if originID != nil && campusID == *originID {
+			originOrder = order
+		}
+		if destinationID != nil && campusID == *destinationID {
+			destinationOrder = order
+		}
+	}
+	if originID != nil && originOrder < 0 {
+		return false
+	}
+	if destinationID != nil && destinationOrder < 0 {
+		return false
+	}
+	if originID != nil && destinationID != nil {
+		return originOrder < destinationOrder
+	}
+	return true
+}
+
+func anySlice(value any) []any {
+	items, _ := value.([]any)
+	return items
+}
+
+func intFromAny(value any) (int, bool) {
+	switch v := value.(type) {
+	case int:
+		return v, true
+	case int64:
+		return int(v), true
+	case float64:
+		return int(v), true
+	case string:
+		parsed, err := strconv.Atoi(v)
+		return parsed, err == nil
+	default:
+		return 0, false
+	}
 }
 
 func renderBus(data map[string]any) {

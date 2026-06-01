@@ -61,8 +61,8 @@ func newCmdUserList() *cobra.Command {
 			}
 			params := &openapi.ListAdminUsersParams{}
 			params.Search = cmdutil.StringPtrIfSet(search)
-			params.Page = cmdutil.IntStringPtrIfPositive(page)
-			params.Limit = cmdutil.IntStringPtrIfPositive(limit)
+			params.Page = cmdutil.Int64PtrIfPositive(page)
+			params.Limit = cmdutil.Int64PtrIfPositive(limit)
 			data, err := api.ParseResponseRaw(c.ListAdminUsers(api.Ctx(), params))
 			if err != nil {
 				return err
@@ -258,7 +258,7 @@ func newCmdCommentList() *cobra.Command {
 				s := openapi.ListAdminCommentsParamsStatus(status)
 				params.Status = &s
 			}
-			params.Limit = cmdutil.IntStringPtrIfPositive(limit)
+			params.Limit = cmdutil.Int64PtrIfPositive(limit)
 			data, err := api.ParseResponseRaw(c.ListAdminComments(api.Ctx(), params))
 			if err != nil {
 				return err
@@ -340,7 +340,7 @@ func newCmdDescriptionList() *cobra.Command {
 				params.HasContent = &h
 			}
 			params.Search = cmdutil.StringPtrIfSet(search)
-			params.Limit = cmdutil.IntStringPtrIfPositive(limit)
+			params.Limit = cmdutil.Int64PtrIfPositive(limit)
 			data, err := api.ParseResponseRaw(c.ListAdminDescriptions(api.Ctx(), params))
 			if err != nil {
 				return err
@@ -390,7 +390,7 @@ func newCmdHomeworkList() *cobra.Command {
 				params.Status = &s
 			}
 			params.Search = cmdutil.StringPtrIfSet(search)
-			params.Limit = cmdutil.IntStringPtrIfPositive(limit)
+			params.Limit = cmdutil.Int64PtrIfPositive(limit)
 			data, err := api.ParseResponseRaw(c.ListAdminHomeworks(api.Ctx(), params))
 			if err != nil {
 				return err

@@ -99,10 +99,13 @@ func runTeacherList(cmd *cobra.Command, opts teacherListOpts) error {
 
 func fetchTeacherList(c *api.TypedClient, opts teacherListOpts) (cmdutil.ListResult, error) {
 	params := openapi.ListTeachersParams{}
-	params.DepartmentId = cmdutil.StringPtrIfSet(opts.departmentID)
+	var err error
+	if params.DepartmentId, err = cmdutil.Int64PtrIfSet(opts.departmentID); err != nil {
+		return cmdutil.ListResult{}, err
+	}
 	params.Search = cmdutil.StringPtrIfSet(opts.search)
-	params.Page = cmdutil.IntStringPtrIfPositive(opts.page)
-	params.Limit = cmdutil.IntStringPtrIfPositive(opts.limit)
+	params.Page = cmdutil.Int64PtrIfPositive(opts.page)
+	params.Limit = cmdutil.Int64PtrIfPositive(opts.limit)
 	data, err := api.ParseResponseRaw(c.ListTeachers(api.Ctx(), &params))
 	if err != nil {
 		return cmdutil.ListResult{}, err
