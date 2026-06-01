@@ -123,15 +123,26 @@ func runSectionList(cmd *cobra.Command, opts sectionListOpts) error {
 
 func fetchSectionList(c *api.TypedClient, opts sectionListOpts) (cmdutil.ListResult, error) {
 	params := openapi.ListSectionsParams{}
-	params.CourseId = cmdutil.StringPtrIfSet(opts.courseID)
-	params.SemesterId = cmdutil.StringPtrIfSet(opts.semesterID)
-	params.CampusId = cmdutil.StringPtrIfSet(opts.campusID)
-	params.DepartmentId = cmdutil.StringPtrIfSet(opts.departmentID)
-	params.TeacherId = cmdutil.StringPtrIfSet(opts.teacherID)
+	var err error
+	if params.CourseId, err = cmdutil.Int64PtrIfSet(opts.courseID); err != nil {
+		return cmdutil.ListResult{}, err
+	}
+	if params.SemesterId, err = cmdutil.Int64PtrIfSet(opts.semesterID); err != nil {
+		return cmdutil.ListResult{}, err
+	}
+	if params.CampusId, err = cmdutil.Int64PtrIfSet(opts.campusID); err != nil {
+		return cmdutil.ListResult{}, err
+	}
+	if params.DepartmentId, err = cmdutil.Int64PtrIfSet(opts.departmentID); err != nil {
+		return cmdutil.ListResult{}, err
+	}
+	if params.TeacherId, err = cmdutil.Int64PtrIfSet(opts.teacherID); err != nil {
+		return cmdutil.ListResult{}, err
+	}
 	params.Search = cmdutil.StringPtrIfSet(opts.search)
 	params.Ids = cmdutil.StringPtrIfSet(opts.ids)
-	params.Page = cmdutil.IntStringPtrIfPositive(opts.page)
-	params.Limit = cmdutil.IntStringPtrIfPositive(opts.limit)
+	params.Page = cmdutil.Int64PtrIfPositive(opts.page)
+	params.Limit = cmdutil.Int64PtrIfPositive(opts.limit)
 	data, err := api.ParseResponseRaw(c.ListSections(api.Ctx(), &params))
 	if err != nil {
 		return cmdutil.ListResult{}, err
@@ -187,7 +198,11 @@ func newCmdView() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			data, err := api.ParseResponseRaw(c.GetSection(api.Ctx(), args[0]))
+			jwID, err := cmdutil.Int64PtrIfSet(args[0])
+			if err != nil {
+				return err
+			}
+			data, err := api.ParseResponseRaw(c.GetSection(api.Ctx(), *jwID))
 			if err != nil {
 				return err
 			}
@@ -245,7 +260,11 @@ func newCmdSchedules() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			data, err := api.ParseResponseRaw(c.GetSectionSchedules(api.Ctx(), args[0]))
+			jwID, err := cmdutil.Int64PtrIfSet(args[0])
+			if err != nil {
+				return err
+			}
+			data, err := api.ParseResponseRaw(c.GetSectionSchedules(api.Ctx(), *jwID))
 			if err != nil {
 				return err
 			}
@@ -275,7 +294,11 @@ func newCmdCalendar() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			resp, err := c.GetSectionCalendar(api.Ctx(), args[0])
+			jwID, err := cmdutil.Int64PtrIfSet(args[0])
+			if err != nil {
+				return err
+			}
+			resp, err := c.GetSectionCalendar(api.Ctx(), *jwID)
 			if err != nil {
 				return err
 			}

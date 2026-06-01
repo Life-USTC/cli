@@ -40,6 +40,27 @@ func IntStringPtrIfPositive(value int) *string {
 	return &result
 }
 
+// Int64PtrIfPositive returns a pointer for positive integer flag values.
+func Int64PtrIfPositive(value int) *int64 {
+	if value <= 0 {
+		return nil
+	}
+	result := int64(value)
+	return &result
+}
+
+// Int64PtrIfSet parses a non-empty integer flag value.
+func Int64PtrIfSet(value string) (*int64, error) {
+	if value == "" {
+		return nil, nil
+	}
+	parsed, err := strconv.ParseInt(value, 10, 64)
+	if err != nil {
+		return nil, fmt.Errorf("invalid integer %q", value)
+	}
+	return &parsed, nil
+}
+
 // ShouldUseInteractive decides whether a command should open a TUI.
 //
 // Default behavior: in a TTY with no explicit list/filter flags set, the TUI

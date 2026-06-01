@@ -58,8 +58,12 @@ func newCmdSectionList() *cobra.Command {
 			if includeDeleted {
 				inclDel = openapi.ListHomeworksParamsIncludeDeletedTrue
 			}
+			sectionID, err := cmdutil.Int64PtrIfSet(args[0])
+			if err != nil {
+				return err
+			}
 			params := &openapi.ListHomeworksParams{
-				SectionId:      &args[0],
+				SectionId:      sectionID,
 				IncludeDeleted: &inclDel,
 			}
 			data, err := api.ParseResponseRaw(c.ListHomeworks(api.Ctx(), params))
@@ -353,8 +357,12 @@ func runMyHomeworkList(cmd *cobra.Command, opts myHomeworkListOpts) error {
 
 	if opts.sectionID != "" {
 		// Single section — use /api/homeworks with sectionId filter
+		sectionID, err := cmdutil.Int64PtrIfSet(opts.sectionID)
+		if err != nil {
+			return err
+		}
 		params := &openapi.ListHomeworksParams{
-			SectionId: &opts.sectionID,
+			SectionId: sectionID,
 		}
 		data, err = api.ParseResponseRaw(c.ListHomeworks(api.Ctx(), params))
 		if err != nil {

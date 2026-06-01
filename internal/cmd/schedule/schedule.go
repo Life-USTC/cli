@@ -56,9 +56,15 @@ func runScheduleList(cmd *cobra.Command, opts scheduleListOpts) error {
 		return err
 	}
 	params := openapi.ListSchedulesParams{}
-	params.SectionId = cmdutil.StringPtrIfSet(opts.sectionID)
-	params.TeacherId = cmdutil.StringPtrIfSet(opts.teacherID)
-	params.RoomId = cmdutil.StringPtrIfSet(opts.roomID)
+	if params.SectionId, err = cmdutil.Int64PtrIfSet(opts.sectionID); err != nil {
+		return err
+	}
+	if params.TeacherId, err = cmdutil.Int64PtrIfSet(opts.teacherID); err != nil {
+		return err
+	}
+	if params.RoomId, err = cmdutil.Int64PtrIfSet(opts.roomID); err != nil {
+		return err
+	}
 	if opts.dateFrom != "" {
 		t, err := time.Parse(time.DateOnly, opts.dateFrom)
 		if err != nil {
@@ -74,10 +80,10 @@ func runScheduleList(cmd *cobra.Command, opts scheduleListOpts) error {
 		params.DateTo = &t
 	}
 	if opts.weekday > 0 {
-		params.Weekday = cmdutil.IntStringPtrIfPositive(opts.weekday)
+		params.Weekday = cmdutil.Int64PtrIfPositive(opts.weekday)
 	}
-	params.Page = cmdutil.IntStringPtrIfPositive(opts.page)
-	params.Limit = cmdutil.IntStringPtrIfPositive(opts.limit)
+	params.Page = cmdutil.Int64PtrIfPositive(opts.page)
+	params.Limit = cmdutil.Int64PtrIfPositive(opts.limit)
 	data, err := api.ParseResponseRaw(c.ListSchedules(api.Ctx(), &params))
 	if err != nil {
 		return err

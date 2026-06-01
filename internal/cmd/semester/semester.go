@@ -51,8 +51,8 @@ func runSemesterList(cmd *cobra.Command, opts semesterListOpts) error {
 		return err
 	}
 	params := &openapi.ListSemestersParams{}
-	params.Page = cmdutil.IntStringPtrIfPositive(opts.page)
-	params.Limit = cmdutil.IntStringPtrIfPositive(opts.limit)
+	params.Page = cmdutil.Int64PtrIfPositive(opts.page)
+	params.Limit = cmdutil.Int64PtrIfPositive(opts.limit)
 	data, err := api.ParseResponseRaw(c.ListSemesters(api.Ctx(), params))
 	if err != nil {
 		return err

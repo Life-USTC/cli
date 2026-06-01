@@ -84,10 +84,16 @@ func runCommentList(cmd *cobra.Command, target commentTarget) error {
 		params.TargetId = &target.targetID
 	}
 	if target.sectionID != "" {
-		params.SectionId = &target.sectionID
+		params.SectionId, err = cmdutil.Int64PtrIfSet(target.sectionID)
+		if err != nil {
+			return err
+		}
 	}
 	if target.teacherID != "" {
-		params.TeacherId = &target.teacherID
+		params.TeacherId, err = cmdutil.Int64PtrIfSet(target.teacherID)
+		if err != nil {
+			return err
+		}
 	}
 	data, err := api.ParseResponseRaw(c.ListComments(api.Ctx(), params))
 	if err != nil {
@@ -115,10 +121,16 @@ func runCommentCreate(cmd *cobra.Command, target commentTarget, body, visibility
 		params.TargetId = &target.targetID
 	}
 	if target.sectionID != "" {
-		params.SectionId = &target.sectionID
+		params.SectionId, err = cmdutil.Int64PtrIfSet(target.sectionID)
+		if err != nil {
+			return err
+		}
 	}
 	if target.teacherID != "" {
-		params.TeacherId = &target.teacherID
+		params.TeacherId, err = cmdutil.Int64PtrIfSet(target.teacherID)
+		if err != nil {
+			return err
+		}
 	}
 
 	vis := openapi.CommentCreateRequestSchemaVisibility(visibility)
