@@ -1459,10 +1459,6 @@ func anyString(value any) string {
 	}
 }
 
-func stringPtr(value string) *string {
-	return &value
-}
-
 func int64Ptr(value int64) *int64 {
 	return &value
 }
