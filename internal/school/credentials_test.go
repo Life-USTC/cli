@@ -44,7 +44,7 @@ func TestResolveGraduateCredentialsPreferGraduateUsername(t *testing.T) {
 	t.Setenv("PASSPORT_GRADUATE_USERNAME", "graduate-specific")
 	t.Setenv("PASSPORT_UNDERGRADUATE_USERNAME", "undergrad-alias")
 	t.Setenv("PASSPORT_PASSWORD", "shared-pass")
-	t.Setenv("PASSPORT_TOTP", "")
+	t.Setenv("PASSPORT_TOTP", "123456")
 
 	creds, err := ResolveCredentialsForProgram(ProgramGraduate, "", "", "")
 	if err != nil {
