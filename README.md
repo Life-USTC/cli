@@ -66,6 +66,18 @@ life-ustc semester current
 life-ustc bus query --from east --to west
 life-ustc metadata
 
+# Official USTC sources
+life-ustc school semesters
+life-ustc school semesters --graduate
+life-ustc school curriculum --semester-id <ID>
+life-ustc school curriculum --graduate
+life-ustc school exam
+life-ustc school score
+life-ustc school homework
+life-ustc school sync --dry-run
+life-ustc school sync --graduate --dry-run
+life-ustc school sync
+
 # Community features
 life-ustc comment list --target-type section --target-id <ID>
 life-ustc comment create --target-type section --target-id <ID> --body "Great class!"
@@ -88,8 +100,23 @@ life-ustc admin suspension create --user-id <ID> --reason "spam"
 - `me` is identity and account status.
 - Personal resources live at the top level: `todo`, `homework`, `calendar`, `upload`.
 - Browseable campus resources also live at the top level: `course`, `section`, `teacher`, `semester`, `schedule`, `bus`.
+- `school` groups official USTC integrations: `semesters`, `curriculum`, `exam`, `score`, `homework`, and `sync`.
 - Generic cross-resource workflows are available via `comment`, `description`, and `api`.
 - Commands that benefit from guided input open their own TUI by default in an interactive terminal when no list/filter flags are provided, such as `course`, `section`, and `teacher`; use `--no-interactive` to force plain table output.
+
+## Official USTC Sources
+
+- `life-ustc school semesters` reads undergraduate semesters from `catalog.ustc.edu.cn`, or graduate semesters from the official `yjs1.ustc.edu.cn` graduate apps with `--graduate`.
+- `life-ustc school curriculum`, `exam`, and `score` sign in directly from Go without a browser backend. Undergraduate data comes from `jw.ustc.edu.cn`; graduate data comes from the official `yjs1.ustc.edu.cn` graduate apps with `--graduate`.
+- `life-ustc school homework` reads Blackboard calendar/homework data from `www.bb.ustc.edu.cn`, or graduate homework from the official `yjs1.ustc.edu.cn` graduate apps with `--graduate`.
+- `life-ustc school sync` reads lesson codes from the active school system, matches them to Life@USTC sections, and updates your Life@USTC calendar subscriptions. The sync is one-way to Life@USTC only; it does not write back to USTC systems. Use `--dry-run` to preview matches without updating subscriptions.
+
+Authenticated `school` commands accept `--username`, `--password`, `--totp`, `--undergraduate`, `--graduate`, and sync commands also accept `--all-programs`. If omitted, the CLI falls back to the configured school program list, then program-specific credentials, then undergraduate. Persist defaults with `life-ustc config set-school-programs undergraduate,graduate`.
+
+- Undergraduate username: `PASSPORT_UNDERGRADUATE_USERNAME`
+- Graduate username: `PASSPORT_GRADUATE_USERNAME`
+- Password: `PASSPORT_PASSWORD`
+- TOTP: `PASSPORT_TOTP`
 
 ## JSON output
 
@@ -146,6 +173,7 @@ life-ustc api -i metadata
 - Config directory: `~/.config/life-ustc/` (or `$XDG_CONFIG_HOME/life-ustc/`)
 - Override server per-command: `--server URL`
 - Environment variable: `LIFE_USTC_SERVER`
+- School program default: `life-ustc config set-school-programs undergraduate,graduate`
 
 ## Global Options
 
