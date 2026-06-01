@@ -97,7 +97,8 @@ func atomicWriteJSON(path string, data any, mode os.FileMode) error {
 // --- Global config ---
 
 type Config struct {
-	Server string `json:"server,omitempty"`
+	Server         string   `json:"server,omitempty"`
+	SchoolPrograms []string `json:"schoolPrograms,omitempty"`
 }
 
 func LoadConfig() (*Config, error) {
@@ -121,9 +122,10 @@ func SaveConfig(cfg *Config) error {
 }
 
 // GetDefaultServer returns the server URL using this precedence:
-//   1. LIFE_USTC_SERVER environment variable
-//   2. Config file server field
-//   3. Built-in DefaultServer
+//  1. LIFE_USTC_SERVER environment variable
+//  2. Config file server field
+//  3. Built-in DefaultServer
+//
 // The --server flag overrides all of these at the command level.
 func GetDefaultServer() string {
 	if server := os.Getenv("LIFE_USTC_SERVER"); server != "" {
@@ -142,6 +144,23 @@ func SetDefaultServer(server string) error {
 		cfg = &Config{}
 	}
 	cfg.Server = server
+	return SaveConfig(cfg)
+}
+
+func GetSchoolPrograms() []string {
+	cfg, err := LoadConfig()
+	if err != nil || cfg == nil {
+		return nil
+	}
+	return append([]string(nil), cfg.SchoolPrograms...)
+}
+
+func SetSchoolPrograms(programs []string) error {
+	cfg, _ := LoadConfig()
+	if cfg == nil {
+		cfg = &Config{}
+	}
+	cfg.SchoolPrograms = append([]string(nil), programs...)
 	return SaveConfig(cfg)
 }
 
