@@ -75,7 +75,7 @@ func (c *Client) FetchSemesters(ctx context.Context) ([]Semester, error) {
 	if err != nil {
 		return nil, fmt.Errorf("fetch semesters: %w", err)
 	}
-	defer res.Body.Close()
+	defer func() { _ = res.Body.Close() }()
 	if res.StatusCode >= 300 {
 		jwClient, err := newJWClient(ctx, c.creds)
 		if err != nil {
@@ -241,7 +241,7 @@ func (c *Client) FetchExams(ctx context.Context, semesterIDs ...int) ([]ExamItem
 	if err != nil {
 		return nil, fmt.Errorf("fetch exams: %w", err)
 	}
-	defer res.Body.Close()
+	defer func() { _ = res.Body.Close() }()
 	if res.StatusCode >= 300 {
 		return nil, responseError(res)
 	}
@@ -386,7 +386,7 @@ func fetchBlackboardCourseCalendarIDs(ctx context.Context, client *http.Client) 
 	if err != nil {
 		return nil, fmt.Errorf("fetch Blackboard calendars: %w", err)
 	}
-	defer res.Body.Close()
+	defer func() { _ = res.Body.Close() }()
 	if res.StatusCode >= 300 {
 		return nil, responseError(res)
 	}
