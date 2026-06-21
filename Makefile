@@ -1,5 +1,5 @@
 VERSION ?= dev
-OPENAPI_SOURCE ?= ../server-nextjs/public/openapi.generated.json
+OPENAPI_SOURCE ?= ../server/public/openapi.generated.json
 LDFLAGS := -ldflags "-X github.com/Life-USTC/CLI/internal/cmd/root.version=$(VERSION)"
 
 .PHONY: build clean test lint install generate sync-openapi check-openapi-sync
