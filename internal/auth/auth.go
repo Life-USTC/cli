@@ -21,7 +21,40 @@ import (
 	"golang.org/x/oauth2"
 )
 
-const oauthScope = "openid profile email offline_access"
+var oauthScope = strings.Join([]string{
+	"openid",
+	"profile",
+	"email",
+	"offline_access",
+	"me:read",
+	"me:write",
+	"todo:read",
+	"todo:write",
+	"homework:read",
+	"homework:write",
+	"subscription:read",
+	"subscription:write",
+	"comment:read",
+	"comment:write",
+	"description:read",
+	"description:write",
+	"upload:read",
+	"upload:write",
+	"dashboard:read",
+	"dashboard:write",
+	"bus:read",
+	"bus:write",
+	"course:read",
+	"course:write",
+	"section:read",
+	"section:write",
+	"teacher:read",
+	"teacher:write",
+	"schedule:read",
+	"schedule:write",
+	"exam:read",
+	"exam:write",
+}, " ")
 
 func b64url(data []byte) string {
 	return base64.RawURLEncoding.EncodeToString(data)

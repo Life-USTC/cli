@@ -545,7 +545,8 @@ func newCmdSchoolSync() *cobra.Command {
 			}
 
 			if !dryRun && len(sectionIDs) > 0 {
-				subscribeRaw, err := api.ParseResponseRaw(apiClient.SetCalendarSubscription(cmd.Context(), openapi.SetCalendarSubscriptionJSONRequestBody{
+				subscribeRaw, err := api.ParseResponseRaw(apiClient.BatchUpdateCalendarSubscription(cmd.Context(), openapi.BatchUpdateCalendarSubscriptionJSONRequestBody{
+					Action:     openapi.CalendarSubscriptionBatchRequestSchemaActionSet,
 					SectionIds: &sectionIDs,
 				}))
 				if err != nil {
