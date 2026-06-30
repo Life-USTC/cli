@@ -12,13 +12,13 @@ import (
 	"io"
 	"net"
 	"net/http"
-	"net/url"
 	"os/exec"
 	"runtime"
 	"strings"
 	"time"
 
 	"github.com/Life-USTC/CLI/internal/config"
+	"golang.org/x/oauth2"
 )
 
 const oauthScope = "openid profile email offline_access"
@@ -133,9 +133,9 @@ func Login(server string) (*config.Credential, error) {
 		return nil, err
 	}
 
-	authEndpoint, _ := meta["authorization_endpoint"].(string)
-	tokenEndpoint, _ := meta["token_endpoint"].(string)
-	regEndpoint, _ := meta["registration_endpoint"].(string)
+	authEndpoint := stringFromMap(meta, "authorization_endpoint")
+	tokenEndpoint := stringFromMap(meta, "token_endpoint")
+	regEndpoint := stringFromMap(meta, "registration_endpoint")
 	if regEndpoint == "" {
 		return nil, fmt.Errorf("server does not advertise a registration_endpoint")
 	}
@@ -165,18 +165,23 @@ func Login(server string) (*config.Credential, error) {
 		return nil, err
 	}
 
-	// Build auth URL
-	params := url.Values{
-		"client_id":             {clientID},
-		"redirect_uri":          {redirectURI},
-		"response_type":         {"code"},
-		"scope":                 {oauthScope},
-		"state":                 {state},
-		"code_challenge":        {challenge},
-		"code_challenge_method": {"S256"},
-		"resource":              {server},
+	conf := &oauth2.Config{
+		ClientID:    clientID,
+		RedirectURL: redirectURI,
+		Scopes:      strings.Fields(oauthScope),
+		Endpoint: oauth2.Endpoint{
+			AuthURL:  authEndpoint,
+			TokenURL: tokenEndpoint,
+		},
 	}
-	authURL := authEndpoint + "?" + params.Encode()
+
+	ctx := oauth2Context(context.Background(), &http.Client{Timeout: 15 * time.Second})
+
+	authURL := conf.AuthCodeURL(state,
+		oauth2.SetAuthURLParam("code_challenge", challenge),
+		oauth2.SetAuthURLParam("code_challenge_method", "S256"),
+		oauth2.SetAuthURLParam("resource", server),
+	)
 
 	// Channel for callback result
 	type callbackResult struct {
@@ -225,34 +230,23 @@ func Login(server string) (*config.Credential, error) {
 		return nil, fmt.Errorf("state mismatch — possible CSRF attack")
 	}
 
-	// Exchange code for tokens
-	tokenData := url.Values{
-		"grant_type":    {"authorization_code"},
-		"client_id":     {clientID},
-		"code":          {result.code},
-		"redirect_uri":  {redirectURI},
-		"code_verifier": {verifier},
-		"resource":      {server},
+	tok, err := conf.Exchange(ctx, result.code,
+		oauth2.VerifierOption(verifier),
+		oauth2.SetAuthURLParam("resource", server),
+	)
+	if err != nil {
+		return nil, fmt.Errorf("token exchange failed: %w", err)
 	}
 
-	httpClient := &http.Client{Timeout: 15 * time.Second}
-	tokenResp, err := httpClient.PostForm(tokenEndpoint, tokenData)
-	if err != nil {
+	vt := newVerifiedToken(tok)
+	issuer := stringFromMap(meta, "issuer")
+	if issuer == "" {
+		issuer = server
+	}
+	if err := vt.ValidateIDToken(issuer, server); err != nil {
 		return nil, err
 	}
-	defer func() { _ = tokenResp.Body.Close() }()
-
-	tokenBody, _ := io.ReadAll(tokenResp.Body)
-	if tokenResp.StatusCode != 200 {
-		return nil, fmt.Errorf("token exchange failed (%d): %s", tokenResp.StatusCode, string(tokenBody))
-	}
-
-	var tokens map[string]any
-	if err := json.Unmarshal(tokenBody, &tokens); err != nil {
-		return nil, fmt.Errorf("failed to decode token response: %w", err)
-	}
-
-	return credentialFromTokens(clientID, server, tokens, "", "")
+	return verifiedTokenToCredential(clientID, server, vt, "", "", time.Now())
 }
 
 // RefreshToken attempts to refresh the access token.
@@ -264,35 +258,38 @@ func RefreshToken(server string, cred *config.Credential) (*config.Credential, e
 	if err != nil {
 		return nil, err
 	}
-	tokenEndpoint, _ := meta["token_endpoint"].(string)
+	tokenEndpoint := stringFromMap(meta, "token_endpoint")
 
-	data := url.Values{
-		"grant_type":    {"refresh_token"},
-		"client_id":     {cred.ClientID},
-		"refresh_token": {cred.RefreshToken},
-	}
-	if cred.Resource != "" {
-		data.Set("resource", cred.Resource)
+	conf := &oauth2.Config{
+		ClientID: cred.ClientID,
+		Scopes:   strings.Fields(cred.Scope),
+		Endpoint: oauth2.Endpoint{TokenURL: tokenEndpoint},
 	}
 
-	client := &http.Client{Timeout: 15 * time.Second}
-	resp, err := client.PostForm(tokenEndpoint, data)
+	ctx := oauth2Context(context.Background(), &http.Client{Timeout: 15 * time.Second})
+	token := &oauth2.Token{
+		RefreshToken: cred.RefreshToken,
+		Expiry:       time.Unix(int64(cred.ExpiresAt), 0).Add(-time.Hour),
+	}
+
+	tok, err := conf.TokenSource(ctx, token).Token()
 	if err != nil {
+		return nil, fmt.Errorf("refresh failed: %w", err)
+	}
+
+	vt := newVerifiedToken(tok)
+	issuer := stringFromMap(meta, "issuer")
+	if issuer == "" {
+		issuer = strings.TrimRight(server, "/")
+	}
+	audience := cred.Resource
+	if audience == "" {
+		audience = strings.TrimRight(server, "/")
+	}
+	if err := vt.ValidateIDToken(issuer, audience); err != nil {
 		return nil, err
 	}
-	defer func() { _ = resp.Body.Close() }()
-
-	if resp.StatusCode != 200 {
-		b, _ := io.ReadAll(resp.Body)
-		return nil, fmt.Errorf("refresh failed (%d): %s", resp.StatusCode, string(b))
-	}
-
-	var tokens map[string]any
-	if err := json.NewDecoder(resp.Body).Decode(&tokens); err != nil {
-		return nil, fmt.Errorf("failed to decode refresh response: %w", err)
-	}
-
-	return credentialFromTokens(cred.ClientID, cred.Resource, tokens, cred.RefreshToken, cred.Scope)
+	return verifiedTokenToCredential(cred.ClientID, cred.Resource, vt, cred.RefreshToken, cred.Scope, time.Now())
 }
 
 func requiredString(values map[string]any, key string) (string, error) {
