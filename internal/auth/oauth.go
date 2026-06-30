@@ -2,10 +2,10 @@ package auth
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 
@@ -54,9 +54,17 @@ func tokenExtraString(tok *oauth2.Token, key string) string {
 // ValidateIDToken checks the ID token's issuer and audience claims.
 // It does not verify the JWT signature; callers should fetch the issuer's
 // JWKS and verify the signature when required.
+// Empty issuer or audience is treated as an error so checks are never
+// silently skipped.
 func (t *VerifiedToken) ValidateIDToken(issuer, audience string) error {
 	if t == nil || t.IDToken == "" {
 		return nil
+	}
+	if issuer == "" {
+		return errors.New("id_token issuer required")
+	}
+	if audience == "" {
+		return errors.New("id_token audience required")
 	}
 	parsed, err := jwt.ParseSigned(t.IDToken, []jose.SignatureAlgorithm{jose.RS256, jose.ES256})
 	if err != nil {
@@ -66,15 +74,11 @@ func (t *VerifiedToken) ValidateIDToken(issuer, audience string) error {
 	if err := parsed.UnsafeClaimsWithoutVerification(&claims); err != nil {
 		return fmt.Errorf("invalid id_token claims: %w", err)
 	}
-	if issuer != "" {
-		if iss, _ := claims["iss"].(string); strings.TrimSpace(iss) != issuer {
-			return fmt.Errorf("invalid issuer %q, expected %q", iss, issuer)
-		}
+	if iss, _ := claims["iss"].(string); strings.TrimSpace(iss) != issuer {
+		return fmt.Errorf("invalid issuer %q, expected %q", iss, issuer)
 	}
-	if audience != "" {
-		if !audienceMatches(claims["aud"], audience) {
-			return fmt.Errorf("invalid audience, expected %q", audience)
-		}
+	if !audienceMatches(claims["aud"], audience) {
+		return fmt.Errorf("invalid audience, expected %q", audience)
 	}
 	if exp, ok := expiresAtFromClaim(claims["exp"]); ok && !exp.After(time.Now()) {
 		return errors.New("id_token expired")
@@ -117,12 +121,10 @@ func parseIntString(s string) (int64, error) {
 	if s == "" {
 		return 0, errors.New("empty")
 	}
-	var n int64
-	_, err := fmt.Sscanf(s, "%d", &n)
-	return n, err
+	return strconv.ParseInt(s, 10, 64)
 }
 
-func verifiedTokenToCredential(clientID, resource string, vt *VerifiedToken, fallbackRefresh, fallbackScope string, now time.Time) (*config.Credential, error) {
+func verifiedTokenToCredential(clientID, audience string, vt *VerifiedToken, fallbackRefresh, fallbackScope string, now time.Time) (*config.Credential, error) {
 	accessToken := strings.TrimSpace(vt.AccessToken)
 	if accessToken == "" {
 		return nil, errors.New("token response missing access_token")
@@ -146,7 +148,7 @@ func verifiedTokenToCredential(clientID, resource string, vt *VerifiedToken, fal
 		TokenType:    strings.TrimSpace(vt.TokenType),
 		ExpiresAt:    float64(now.Add(time.Duration(expiresIn) * time.Second).Unix()),
 		Scope:        scope,
-		Resource:     resource,
+		Resource:     audience,
 	}, nil
 }
 
@@ -189,6 +191,3 @@ func tokenExpiresIn(tok *oauth2.Token, fallback int) int {
 	}
 	return fallback
 }
-
-// jsonValid reports whether b is valid JSON.
-func jsonValid(b []byte) bool { return json.Valid(b) }

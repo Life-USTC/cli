@@ -250,7 +250,13 @@ func Login(server string) (*config.Credential, error) {
 }
 
 // RefreshToken attempts to refresh the access token.
+//
+// Note: oauth2.TokenSource does not expose extra refresh parameters, so the
+// original OAuth 2.0 resource indicator is not sent on refresh requests. The
+// stored resource/audience is still preserved in the returned credential and
+// used for ID token validation.
 func RefreshToken(server string, cred *config.Credential) (*config.Credential, error) {
+	server = strings.TrimRight(server, "/")
 	if cred.RefreshToken == "" {
 		return nil, fmt.Errorf("no refresh token")
 	}
@@ -280,56 +286,14 @@ func RefreshToken(server string, cred *config.Credential) (*config.Credential, e
 	vt := newVerifiedToken(tok)
 	issuer := stringFromMap(meta, "issuer")
 	if issuer == "" {
-		issuer = strings.TrimRight(server, "/")
+		issuer = server
 	}
 	audience := cred.Resource
 	if audience == "" {
-		audience = strings.TrimRight(server, "/")
+		audience = server
 	}
 	if err := vt.ValidateIDToken(issuer, audience); err != nil {
 		return nil, err
 	}
-	return verifiedTokenToCredential(cred.ClientID, cred.Resource, vt, cred.RefreshToken, cred.Scope, time.Now())
-}
-
-func requiredString(values map[string]any, key string) (string, error) {
-	if s, ok := values[key].(string); ok && s != "" {
-		return s, nil
-	}
-	return "", fmt.Errorf("token response missing %q", key)
-}
-
-func strDefault(v any) string {
-	if s, ok := v.(string); ok {
-		return s
-	}
-	return ""
-}
-
-func credentialFromTokens(clientID, resource string, tokens map[string]any, fallbackRefresh, fallbackScope string) (*config.Credential, error) {
-	accessToken, err := requiredString(tokens, "access_token")
-	if err != nil {
-		return nil, err
-	}
-	expiresIn := 3600.0
-	if ei, ok := tokens["expires_in"].(float64); ok {
-		expiresIn = ei
-	}
-	refreshToken := strDefault(tokens["refresh_token"])
-	if refreshToken == "" {
-		refreshToken = fallbackRefresh
-	}
-	scope := strDefault(tokens["scope"])
-	if scope == "" {
-		scope = fallbackScope
-	}
-	return &config.Credential{
-		ClientID:     clientID,
-		AccessToken:  accessToken,
-		RefreshToken: refreshToken,
-		TokenType:    strDefault(tokens["token_type"]),
-		ExpiresAt:    float64(time.Now().Unix()) + expiresIn,
-		Scope:        scope,
-		Resource:     resource,
-	}, nil
+	return verifiedTokenToCredential(cred.ClientID, audience, vt, cred.RefreshToken, cred.Scope, time.Now())
 }
