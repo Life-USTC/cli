@@ -430,18 +430,20 @@ func newCmdCreate() *cobra.Command {
 func newCmdDone() *cobra.Command {
 	var undo bool
 	cmd := &cobra.Command{
-		Use:     "done [todo-id]",
+		Use:     "done [todo-id]...",
 		Aliases: []string{"complete", "finish"},
-		Short:   "Mark a todo as done",
-		Long:    "Mark a todo as done. When run interactively without an ID, shows matching todos and lets you pick one.",
-		Args:    cobra.MaximumNArgs(1),
+		Short:   "Mark todo(s) as done",
+		Long:    "Mark one or more todos as done. When run interactively without IDs, shows matching todos and lets you pick one.",
+		Args:    cobra.ArbitraryArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			id := ""
-			var row map[string]any
-			if len(args) == 1 {
-				id = strings.TrimSpace(args[0])
-			}
-			if id == "" {
+			var ids []string
+			var rows []map[string]any
+			if len(args) > 0 {
+				ids = make([]string, len(args))
+				for i, arg := range args {
+					ids[i] = strings.TrimSpace(arg)
+				}
+			} else {
 				if !cmdutil.IsInteractive() {
 					return fmt.Errorf("todo id is required in non-interactive mode")
 				}
@@ -458,31 +460,83 @@ func newCmdDone() *cobra.Command {
 				if picked == nil {
 					return nil
 				}
-				id, _ = picked["id"].(string)
-				row = picked
+				id, _ := picked["id"].(string)
+				ids = []string{id}
+				rows = []map[string]any{picked}
 			}
-			return setTodoCompleted(cmd, id, row, !undo)
+			return setTodosCompleted(cmd, ids, rows, !undo)
 		},
 	}
 	cmd.Flags().BoolVar(&undo, "undo", false, "Mark as not completed")
 	return cmd
 }
 
-func setTodoCompleted(cmd *cobra.Command, id string, row map[string]any, completed bool) error {
+func setTodosCompleted(cmd *cobra.Command, ids []string, rows []map[string]any, completed bool) error {
 	c, err := api.NewTypedClient(cmdutil.ServerFromCmd(cmd), true)
 	if err != nil {
 		return err
 	}
-	body := openapi.UpdateTodoJSONRequestBody{Completed: &completed}
-	_, err = api.ParseResponseRaw(c.UpdateTodo(api.Ctx(), id, body))
+	items := make([]struct {
+		Completed bool   `json:"completed"`
+		TodoId    string `json:"todoId"`
+	}, len(ids))
+	for i, id := range ids {
+		items[i].Completed = completed
+		items[i].TodoId = id
+	}
+	body := openapi.PatchApiTodosBatchJSONRequestBody{Items: items}
+	data, err := api.ParseResponseRaw(c.PatchApiTodosBatch(api.Ctx(), body))
 	if err != nil {
 		return err
 	}
-	label := todoTitleFromRow(row)
-	if completed {
-		output.Success(fmt.Sprintf("Completed: %s", label))
-	} else {
-		output.Success(fmt.Sprintf("Reopened: %s", label))
+	return reportTodoBatchResults(data, rows, completed)
+}
+
+func reportTodoBatchResults(data any, rows []map[string]any, completed bool) error {
+	labels := make(map[string]string, len(rows))
+	for _, row := range rows {
+		id, _ := row["id"].(string)
+		if id != "" {
+			labels[id] = todoTitleFromRow(row)
+		}
+	}
+
+	m, ok := data.(map[string]any)
+	if !ok {
+		return fmt.Errorf("unexpected batch response format")
+	}
+	results, _ := m["results"].([]any)
+
+	var failures []string
+	for _, r := range results {
+		result, ok := r.(map[string]any)
+		if !ok {
+			continue
+		}
+		id, _ := result["todoId"].(string)
+		success, _ := result["success"].(bool)
+		if success {
+			label := labels[id]
+			if label == "" {
+				label = id
+			}
+			if completed {
+				output.Success(fmt.Sprintf("Completed: %s", label))
+			} else {
+				output.Success(fmt.Sprintf("Reopened: %s", label))
+			}
+			continue
+		}
+		if errMap, ok := result["error"].(map[string]any); ok {
+			msg, _ := errMap["message"].(string)
+			failures = append(failures, fmt.Sprintf("%s: %s", id, msg))
+		} else {
+			failures = append(failures, id)
+		}
+	}
+
+	if len(failures) > 0 {
+		return fmt.Errorf("failed to update %d todo(s):\n%s", len(failures), strings.Join(failures, "\n"))
 	}
 	return nil
 }

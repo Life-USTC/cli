@@ -439,3 +439,35 @@ func TestAnnotateTodoRows_EmptySlice(t *testing.T) {
 	// must not panic
 	annotateTodoRows([]map[string]any{})
 }
+
+func TestReportTodoBatchResults_AllSuccess(t *testing.T) {
+	data := map[string]any{
+		"results": []any{
+			map[string]any{"todoId": "t1", "success": true},
+			map[string]any{"todoId": "t2", "success": true},
+		},
+	}
+	rows := []map[string]any{
+		{"id": "t1", "title": "First"},
+		{"id": "t2", "title": "Second"},
+	}
+	if err := reportTodoBatchResults(data, rows, true); err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+}
+
+func TestReportTodoBatchResults_PartialFailure(t *testing.T) {
+	data := map[string]any{
+		"results": []any{
+			map[string]any{"todoId": "t1", "success": true},
+			map[string]any{"todoId": "t2", "success": false, "error": map[string]any{"message": "not found"}},
+		},
+	}
+	err := reportTodoBatchResults(data, []map[string]any{{"id": "t1", "title": "First"}}, true)
+	if err == nil {
+		t.Fatal("expected error for partial failure, got nil")
+	}
+	if !strings.Contains(err.Error(), "t2: not found") {
+		t.Errorf("expected error to contain failed item, got %v", err)
+	}
+}

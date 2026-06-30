@@ -42,14 +42,17 @@ life-ustc me
 life-ustc todo --pending
 life-ustc todo create --title "Write report" --priority high
 life-ustc todo done <TODO_ID>
+life-ustc todo done <TODO_ID_1> <TODO_ID_2>
 life-ustc homework --pending
 life-ustc homework create <SECTION_ID> --title "Problem Set 1"
 life-ustc homework create
 life-ustc homework done <HOMEWORK_ID>
+life-ustc homework done <HOMEWORK_ID_1> <HOMEWORK_ID_2>
 life-ustc upload file ./report.pdf
 life-ustc upload download <ID> -o report.pdf
 life-ustc calendar get
 life-ustc calendar set <SECTION_ID_1> <SECTION_ID_2>
+life-ustc calendar import-codes <CODE_1> <CODE_2>
 
 # Browse (no auth required unless noted)
 # In a terminal, bare course/section/teacher list commands open an interactive TUI.
@@ -81,6 +84,7 @@ life-ustc school sync
 # Community features
 life-ustc comment list --target-type section --target-id <ID>
 life-ustc comment create --target-type section --target-id <ID> --body "Great class!"
+life-ustc comment delete <COMMENT_ID_1> <COMMENT_ID_2>
 life-ustc description get --target-type course --target-id <ID>
 life-ustc description set --target-type course --target-id <ID> --content "Good for freshmen."
 
