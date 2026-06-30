@@ -33,7 +33,7 @@ jobs:
 
       - name: Check generated code is up-to-date
         run: |
-          make sync-openapi generate
+          make sync-openapi generate OPENAPI_SOURCE=server/public/openapi.generated.json
           git diff --exit-code
 
   lint:
