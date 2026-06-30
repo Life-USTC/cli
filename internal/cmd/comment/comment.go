@@ -408,18 +408,20 @@ func newCmdUpdate() *cobra.Command {
 func newCmdDelete() *cobra.Command {
 	var yes bool
 	cmd := &cobra.Command{
-		Use:     "delete [comment-id]",
+		Use:     "delete [comment-id]...",
 		Aliases: []string{"rm"},
-		Short:   "Delete a comment",
-		Long:    "Delete a comment. When run interactively without an ID, shows your recent comments and lets you pick one.",
-		Args:    cobra.MaximumNArgs(1),
+		Short:   "Delete comment(s)",
+		Long:    "Delete one or more comments. When run interactively without IDs, shows your recent comments and lets you pick one.",
+		Args:    cobra.ArbitraryArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			id := ""
-			var row map[string]any
-			if len(args) == 1 {
-				id = strings.TrimSpace(args[0])
-			}
-			if id == "" {
+			var ids []string
+			var rows []map[string]any
+			if len(args) > 0 {
+				ids = make([]string, len(args))
+				for i, arg := range args {
+					ids[i] = strings.TrimSpace(arg)
+				}
+			} else {
 				if !cmdutil.IsInteractive() {
 					return fmt.Errorf("comment id is required in non-interactive mode")
 				}
@@ -430,27 +432,91 @@ func newCmdDelete() *cobra.Command {
 				if picked == nil {
 					return nil
 				}
-				id, _ = picked["id"].(string)
-				row = picked
+				id, _ := picked["id"].(string)
+				ids = []string{id}
+				rows = []map[string]any{picked}
 			}
-			label := commentLabelFromRow(row)
+
+			label := commentBatchLabel(rows, len(ids))
 			if !cmdutil.Confirm(fmt.Sprintf("Delete %s?", label), yes) {
 				return nil
 			}
-			c, err := api.NewTypedClient(cmdutil.ServerFromCmd(cmd), true)
-			if err != nil {
-				return err
-			}
-			_, err = api.ParseResponseRaw(c.DeleteComment(api.Ctx(), id))
-			if err != nil {
-				return err
-			}
-			output.Success(fmt.Sprintf("Deleted: %s", label))
-			return nil
+			return deleteComments(cmd, ids, rows)
 		},
 	}
 	cmd.Flags().BoolVarP(&yes, "yes", "y", false, "Skip confirmation")
 	return cmd
+}
+
+func commentBatchLabel(rows []map[string]any, idCount int) string {
+	if len(rows) == 1 {
+		return commentLabelFromRow(rows[0])
+	}
+	if len(rows) > 1 {
+		return fmt.Sprintf("%d comments", len(rows))
+	}
+	if idCount == 1 {
+		return "this comment"
+	}
+	return fmt.Sprintf("%d comments", idCount)
+}
+
+func deleteComments(cmd *cobra.Command, ids []string, rows []map[string]any) error {
+	c, err := api.NewTypedClient(cmdutil.ServerFromCmd(cmd), true)
+	if err != nil {
+		return err
+	}
+	body := openapi.DeleteApiCommentsBatchJSONRequestBody{Ids: ids}
+	data, err := api.ParseResponseRaw(c.DeleteApiCommentsBatch(api.Ctx(), body))
+	if err != nil {
+		return err
+	}
+	return reportCommentBatchResults(data, rows)
+}
+
+func reportCommentBatchResults(data any, rows []map[string]any) error {
+	labels := make(map[string]string, len(rows))
+	for _, row := range rows {
+		id, _ := row["id"].(string)
+		if id != "" {
+			labels[id] = commentLabelFromRow(row)
+		}
+	}
+
+	m, ok := data.(map[string]any)
+	if !ok {
+		return fmt.Errorf("unexpected batch response format")
+	}
+	results, _ := m["results"].([]any)
+
+	var failures []string
+	for _, r := range results {
+		result, ok := r.(map[string]any)
+		if !ok {
+			continue
+		}
+		id, _ := result["id"].(string)
+		success, _ := result["success"].(bool)
+		if success {
+			label := labels[id]
+			if label == "" {
+				label = "comment " + id
+			}
+			output.Success(fmt.Sprintf("Deleted: %s", label))
+			continue
+		}
+		if errMap, ok := result["error"].(map[string]any); ok {
+			msg, _ := errMap["message"].(string)
+			failures = append(failures, fmt.Sprintf("%s: %s", id, msg))
+		} else {
+			failures = append(failures, id)
+		}
+	}
+
+	if len(failures) > 0 {
+		return fmt.Errorf("failed to delete %d comment(s):\n%s", len(failures), strings.Join(failures, "\n"))
+	}
+	return nil
 }
 
 func newCmdReact() *cobra.Command {

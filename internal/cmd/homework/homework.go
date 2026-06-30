@@ -745,18 +745,20 @@ func newCmdDelete() *cobra.Command {
 func newCmdComplete() *cobra.Command {
 	var undo bool
 	cmd := &cobra.Command{
-		Use:     "done [homework-id]",
+		Use:     "done [homework-id]...",
 		Aliases: []string{"complete", "finish"},
-		Short:   "Mark homework as complete",
-		Long:    "Mark homework as complete. When run interactively without an ID, shows matching homeworks and lets you pick one.",
-		Args:    cobra.MaximumNArgs(1),
+		Short:   "Mark homework(s) as complete",
+		Long:    "Mark one or more homeworks as complete. When run interactively without IDs, shows matching homeworks and lets you pick one.",
+		Args:    cobra.ArbitraryArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			id := ""
-			var row map[string]any
-			if len(args) == 1 {
-				id = strings.TrimSpace(args[0])
-			}
-			if id == "" {
+			var ids []string
+			var rows []map[string]any
+			if len(args) > 0 {
+				ids = make([]string, len(args))
+				for i, arg := range args {
+					ids[i] = strings.TrimSpace(arg)
+				}
+			} else {
 				if !cmdutil.IsInteractive() {
 					return fmt.Errorf("homework id is required in non-interactive mode")
 				}
@@ -773,31 +775,83 @@ func newCmdComplete() *cobra.Command {
 				if picked == nil {
 					return nil
 				}
-				id, _ = picked["id"].(string)
-				row = picked
+				id, _ := picked["id"].(string)
+				ids = []string{id}
+				rows = []map[string]any{picked}
 			}
-			return setHomeworkCompleted(cmd, id, row, !undo)
+			return setHomeworksCompleted(cmd, ids, rows, !undo)
 		},
 	}
 	cmd.Flags().BoolVar(&undo, "undo", false, "Mark as not completed")
 	return cmd
 }
 
-func setHomeworkCompleted(cmd *cobra.Command, id string, row map[string]any, completed bool) error {
+func setHomeworksCompleted(cmd *cobra.Command, ids []string, rows []map[string]any, completed bool) error {
 	c, err := api.NewTypedClient(cmdutil.ServerFromCmd(cmd), true)
 	if err != nil {
 		return err
 	}
-	body := openapi.SetHomeworkCompletionJSONRequestBody{Completed: completed}
-	_, err = api.ParseResponseRaw(c.SetHomeworkCompletion(api.Ctx(), id, body))
+	items := make([]struct {
+		Completed  bool   `json:"completed"`
+		HomeworkId string `json:"homeworkId"`
+	}, len(ids))
+	for i, id := range ids {
+		items[i].Completed = completed
+		items[i].HomeworkId = id
+	}
+	body := openapi.PutApiHomeworksCompletionsJSONRequestBody{Items: items}
+	data, err := api.ParseResponseRaw(c.PutApiHomeworksCompletions(api.Ctx(), body))
 	if err != nil {
 		return err
 	}
-	label := homeworkTitleFromRow(row)
-	if completed {
-		output.Success(fmt.Sprintf("Completed: %s", label))
-	} else {
-		output.Success(fmt.Sprintf("Reopened: %s", label))
+	return reportHomeworkBatchResults(data, rows, completed)
+}
+
+func reportHomeworkBatchResults(data any, rows []map[string]any, completed bool) error {
+	labels := make(map[string]string, len(rows))
+	for _, row := range rows {
+		id, _ := row["id"].(string)
+		if id != "" {
+			labels[id] = homeworkTitleFromRow(row)
+		}
+	}
+
+	m, ok := data.(map[string]any)
+	if !ok {
+		return fmt.Errorf("unexpected batch response format")
+	}
+	results, _ := m["results"].([]any)
+
+	var failures []string
+	for _, r := range results {
+		result, ok := r.(map[string]any)
+		if !ok {
+			continue
+		}
+		id, _ := result["homeworkId"].(string)
+		success, _ := result["success"].(bool)
+		if success {
+			label := labels[id]
+			if label == "" {
+				label = id
+			}
+			if completed {
+				output.Success(fmt.Sprintf("Completed: %s", label))
+			} else {
+				output.Success(fmt.Sprintf("Reopened: %s", label))
+			}
+			continue
+		}
+		if errMap, ok := result["error"].(map[string]any); ok {
+			msg, _ := errMap["message"].(string)
+			failures = append(failures, fmt.Sprintf("%s: %s", id, msg))
+		} else {
+			failures = append(failures, id)
+		}
+	}
+
+	if len(failures) > 0 {
+		return fmt.Errorf("failed to update %d homework(s):\n%s", len(failures), strings.Join(failures, "\n"))
 	}
 	return nil
 }
