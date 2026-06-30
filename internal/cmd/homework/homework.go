@@ -132,29 +132,39 @@ func newCmdSectionCreate() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			body := openapi.CreateHomeworkJSONRequestBody{
-				SectionId: sectionID,
+			sectionId := openapi.HomeworkCreateRequestSchema_0_SectionId{}
+			_ = sectionId.FromHomeworkCreateRequestSchema0SectionId0(sectionID)
+			schemaBody := openapi.HomeworkCreateRequestSchema0{
+				SectionId: sectionId,
 				Title:     title,
 			}
 			if desc != "" {
-				body.Description = &desc
+				schemaBody.Description = &desc
 			}
 			if publishedAt != "" {
-				body.PublishedAt = &publishedAt
+				publishedAtUnion := openapi.HomeworkCreateRequestSchema_0_PublishedAt{}
+				_ = publishedAtUnion.FromHomeworkCreateRequestSchema0PublishedAt0(publishedAt)
+				schemaBody.PublishedAt = &publishedAtUnion
 			}
 			if submissionStart != "" {
-				body.SubmissionStartAt = &submissionStart
+				submissionStartUnion := openapi.HomeworkCreateRequestSchema_0_SubmissionStartAt{}
+				_ = submissionStartUnion.FromHomeworkCreateRequestSchema0SubmissionStartAt0(submissionStart)
+				schemaBody.SubmissionStartAt = &submissionStartUnion
 			}
 			if submissionDue != "" {
-				body.SubmissionDueAt = &submissionDue
+				submissionDueUnion := openapi.HomeworkCreateRequestSchema_0_SubmissionDueAt{}
+				_ = submissionDueUnion.FromHomeworkCreateRequestSchema0SubmissionDueAt0(submissionDue)
+				schemaBody.SubmissionDueAt = &submissionDueUnion
 			}
 			if major {
-				body.IsMajor = &major
+				schemaBody.IsMajor = &major
 			}
 			if requiresTeam {
-				body.RequiresTeam = &requiresTeam
+				schemaBody.RequiresTeam = &requiresTeam
 			}
-			data, err := api.ParseResponseRaw(c.CreateHomework(api.Ctx(), nil, body))
+			body := openapi.CreateHomeworkJSONRequestBody{}
+			_ = body.FromHomeworkCreateRequestSchema0(schemaBody)
+			data, err := api.ParseResponseRaw(c.CreateHomework(api.Ctx(), body))
 			if err != nil {
 				return err
 			}
@@ -625,15 +635,21 @@ func newCmdUpdate() *cobra.Command {
 				hasUpdate = true
 			}
 			if publishedAt != "" {
-				body.PublishedAt = &publishedAt
+				publishedAtUnion := openapi.HomeworkUpdateRequestSchema_PublishedAt{}
+				_ = publishedAtUnion.FromHomeworkUpdateRequestSchemaPublishedAt0(publishedAt)
+				body.PublishedAt = &publishedAtUnion
 				hasUpdate = true
 			}
 			if submissionStart != "" {
-				body.SubmissionStartAt = &submissionStart
+				submissionStartUnion := openapi.HomeworkUpdateRequestSchema_SubmissionStartAt{}
+				_ = submissionStartUnion.FromHomeworkUpdateRequestSchemaSubmissionStartAt0(submissionStart)
+				body.SubmissionStartAt = &submissionStartUnion
 				hasUpdate = true
 			}
 			if submissionDue != "" {
-				body.SubmissionDueAt = &submissionDue
+				submissionDueUnion := openapi.HomeworkUpdateRequestSchema_SubmissionDueAt{}
+				_ = submissionDueUnion.FromHomeworkUpdateRequestSchemaSubmissionDueAt0(submissionDue)
+				body.SubmissionDueAt = &submissionDueUnion
 				hasUpdate = true
 			}
 			if major {
@@ -714,7 +730,7 @@ func newCmdDelete() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			_, err = api.ParseResponseRaw(c.DeleteHomework(api.Ctx(), id, openapi.DeleteHomeworkJSONRequestBody{}))
+			_, err = api.ParseResponseRaw(c.DeleteHomework(api.Ctx(), id))
 			if err != nil {
 				return err
 			}

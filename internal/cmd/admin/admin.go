@@ -99,11 +99,15 @@ func newCmdUserUpdate() *cobra.Command {
 			reqBody := openapi.UpdateAdminUserJSONRequestBody{}
 			hasUpdate := false
 			if name != "" {
-				reqBody.Name = &name
+				nameUnion := openapi.AdminUpdateUserRequestSchema_Name{}
+				_ = nameUnion.FromAdminUpdateUserRequestSchemaName1(openapi.AdminUpdateUserRequestSchemaName1(name))
+				reqBody.Name = &nameUnion
 				hasUpdate = true
 			}
 			if username != "" {
-				reqBody.Username = &username
+				usernameUnion := openapi.AdminUpdateUserRequestSchema_Username{}
+				_ = usernameUnion.FromAdminUpdateUserRequestSchemaUsername1(openapi.AdminUpdateUserRequestSchemaUsername1(username))
+				reqBody.Username = &usernameUnion
 				hasUpdate = true
 			}
 			if admin {
@@ -193,7 +197,9 @@ func newCmdSuspensionCreate() *cobra.Command {
 				reqBody.Note = &note
 			}
 			if expiresAt != "" {
-				reqBody.ExpiresAt = &expiresAt
+				expiresAtUnion := openapi.AdminCreateSuspensionRequestSchema_ExpiresAt{}
+				_ = expiresAtUnion.FromAdminCreateSuspensionRequestSchemaExpiresAt1(openapi.AdminCreateSuspensionRequestSchemaExpiresAt1(expiresAt))
+				reqBody.ExpiresAt = &expiresAtUnion
 			}
 			_, err = api.ParseResponseRaw(c.CreateAdminSuspension(api.Ctx(), reqBody))
 			if err != nil {

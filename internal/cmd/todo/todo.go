@@ -75,11 +75,11 @@ func runTodoList(cmd *cobra.Command, opts todoListOpts) error {
 		return fmt.Errorf("--done and --pending cannot be used together")
 	}
 	if opts.done {
-		v := openapi.ListTodosParamsCompletedTrue
+		v := openapi.True
 		params.Completed = &v
 	}
 	if opts.pending {
-		v := openapi.ListTodosParamsCompletedFalse
+		v := openapi.False
 		params.Completed = &v
 	}
 	if opts.priority != "" {
@@ -94,14 +94,16 @@ func runTodoList(cmd *cobra.Command, opts todoListOpts) error {
 		if err != nil {
 			return fmt.Errorf("invalid --before date: %w", err)
 		}
-		params.DueBefore = &t
+		s := t.Format(time.RFC3339)
+		params.DueBefore = &s
 	}
 	if opts.after != "" {
 		t, err := timeutil.ParseUserDateTime(opts.after, false)
 		if err != nil {
 			return fmt.Errorf("invalid --after date: %w", err)
 		}
-		params.DueAfter = &t
+		s := t.Format(time.RFC3339)
+		params.DueAfter = &s
 	}
 
 	data, err := api.ParseResponseRaw(c.ListTodos(api.Ctx(), params))
@@ -291,11 +293,11 @@ func fetchTodoPickList(cmd *cobra.Command, opts todoListOpts) ([]map[string]any,
 	}
 	params := &openapi.ListTodosParams{}
 	if opts.done {
-		v := openapi.ListTodosParamsCompletedTrue
+		v := openapi.True
 		params.Completed = &v
 	}
 	if opts.pending {
-		v := openapi.ListTodosParamsCompletedFalse
+		v := openapi.False
 		params.Completed = &v
 	}
 	data, err := api.ParseResponseRaw(c.ListTodos(api.Ctx(), params))
@@ -404,9 +406,11 @@ func newCmdCreate() *cobra.Command {
 				body.Priority = &p
 			}
 			if due != "" {
-				body.DueAt = &due
+				dueAt := openapi.TodoCreateRequestSchema_DueAt{}
+				_ = dueAt.FromTodoCreateRequestSchemaDueAt1(openapi.TodoCreateRequestSchemaDueAt1(due))
+				body.DueAt = &dueAt
 			}
-			data, err := api.ParseResponseRaw(c.CreateTodo(api.Ctx(), nil, body))
+			data, err := api.ParseResponseRaw(c.CreateTodo(api.Ctx(), body))
 			if err != nil {
 				return err
 			}
@@ -535,7 +539,9 @@ func newCmdUpdate() *cobra.Command {
 				hasUpdate = true
 			}
 			if due != "" {
-				body.DueAt = &due
+				dueAt := openapi.TodoUpdateRequestSchema_DueAt{}
+				_ = dueAt.FromTodoUpdateRequestSchemaDueAt1(openapi.TodoUpdateRequestSchemaDueAt1(due))
+				body.DueAt = &dueAt
 				hasUpdate = true
 			}
 			if completed && notCompleted {
@@ -609,7 +615,7 @@ func newCmdDelete() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			_, err = api.ParseResponseRaw(c.DeleteTodo(api.Ctx(), id, openapi.DeleteTodoJSONRequestBody{}))
+			_, err = api.ParseResponseRaw(c.DeleteTodo(api.Ctx(), id))
 			if err != nil {
 				return err
 			}

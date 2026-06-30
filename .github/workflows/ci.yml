@@ -18,15 +18,12 @@ jobs:
       - name: Checkout server OpenAPI source
         uses: actions/checkout@v4
         with:
-          repository: Life-USTC/server-nextjs
-          path: server-nextjs
+          repository: Life-USTC/server
+          path: server
 
       - uses: actions/setup-go@v5
         with:
           go-version-file: go.mod
-
-      - name: OpenAPI spec is synced with server
-        run: make check-openapi-sync OPENAPI_SOURCE=server-nextjs/public/openapi.generated.json
 
       - name: Build
         run: make build
@@ -34,8 +31,10 @@ jobs:
       - name: Test
         run: make test
 
-      - name: Generated files are current
-        run: make generate && git diff --exit-code
+      - name: Check generated code is up-to-date
+        run: |
+          make sync-openapi generate
+          git diff --exit-code
 
   lint:
     runs-on: ubuntu-latest

@@ -104,7 +104,8 @@ func newCmdFile() *cobra.Command {
 			}
 
 			// Step 1: Create upload
-			size := fmt.Sprintf("%d", stat.Size())
+			size := openapi.UploadCreateRequestSchema_Size{}
+			_ = size.FromUploadCreateRequestSchemaSize0(fmt.Sprintf("%d", stat.Size()))
 			reqBody := openapi.CreateUploadJSONRequestBody{
 				Filename: filepath.Base(filePath),
 				Size:     size,
@@ -226,7 +227,7 @@ func newCmdDelete() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			_, err = api.ParseResponseRaw(c.DeleteUploadWithBody(api.Ctx(), id, "application/json", strings.NewReader("{}")))
+			_, err = api.ParseResponseRaw(c.DeleteUpload(api.Ctx(), id))
 			if err != nil {
 				return err
 			}

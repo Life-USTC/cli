@@ -64,7 +64,7 @@ func runDescriptionGet(cmd *cobra.Command, targetType, targetID string, includeH
 	}
 	params := &openapi.GetDescriptionParams{
 		TargetType: openapi.GetDescriptionParamsTargetType(targetType),
-		TargetId:   targetID,
+		TargetId:   &targetID,
 	}
 	data, err := api.ParseResponseRaw(c.GetDescription(api.Ctx(), params))
 	if err != nil {
@@ -81,16 +81,14 @@ func runDescriptionSet(cmd *cobra.Command, targetType, targetID, content string)
 	if err != nil {
 		return err
 	}
-	params := &openapi.UpsertDescriptionParams{
-		TargetType: openapi.UpsertDescriptionParamsTargetType(targetType),
-		TargetId:   targetID,
-	}
+	targetIdUnion := openapi.DescriptionUpsertRequestSchema_TargetId{}
+	_ = targetIdUnion.FromDescriptionUpsertRequestSchemaTargetId0(targetID)
 	reqBody := openapi.UpsertDescriptionJSONRequestBody{
 		TargetType: openapi.DescriptionUpsertRequestSchemaTargetType(targetType),
-		TargetId:   targetID,
+		TargetId:   &targetIdUnion,
 		Content:    content,
 	}
-	data, err := api.ParseResponseRaw(c.UpsertDescription(api.Ctx(), params, reqBody))
+	data, err := api.ParseResponseRaw(c.UpsertDescription(api.Ctx(), reqBody))
 	if err != nil {
 		return err
 	}
