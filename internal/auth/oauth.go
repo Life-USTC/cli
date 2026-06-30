@@ -124,7 +124,29 @@ func parseIntString(s string) (int64, error) {
 	return strconv.ParseInt(s, 10, 64)
 }
 
-func verifiedTokenToCredential(clientID, audience string, vt *VerifiedToken, fallbackRefresh, fallbackScope string, now time.Time) (*config.Credential, error) {
+// scopeIncludes reports whether a space-delimited OAuth scope contains value.
+func scopeIncludes(scope, value string) bool {
+	for _, s := range strings.Fields(scope) {
+		if s == value {
+			return true
+		}
+	}
+	return false
+}
+
+// requireIDTokenForOpenID returns an error when the openid scope was requested
+// but the token response does not contain an ID token.
+func requireIDTokenForOpenID(scope, idToken string) error {
+	if scopeIncludes(scope, "openid") && strings.TrimSpace(idToken) == "" {
+		return errors.New("openid scope requested but token response missing id_token")
+	}
+	return nil
+}
+
+func verifiedTokenToCredential(clientID, resource string, vt *VerifiedToken, fallbackRefresh, fallbackScope string, now time.Time) (*config.Credential, error) {
+	if vt == nil {
+		return nil, errors.New("token response is nil")
+	}
 	accessToken := strings.TrimSpace(vt.AccessToken)
 	if accessToken == "" {
 		return nil, errors.New("token response missing access_token")
@@ -148,7 +170,7 @@ func verifiedTokenToCredential(clientID, audience string, vt *VerifiedToken, fal
 		TokenType:    strings.TrimSpace(vt.TokenType),
 		ExpiresAt:    float64(now.Add(time.Duration(expiresIn) * time.Second).Unix()),
 		Scope:        scope,
-		Resource:     audience,
+		Resource:     resource,
 	}, nil
 }
 
