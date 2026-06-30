@@ -1,12 +1,16 @@
 package auth
 
-import "testing"
+import (
+	"testing"
+	"time"
+)
 
-func TestCredentialFromTokensUsesFallbacks(t *testing.T) {
-	cred, err := credentialFromTokens("client", "https://example.test", map[string]any{
-		"access_token": "access",
-		"expires_in":   float64(120),
-	}, "refresh", "openid")
+func TestVerifiedTokenToCredentialUsesFallbacks(t *testing.T) {
+	vt := &VerifiedToken{
+		AccessToken: "access",
+		ExpiresIn:   120,
+	}
+	cred, err := verifiedTokenToCredential("client", "https://example.test", vt, "refresh", "openid", time.Now())
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -16,10 +20,14 @@ func TestCredentialFromTokensUsesFallbacks(t *testing.T) {
 	if cred.ExpiresAt == 0 {
 		t.Fatal("ExpiresAt was not populated")
 	}
+	if cred.Resource != "https://example.test" {
+		t.Fatalf("resource = %q, want %q", cred.Resource, "https://example.test")
+	}
 }
 
-func TestCredentialFromTokensRequiresAccessToken(t *testing.T) {
-	if _, err := credentialFromTokens("client", "resource", map[string]any{}, "", ""); err == nil {
+func TestVerifiedTokenToCredentialRequiresAccessToken(t *testing.T) {
+	vt := &VerifiedToken{}
+	if _, err := verifiedTokenToCredential("client", "resource", vt, "", "", time.Now()); err == nil {
 		t.Fatal("expected missing access token error")
 	}
 }
