@@ -114,25 +114,6 @@ func runCommentCreate(cmd *cobra.Command, target commentTarget, body, visibility
 	if err != nil {
 		return err
 	}
-	params := &openapi.CreateCommentParams{
-		TargetType: openapi.CreateCommentParamsTargetType(target.targetType),
-	}
-	if target.targetID != "" {
-		params.TargetId = &target.targetID
-	}
-	if target.sectionID != "" {
-		params.SectionId, err = cmdutil.Int64PtrIfSet(target.sectionID)
-		if err != nil {
-			return err
-		}
-	}
-	if target.teacherID != "" {
-		params.TeacherId, err = cmdutil.Int64PtrIfSet(target.teacherID)
-		if err != nil {
-			return err
-		}
-	}
-
 	vis := openapi.CommentCreateRequestSchemaVisibility(visibility)
 	reqBody := openapi.CreateCommentJSONRequestBody{
 		TargetType:  openapi.CommentCreateRequestSchemaTargetType(target.targetType),
@@ -141,19 +122,25 @@ func runCommentCreate(cmd *cobra.Command, target commentTarget, body, visibility
 		IsAnonymous: &anonymous,
 	}
 	if target.targetID != "" {
-		reqBody.TargetId = &target.targetID
+		targetId := openapi.CommentCreateRequestSchema_TargetId{}
+		_ = targetId.FromCommentCreateRequestSchemaTargetId0(target.targetID)
+		reqBody.TargetId = &targetId
 	}
 	if target.sectionID != "" {
-		reqBody.SectionId = &target.sectionID
+		sectionId := openapi.CommentCreateRequestSchema_SectionId{}
+		_ = sectionId.FromCommentCreateRequestSchemaSectionId0(target.sectionID)
+		reqBody.SectionId = &sectionId
 	}
 	if target.teacherID != "" {
-		reqBody.TeacherId = &target.teacherID
+		teacherId := openapi.CommentCreateRequestSchema_TeacherId{}
+		_ = teacherId.FromCommentCreateRequestSchemaTeacherId0(target.teacherID)
+		reqBody.TeacherId = &teacherId
 	}
 	if parentID != "" {
 		reqBody.ParentId = &parentID
 	}
 
-	data, err := api.ParseResponseRaw(c.CreateComment(api.Ctx(), params, reqBody))
+	data, err := api.ParseResponseRaw(c.CreateComment(api.Ctx(), reqBody))
 	if err != nil {
 		return err
 	}
@@ -454,7 +441,7 @@ func newCmdDelete() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			_, err = api.ParseResponseRaw(c.DeleteCommentWithBody(api.Ctx(), id, "application/json", strings.NewReader("{}")))
+			_, err = api.ParseResponseRaw(c.DeleteComment(api.Ctx(), id))
 			if err != nil {
 				return err
 			}
@@ -482,10 +469,7 @@ func newCmdReact() *cobra.Command {
 				params := &openapi.RemoveCommentReactionParams{
 					Type: openapi.RemoveCommentReactionParamsType(reactionType),
 				}
-				body := openapi.RemoveCommentReactionJSONRequestBody{
-					Type: openapi.CommentReactionRequestSchemaType(reactionType),
-				}
-				_, err = api.ParseResponseRaw(c.RemoveCommentReaction(api.Ctx(), args[0], params, body))
+				_, err = api.ParseResponseRaw(c.RemoveCommentReaction(api.Ctx(), args[0], params))
 				if err != nil {
 					return err
 				}

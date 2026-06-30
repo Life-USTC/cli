@@ -70,14 +70,16 @@ func runScheduleList(cmd *cobra.Command, opts scheduleListOpts) error {
 		if err != nil {
 			return fmt.Errorf("invalid --date-from: %w", err)
 		}
-		params.DateFrom = &t
+		s := t.Format(time.DateOnly)
+		params.DateFrom = &s
 	}
 	if opts.dateTo != "" {
 		t, err := time.Parse(time.DateOnly, opts.dateTo)
 		if err != nil {
 			return fmt.Errorf("invalid --date-to: %w", err)
 		}
-		params.DateTo = &t
+		s := t.Format(time.DateOnly)
+		params.DateTo = &s
 	}
 	if opts.weekday > 0 {
 		params.Weekday = cmdutil.Int64PtrIfPositive(opts.weekday)

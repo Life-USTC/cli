@@ -42,6 +42,15 @@ type schoolSyncSource struct {
 	Client  *ustcschool.Client
 }
 
+func newMatchSectionCodesBody(codes []string, semesterID string) openapi.MatchSectionCodesJSONRequestBody {
+	semesterIDUnion := openapi.MatchSectionCodesRequestSchema_SemesterId{}
+	_ = semesterIDUnion.FromMatchSectionCodesRequestSchemaSemesterId0(semesterID)
+	return openapi.MatchSectionCodesJSONRequestBody{
+		Codes:      codes,
+		SemesterId: &semesterIDUnion,
+	}
+}
+
 func NewCmdSchool() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "school",
@@ -497,10 +506,7 @@ func newCmdSchoolSync() *cobra.Command {
 					continue
 				}
 
-				matchRaw, err := api.ParseResponseRaw(apiClient.MatchSectionCodes(cmd.Context(), openapi.MatchSectionCodesJSONRequestBody{
-					Codes:      codes,
-					SemesterId: &lifeSemesterID,
-				}))
+				matchRaw, err := api.ParseResponseRaw(apiClient.MatchSectionCodes(cmd.Context(), newMatchSectionCodesBody(codes, lifeSemesterID)))
 				if err != nil {
 					return err
 				}
@@ -1019,10 +1025,7 @@ func homeworkSectionsByCode(cmd *cobra.Command, apiClient *api.TypedClient, life
 	out := map[string]map[string]any{}
 	for lifeSemesterID, codes := range codesByLifeSemester {
 		codes = uniqueStrings(codes)
-		matchRaw, err := api.ParseResponseRaw(apiClient.MatchSectionCodes(cmd.Context(), openapi.MatchSectionCodesJSONRequestBody{
-			Codes:      codes,
-			SemesterId: &lifeSemesterID,
-		}))
+		matchRaw, err := api.ParseResponseRaw(apiClient.MatchSectionCodes(cmd.Context(), newMatchSectionCodesBody(codes, lifeSemesterID)))
 		if err != nil {
 			return nil, err
 		}
@@ -1112,10 +1115,7 @@ func homeworkSectionsByCourse(cmd *cobra.Command, apiClient *api.TypedClient, so
 		if firstLifeSemester == nil {
 			firstLifeSemester = lifeSemester
 		}
-		matchRaw, err := api.ParseResponseRaw(apiClient.MatchSectionCodes(cmd.Context(), openapi.MatchSectionCodesJSONRequestBody{
-			Codes:      codes,
-			SemesterId: &lifeSemesterID,
-		}))
+		matchRaw, err := api.ParseResponseRaw(apiClient.MatchSectionCodes(cmd.Context(), newMatchSectionCodesBody(codes, lifeSemesterID)))
 		if err != nil {
 			return ustcschool.Semester{}, nil, nil, err
 		}
@@ -1230,17 +1230,25 @@ func fetchLifeHomeworksForSection(cmd *cobra.Command, apiClient *api.TypedClient
 }
 
 func createLifeHomework(cmd *cobra.Command, apiClient *api.TypedClient, sectionID string, item ustcschool.HomeworkItem) (map[string]any, error) {
-	body := openapi.CreateHomeworkJSONRequestBody{
-		SectionId: sectionID,
+	sectionIdUnion := openapi.HomeworkCreateRequestSchema_0_SectionId{}
+	_ = sectionIdUnion.FromHomeworkCreateRequestSchema0SectionId0(sectionID)
+	schemaBody := openapi.HomeworkCreateRequestSchema0{
+		SectionId: sectionIdUnion,
 		Title:     item.Title,
 	}
 	if start := lifeHomeworkTime(item.StartAt); start != "" {
-		body.SubmissionStartAt = &start
+		startUnion := openapi.HomeworkCreateRequestSchema_0_SubmissionStartAt{}
+		_ = startUnion.FromHomeworkCreateRequestSchema0SubmissionStartAt0(start)
+		schemaBody.SubmissionStartAt = &startUnion
 	}
 	if due := lifeHomeworkTime(item.EndAt); due != "" {
-		body.SubmissionDueAt = &due
+		dueUnion := openapi.HomeworkCreateRequestSchema_0_SubmissionDueAt{}
+		_ = dueUnion.FromHomeworkCreateRequestSchema0SubmissionDueAt0(due)
+		schemaBody.SubmissionDueAt = &dueUnion
 	}
-	raw, err := api.ParseResponseRaw(apiClient.CreateHomework(cmd.Context(), nil, body))
+	body := openapi.CreateHomeworkJSONRequestBody{}
+	_ = body.FromHomeworkCreateRequestSchema0(schemaBody)
+	raw, err := api.ParseResponseRaw(apiClient.CreateHomework(cmd.Context(), body))
 	if err != nil {
 		return nil, err
 	}

@@ -264,7 +264,7 @@ func newCmdSchedules() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			data, err := api.ParseResponseRaw(c.GetSectionSchedules(api.Ctx(), *jwID))
+			data, err := api.ParseResponseRaw(c.GetSectionSchedules(api.Ctx(), *jwID, &openapi.GetSectionSchedulesParams{}))
 			if err != nil {
 				return err
 			}
@@ -337,7 +337,9 @@ func newCmdMatchCodes() *cobra.Command {
 				Codes: args,
 			}
 			if semesterID != "" {
-				body.SemesterId = &semesterID
+				semesterIDUnion := openapi.MatchSectionCodesRequestSchema_SemesterId{}
+				_ = semesterIDUnion.FromMatchSectionCodesRequestSchemaSemesterId0(semesterID)
+				body.SemesterId = &semesterIDUnion
 			}
 			data, err := api.ParseResponseRaw(c.MatchSectionCodes(api.Ctx(), body))
 			if err != nil {

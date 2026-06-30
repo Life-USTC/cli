@@ -2,6 +2,7 @@ package teacher
 
 import (
 	"fmt"
+	"strconv"
 
 	"github.com/spf13/cobra"
 
@@ -155,7 +156,11 @@ func newCmdView() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			data, err := api.ParseResponseRaw(c.GetTeacher(api.Ctx(), args[0]))
+			teacherID, err := strconv.ParseInt(args[0], 10, 64)
+			if err != nil {
+				return fmt.Errorf("invalid teacher id %q: %w", args[0], err)
+			}
+			data, err := api.ParseResponseRaw(c.GetTeacher(api.Ctx(), teacherID))
 			if err != nil {
 				return err
 			}
