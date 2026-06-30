@@ -239,22 +239,30 @@ func Login(server string) (*config.Credential, error) {
 	}
 
 	vt := newVerifiedToken(tok)
+	if err := requireIDTokenForOpenID(oauthScope, vt.IDToken); err != nil {
+		return nil, err
+	}
 	issuer := stringFromMap(meta, "issuer")
 	if issuer == "" {
 		issuer = server
 	}
-	if err := vt.ValidateIDToken(issuer, server); err != nil {
+	if err := vt.ValidateIDToken(issuer, clientID); err != nil {
 		return nil, err
 	}
-	return verifiedTokenToCredential(clientID, server, vt, "", "", time.Now())
+	return verifiedTokenToCredential(clientID, server, vt, "", oauthScope, time.Now())
 }
 
 // RefreshToken attempts to refresh the access token.
 //
 // Note: oauth2.TokenSource does not expose extra refresh parameters, so the
 // original OAuth 2.0 resource indicator is not sent on refresh requests. The
-// stored resource/audience is still preserved in the returned credential and
-// used for ID token validation.
+// stored resource (server URL) is preserved in the returned credential, while
+// ID token audience validation uses the registered client_id.
+//
+// The oauth2.Token Expiry is set one hour before the stored ExpiresAt. This
+// heuristic causes oauth2.TokenSource to treat the token as expired and
+// refresh proactively, rather than risking use of an access token near its
+// boundary.
 func RefreshToken(server string, cred *config.Credential) (*config.Credential, error) {
 	server = strings.TrimRight(server, "/")
 	if cred.RefreshToken == "" {
@@ -284,16 +292,19 @@ func RefreshToken(server string, cred *config.Credential) (*config.Credential, e
 	}
 
 	vt := newVerifiedToken(tok)
+	if err := requireIDTokenForOpenID(oauthScope, vt.IDToken); err != nil {
+		return nil, err
+	}
 	issuer := stringFromMap(meta, "issuer")
 	if issuer == "" {
 		issuer = server
 	}
-	audience := cred.Resource
-	if audience == "" {
-		audience = server
+	resource := cred.Resource
+	if resource == "" {
+		resource = server
 	}
-	if err := vt.ValidateIDToken(issuer, audience); err != nil {
+	if err := vt.ValidateIDToken(issuer, cred.ClientID); err != nil {
 		return nil, err
 	}
-	return verifiedTokenToCredential(cred.ClientID, audience, vt, cred.RefreshToken, cred.Scope, time.Now())
+	return verifiedTokenToCredential(cred.ClientID, resource, vt, cred.RefreshToken, cred.Scope, time.Now())
 }

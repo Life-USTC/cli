@@ -87,12 +87,15 @@ func LoginDeviceCode(server string) (*config.Credential, error) {
 	}
 
 	vt := newVerifiedToken(tok)
+	if err := requireIDTokenForOpenID(oauthScope, vt.IDToken); err != nil {
+		return nil, err
+	}
 	issuer := stringFromMap(meta, "issuer")
 	if issuer == "" {
 		issuer = server
 	}
-	if err := vt.ValidateIDToken(issuer, server); err != nil {
+	if err := vt.ValidateIDToken(issuer, clientID); err != nil {
 		return nil, err
 	}
-	return verifiedTokenToCredential(clientID, server, vt, "", "", time.Now())
+	return verifiedTokenToCredential(clientID, server, vt, "", oauthScope, time.Now())
 }
