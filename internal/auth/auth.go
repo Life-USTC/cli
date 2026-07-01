@@ -82,12 +82,16 @@ func randomState() (string, error) {
 func discoverOAuthMetadata(server string) (map[string]any, error) {
 	client := &http.Client{Timeout: 15 * time.Second}
 
+	var lastErr error
 	for _, path := range []string{
+		"/.well-known/oauth-authorization-server/api/auth",
+		"/api/auth/.well-known/openid-configuration",
 		"/.well-known/oauth-authorization-server",
 		"/.well-known/openid-configuration",
 	} {
 		resp, err := client.Get(strings.TrimRight(server, "/") + path)
 		if err != nil {
+			lastErr = fmt.Errorf("%s: %w", path, err)
 			continue
 		}
 		if resp.StatusCode == 200 {
@@ -95,13 +99,26 @@ func discoverOAuthMetadata(server string) (map[string]any, error) {
 			decodeErr := json.NewDecoder(resp.Body).Decode(&meta)
 			_ = resp.Body.Close()
 			if decodeErr != nil {
+				lastErr = fmt.Errorf("%s: decode metadata: %w", path, decodeErr)
 				continue
 			}
 			return meta, nil
 		}
+		body, _ := io.ReadAll(resp.Body)
+		lastErr = fmt.Errorf("%s returned %d: %s", path, resp.StatusCode, strings.TrimSpace(string(body)))
 		_ = resp.Body.Close()
 	}
+	if lastErr != nil {
+		return nil, fmt.Errorf("could not discover OAuth metadata from %s: %w", server, lastErr)
+	}
 	return nil, fmt.Errorf("could not discover OAuth metadata from %s", server)
+}
+
+func oauthResource(server string, meta map[string]any) string {
+	if issuer := strings.TrimRight(stringFromMap(meta, "issuer"), "/"); issuer != "" {
+		return issuer
+	}
+	return strings.TrimRight(server, "/")
 }
 
 func registerPublicClient(endpoint string, redirectURIs, grantTypes, responseTypes []string) (map[string]any, error) {
@@ -172,6 +189,7 @@ func Login(server string) (*config.Credential, error) {
 	if regEndpoint == "" {
 		return nil, fmt.Errorf("server does not advertise a registration_endpoint")
 	}
+	resource := oauthResource(server, meta)
 
 	// Start local callback server
 	listener, err := net.Listen("tcp", "127.0.0.1:0")
@@ -213,7 +231,7 @@ func Login(server string) (*config.Credential, error) {
 	authURL := conf.AuthCodeURL(state,
 		oauth2.SetAuthURLParam("code_challenge", challenge),
 		oauth2.SetAuthURLParam("code_challenge_method", "S256"),
-		oauth2.SetAuthURLParam("resource", server),
+		oauth2.SetAuthURLParam("resource", resource),
 	)
 
 	// Channel for callback result
@@ -265,7 +283,7 @@ func Login(server string) (*config.Credential, error) {
 
 	tok, err := conf.Exchange(ctx, result.code,
 		oauth2.VerifierOption(verifier),
-		oauth2.SetAuthURLParam("resource", server),
+		oauth2.SetAuthURLParam("resource", resource),
 	)
 	if err != nil {
 		return nil, fmt.Errorf("token exchange failed: %w", err)
@@ -282,14 +300,14 @@ func Login(server string) (*config.Credential, error) {
 	if err := vt.ValidateIDToken(issuer, clientID); err != nil {
 		return nil, err
 	}
-	return verifiedTokenToCredential(clientID, server, vt, "", oauthScope, time.Now())
+	return verifiedTokenToCredential(clientID, resource, vt, "", oauthScope, time.Now())
 }
 
 // RefreshToken attempts to refresh the access token.
 //
 // Note: oauth2.TokenSource does not expose extra refresh parameters, so the
 // original OAuth 2.0 resource indicator is not sent on refresh requests. The
-// stored resource (server URL) is preserved in the returned credential, while
+// returned credential stores the current issuer resource from metadata, while
 // ID token audience validation uses the registered client_id.
 //
 // The oauth2.Token Expiry is set one hour before the stored ExpiresAt. This
@@ -332,10 +350,7 @@ func RefreshToken(server string, cred *config.Credential) (*config.Credential, e
 	if issuer == "" {
 		issuer = server
 	}
-	resource := cred.Resource
-	if resource == "" {
-		resource = server
-	}
+	resource := oauthResource(server, meta)
 	if err := vt.ValidateIDToken(issuer, cred.ClientID); err != nil {
 		return nil, err
 	}

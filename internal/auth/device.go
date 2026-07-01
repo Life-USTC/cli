@@ -33,6 +33,7 @@ func LoginDeviceCode(server string) (*config.Credential, error) {
 	if regEndpoint == "" {
 		return nil, fmt.Errorf("server does not advertise a registration_endpoint")
 	}
+	resource := oauthResource(server, meta)
 
 	// Register client
 	clientInfo, err := registerPublicClient(
@@ -56,7 +57,7 @@ func LoginDeviceCode(server string) (*config.Credential, error) {
 	}
 
 	ctx := oauth2Context(context.Background(), &http.Client{Timeout: 15 * time.Second})
-	res, err := conf.DeviceAuth(ctx, oauth2.SetAuthURLParam("resource", server))
+	res, err := conf.DeviceAuth(ctx, oauth2.SetAuthURLParam("resource", resource))
 	if err != nil {
 		return nil, fmt.Errorf("device authorization request failed: %w", err)
 	}
@@ -81,7 +82,7 @@ func LoginDeviceCode(server string) (*config.Credential, error) {
 
 	fmt.Println("Waiting for authorization...")
 
-	tok, err := conf.DeviceAccessToken(ctx, res, oauth2.SetAuthURLParam("resource", server))
+	tok, err := conf.DeviceAccessToken(ctx, res, oauth2.SetAuthURLParam("resource", resource))
 	if err != nil {
 		return nil, fmt.Errorf("device authorization failed: %w", err)
 	}
@@ -97,5 +98,5 @@ func LoginDeviceCode(server string) (*config.Credential, error) {
 	if err := vt.ValidateIDToken(issuer, clientID); err != nil {
 		return nil, err
 	}
-	return verifiedTokenToCredential(clientID, server, vt, "", oauthScope, time.Now())
+	return verifiedTokenToCredential(clientID, resource, vt, "", oauthScope, time.Now())
 }
