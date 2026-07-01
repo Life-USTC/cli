@@ -167,6 +167,12 @@ func TestApplyJQErrors(t *testing.T) {
 	if err := ApplyJQ([]any{1, 2, 3}, ".[]"); err != nil {
 		t.Errorf("array iteration expr returned error: %v", err)
 	}
+	if err := ApplyJQ([]struct {
+		ID   int    `json:"id"`
+		Name string `json:"name"`
+	}{{ID: 1, Name: "one"}}, "length"); err != nil {
+		t.Errorf("typed struct slice expr returned error: %v", err)
+	}
 	if err := ApplyJQ(data, ".invalid-["); err == nil {
 		t.Error("invalid expr returned nil error")
 	}
