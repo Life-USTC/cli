@@ -309,7 +309,6 @@ func Login(server string) (*config.Credential, error) {
 	authURL := conf.AuthCodeURL(state,
 		oauth2.SetAuthURLParam("code_challenge", challenge),
 		oauth2.SetAuthURLParam("code_challenge_method", "S256"),
-		oauth2.SetAuthURLParam("resource", resource),
 	)
 
 	// Channel for callback result
