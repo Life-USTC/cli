@@ -1,6 +1,7 @@
 package upload
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"net/http"
@@ -118,29 +119,29 @@ func newCmdFile() *cobra.Command {
 				return err
 			}
 			cm := cmdutil.AsMap(createResp)
-			uploadURL, _ := cm["url"].(string)
 			uploadKey, _ := cm["key"].(string)
 
-			if uploadURL == "" {
-				return fmt.Errorf("server did not return an upload URL")
+			if uploadKey == "" {
+				return fmt.Errorf("server did not return an upload key")
 			}
 
-			// Step 2: PUT to S3
-			req, err := http.NewRequest("PUT", uploadURL, f)
-			if err != nil {
-				return err
-			}
-			req.Header.Set("Content-Type", contentType)
-			req.ContentLength = stat.Size()
-
-			httpClient := &http.Client{}
-			resp, err := httpClient.Do(req)
+			// Step 2: PUT through the authenticated object upload endpoint.
+			resp, err := c.PutApiUploadsObjectWithBody(
+				api.Ctx(),
+				&openapi.PutApiUploadsObjectParams{Key: uploadKey},
+				contentType,
+				f,
+				func(_ context.Context, req *http.Request) error {
+					req.ContentLength = stat.Size()
+					return nil
+				},
+			)
 			if err != nil {
 				return err
 			}
 			_ = resp.Body.Close()
 			if resp.StatusCode >= 400 {
-				return fmt.Errorf("S3 upload failed with status %d", resp.StatusCode)
+				return fmt.Errorf("object upload failed with status %d", resp.StatusCode)
 			}
 
 			// Step 3: Complete

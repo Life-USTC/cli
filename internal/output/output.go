@@ -72,7 +72,11 @@ func ApplyJQ(data any, expr string) error {
 	if err != nil {
 		return fmt.Errorf("invalid --jq expression: %w", err)
 	}
-	iter := query.Run(data)
+	normalized, err := normalizeJQInput(data)
+	if err != nil {
+		return err
+	}
+	iter := query.Run(normalized)
 	for {
 		v, ok := iter.Next()
 		if !ok {
@@ -92,6 +96,18 @@ func ApplyJQ(data any, expr string) error {
 		}
 	}
 	return nil
+}
+
+func normalizeJQInput(data any) (any, error) {
+	raw, err := json.Marshal(data)
+	if err != nil {
+		return nil, fmt.Errorf("prepare --jq input: %w", err)
+	}
+	var normalized any
+	if err := json.Unmarshal(raw, &normalized); err != nil {
+		return nil, fmt.Errorf("prepare --jq input: %w", err)
+	}
+	return normalized, nil
 }
 
 // --- JSON output ---
