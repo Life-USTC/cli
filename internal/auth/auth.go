@@ -12,6 +12,7 @@ import (
 	"io"
 	"net"
 	"net/http"
+	"net/url"
 	"os/exec"
 	"runtime"
 	"strings"
@@ -155,6 +156,83 @@ func registerClient(endpoint, redirectURI string) (map[string]any, error) {
 		[]string{"authorization_code", "refresh_token"},
 		[]string{"code"},
 	)
+}
+
+func refreshTokenRequest(ctx context.Context, client *http.Client, endpoint, clientID, refreshToken, scope, resource string) (*oauth2.Token, error) {
+	form := url.Values{}
+	form.Set("grant_type", "refresh_token")
+	form.Set("refresh_token", refreshToken)
+	form.Set("client_id", clientID)
+	if scope = strings.TrimSpace(scope); scope != "" {
+		form.Set("scope", scope)
+	}
+	if resource = strings.TrimSpace(resource); resource != "" {
+		form.Set("resource", resource)
+	}
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, endpoint, strings.NewReader(form.Encode()))
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	req.Header.Set("Accept", "application/json")
+
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer func() { _ = resp.Body.Close() }()
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+	var raw map[string]any
+	if err := json.Unmarshal(body, &raw); err != nil {
+		return nil, fmt.Errorf("token refresh returned %d with invalid JSON", resp.StatusCode)
+	}
+	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+		if desc, _ := raw["error_description"].(string); strings.TrimSpace(desc) != "" {
+			return nil, fmt.Errorf("%s", strings.TrimSpace(desc))
+		}
+		if code, _ := raw["error"].(string); strings.TrimSpace(code) != "" {
+			return nil, fmt.Errorf("%s", strings.TrimSpace(code))
+		}
+		return nil, fmt.Errorf("token refresh failed with status %d", resp.StatusCode)
+	}
+
+	accessToken, _ := raw["access_token"].(string)
+	tokenType, _ := raw["token_type"].(string)
+	nextRefreshToken, _ := raw["refresh_token"].(string)
+	expiresIn := tokenExpiresInFromRaw(raw)
+	tok := &oauth2.Token{
+		AccessToken:  strings.TrimSpace(accessToken),
+		TokenType:    strings.TrimSpace(tokenType),
+		RefreshToken: strings.TrimSpace(nextRefreshToken),
+		ExpiresIn:    int64(expiresIn),
+	}
+	if expiresIn > 0 {
+		tok.Expiry = time.Now().Add(time.Duration(expiresIn) * time.Second)
+	}
+	return tok.WithExtra(raw), nil
+}
+
+func tokenExpiresInFromRaw(raw map[string]any) int {
+	switch v := raw["expires_in"].(type) {
+	case int:
+		return v
+	case int64:
+		return int(v)
+	case float64:
+		if v > 0 {
+			return int(v)
+		}
+	case string:
+		if n, err := parseIntString(v); err == nil && n > 0 {
+			return int(n)
+		}
+	}
+	return 0
 }
 
 func openBrowser(url string) error {
@@ -304,16 +382,6 @@ func Login(server string) (*config.Credential, error) {
 }
 
 // RefreshToken attempts to refresh the access token.
-//
-// Note: oauth2.TokenSource does not expose extra refresh parameters, so the
-// original OAuth 2.0 resource indicator is not sent on refresh requests. The
-// returned credential stores the current issuer resource from metadata, while
-// ID token audience validation uses the registered client_id.
-//
-// The oauth2.Token Expiry is set one hour before the stored ExpiresAt. This
-// heuristic causes oauth2.TokenSource to treat the token as expired and
-// refresh proactively, rather than risking use of an access token near its
-// boundary.
 func RefreshToken(server string, cred *config.Credential) (*config.Credential, error) {
 	server = strings.TrimRight(server, "/")
 	if cred.RefreshToken == "" {
@@ -324,20 +392,13 @@ func RefreshToken(server string, cred *config.Credential) (*config.Credential, e
 		return nil, err
 	}
 	tokenEndpoint := stringFromMap(meta, "token_endpoint")
-
-	conf := &oauth2.Config{
-		ClientID: cred.ClientID,
-		Scopes:   strings.Fields(cred.Scope),
-		Endpoint: oauth2.Endpoint{TokenURL: tokenEndpoint},
+	resource := strings.TrimSpace(cred.Resource)
+	if resource == "" {
+		resource = oauthResource(server, meta)
 	}
 
-	ctx := oauth2Context(context.Background(), &http.Client{Timeout: 15 * time.Second})
-	token := &oauth2.Token{
-		RefreshToken: cred.RefreshToken,
-		Expiry:       time.Unix(int64(cred.ExpiresAt), 0).Add(-time.Hour),
-	}
-
-	tok, err := conf.TokenSource(ctx, token).Token()
+	client := &http.Client{Timeout: 15 * time.Second}
+	tok, err := refreshTokenRequest(context.Background(), client, tokenEndpoint, cred.ClientID, cred.RefreshToken, cred.Scope, resource)
 	if err != nil {
 		return nil, fmt.Errorf("refresh failed: %w", err)
 	}
@@ -350,7 +411,6 @@ func RefreshToken(server string, cred *config.Credential) (*config.Credential, e
 	if issuer == "" {
 		issuer = server
 	}
-	resource := oauthResource(server, meta)
 	if err := vt.ValidateIDToken(issuer, cred.ClientID); err != nil {
 		return nil, err
 	}
