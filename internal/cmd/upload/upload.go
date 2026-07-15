@@ -39,7 +39,7 @@ func runUploadList(cmd *cobra.Command) error {
 	if err != nil {
 		return err
 	}
-	data, err := api.ParseResponseRaw(c.ListUploads(api.Ctx()))
+	data, err := api.ParseResponseRaw(c.ListUploads(api.Ctx(), nil))
 	if err != nil {
 		return err
 	}
@@ -286,7 +286,7 @@ func promptUploadPick(cmd *cobra.Command, prompt string) (map[string]any, error)
 	if err != nil {
 		return nil, err
 	}
-	data, err := api.ParseResponseRaw(c.ListUploads(api.Ctx()))
+	data, err := api.ParseResponseRaw(c.ListUploads(api.Ctx(), nil))
 	if err != nil {
 		return nil, err
 	}
