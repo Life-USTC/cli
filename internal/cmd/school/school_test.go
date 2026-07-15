@@ -1,8 +1,10 @@
 package school
 
 import (
+	"slices"
 	"testing"
 
+	"github.com/Life-USTC/CLI/internal/openapi"
 	ustcschool "github.com/Life-USTC/CLI/internal/school"
 )
 
@@ -64,6 +66,29 @@ func TestResolveLifeSemesterReturnsFalseWithoutMatch(t *testing.T) {
 		},
 	}, ustcschool.Semester{ID: 362, Code: "20241"}); ok {
 		t.Fatal("resolveLifeSemester() unexpectedly found a match")
+	}
+}
+
+func TestNewSemesterScopedSubscriptionSetBody(t *testing.T) {
+	t.Parallel()
+
+	sectionIDs := []int{11, 12}
+	body := newSemesterScopedSubscriptionSetBody(sectionIDs, "77")
+	if body.Action != openapi.CalendarSubscriptionBatchRequestSchemaActionSet {
+		t.Fatalf("body.Action = %q, want set", body.Action)
+	}
+	if body.SectionIds == nil || !slices.Equal(*body.SectionIds, sectionIDs) {
+		t.Fatalf("body.SectionIds = %v, want %v", body.SectionIds, sectionIDs)
+	}
+	if body.SemesterId == nil {
+		t.Fatal("body.SemesterId is nil")
+	}
+	value, err := body.SemesterId.AsCalendarSubscriptionBatchRequestSchemaSemesterId0()
+	if err != nil {
+		t.Fatalf("semester ID is not a string: %v", err)
+	}
+	if value != "77" {
+		t.Fatalf("semester ID = %q, want 77", value)
 	}
 }
 

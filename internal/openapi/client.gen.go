@@ -23,39 +23,39 @@ const (
 	SessionCookieScopes     = "sessionCookie.Scopes"
 )
 
-// Defines values for AdminCommentsResponseSchemaCommentsStatus.
+// Defines values for AdminCommentsResponseSchemaDataStatus.
 const (
-	AdminCommentsResponseSchemaCommentsStatusActive     AdminCommentsResponseSchemaCommentsStatus = "active"
-	AdminCommentsResponseSchemaCommentsStatusDeleted    AdminCommentsResponseSchemaCommentsStatus = "deleted"
-	AdminCommentsResponseSchemaCommentsStatusSoftbanned AdminCommentsResponseSchemaCommentsStatus = "softbanned"
+	AdminCommentsResponseSchemaDataStatusActive     AdminCommentsResponseSchemaDataStatus = "active"
+	AdminCommentsResponseSchemaDataStatusDeleted    AdminCommentsResponseSchemaDataStatus = "deleted"
+	AdminCommentsResponseSchemaDataStatusSoftbanned AdminCommentsResponseSchemaDataStatus = "softbanned"
 )
 
-// Valid indicates whether the value is a known member of the AdminCommentsResponseSchemaCommentsStatus enum.
-func (e AdminCommentsResponseSchemaCommentsStatus) Valid() bool {
+// Valid indicates whether the value is a known member of the AdminCommentsResponseSchemaDataStatus enum.
+func (e AdminCommentsResponseSchemaDataStatus) Valid() bool {
 	switch e {
-	case AdminCommentsResponseSchemaCommentsStatusActive:
+	case AdminCommentsResponseSchemaDataStatusActive:
 		return true
-	case AdminCommentsResponseSchemaCommentsStatusDeleted:
+	case AdminCommentsResponseSchemaDataStatusDeleted:
 		return true
-	case AdminCommentsResponseSchemaCommentsStatusSoftbanned:
+	case AdminCommentsResponseSchemaDataStatusSoftbanned:
 		return true
 	default:
 		return false
 	}
 }
 
-// Defines values for AdminCommentsResponseSchemaCommentsVisibility.
+// Defines values for AdminCommentsResponseSchemaDataVisibility.
 const (
-	AdminCommentsResponseSchemaCommentsVisibilityLoggedInOnly AdminCommentsResponseSchemaCommentsVisibility = "logged_in_only"
-	AdminCommentsResponseSchemaCommentsVisibilityPublic       AdminCommentsResponseSchemaCommentsVisibility = "public"
+	AdminCommentsResponseSchemaDataVisibilityLoggedInOnly AdminCommentsResponseSchemaDataVisibility = "logged_in_only"
+	AdminCommentsResponseSchemaDataVisibilityPublic       AdminCommentsResponseSchemaDataVisibility = "public"
 )
 
-// Valid indicates whether the value is a known member of the AdminCommentsResponseSchemaCommentsVisibility enum.
-func (e AdminCommentsResponseSchemaCommentsVisibility) Valid() bool {
+// Valid indicates whether the value is a known member of the AdminCommentsResponseSchemaDataVisibility enum.
+func (e AdminCommentsResponseSchemaDataVisibility) Valid() bool {
 	switch e {
-	case AdminCommentsResponseSchemaCommentsVisibilityLoggedInOnly:
+	case AdminCommentsResponseSchemaDataVisibilityLoggedInOnly:
 		return true
-	case AdminCommentsResponseSchemaCommentsVisibilityPublic:
+	case AdminCommentsResponseSchemaDataVisibilityPublic:
 		return true
 	default:
 		return false
@@ -485,15 +485,15 @@ func (e CommentUpdateRequestSchemaVisibility) Valid() bool {
 	}
 }
 
-// Defines values for CommentsListResponseSchemaTargetTargetId2.
+// Defines values for CommentsListResponseSchemaMetaTargetTargetId2.
 const (
-	CommentsListResponseSchemaTargetTargetId2LessThannil CommentsListResponseSchemaTargetTargetId2 = "<nil>"
+	CommentsListResponseSchemaMetaTargetTargetId2LessThannil CommentsListResponseSchemaMetaTargetTargetId2 = "<nil>"
 )
 
-// Valid indicates whether the value is a known member of the CommentsListResponseSchemaTargetTargetId2 enum.
-func (e CommentsListResponseSchemaTargetTargetId2) Valid() bool {
+// Valid indicates whether the value is a known member of the CommentsListResponseSchemaMetaTargetTargetId2 enum.
+func (e CommentsListResponseSchemaMetaTargetTargetId2) Valid() bool {
 	switch e {
-	case CommentsListResponseSchemaTargetTargetId2LessThannil:
+	case CommentsListResponseSchemaMetaTargetTargetId2LessThannil:
 		return true
 	default:
 		return false
@@ -890,42 +890,6 @@ const (
 func (e OauthTokenResponseSchemaTokenType) Valid() bool {
 	switch e {
 	case Bearer:
-		return true
-	default:
-		return false
-	}
-}
-
-// Defines values for ReadinessResponseSchemaChecksDatabaseStatus.
-const (
-	ReadinessResponseSchemaChecksDatabaseStatusError ReadinessResponseSchemaChecksDatabaseStatus = "error"
-	ReadinessResponseSchemaChecksDatabaseStatusOk    ReadinessResponseSchemaChecksDatabaseStatus = "ok"
-)
-
-// Valid indicates whether the value is a known member of the ReadinessResponseSchemaChecksDatabaseStatus enum.
-func (e ReadinessResponseSchemaChecksDatabaseStatus) Valid() bool {
-	switch e {
-	case ReadinessResponseSchemaChecksDatabaseStatusError:
-		return true
-	case ReadinessResponseSchemaChecksDatabaseStatusOk:
-		return true
-	default:
-		return false
-	}
-}
-
-// Defines values for ReadinessResponseSchemaStatus.
-const (
-	ReadinessResponseSchemaStatusDegraded ReadinessResponseSchemaStatus = "degraded"
-	ReadinessResponseSchemaStatusOk       ReadinessResponseSchemaStatus = "ok"
-)
-
-// Valid indicates whether the value is a known member of the ReadinessResponseSchemaStatus enum.
-func (e ReadinessResponseSchemaStatus) Valid() bool {
-	switch e {
-	case ReadinessResponseSchemaStatusDegraded:
-		return true
-	case ReadinessResponseSchemaStatusOk:
 		return true
 	default:
 		return false
@@ -1618,7 +1582,7 @@ type UnderscoreUnderscoreSchema1 struct {
 
 // AdminCommentsResponseSchema defines model for adminCommentsResponseSchema.
 type AdminCommentsResponseSchema struct {
-	Comments []struct {
+	Data []struct {
 		AuthorName *string `json:"authorName"`
 		Body       string  `json:"body"`
 		Course     *struct {
@@ -1668,8 +1632,8 @@ type AdminCommentsResponseSchema struct {
 				NameCn string `json:"nameCn"`
 			} `json:"teacher"`
 		} `json:"sectionTeacher"`
-		SectionTeacherId *int                                      `json:"sectionTeacherId"`
-		Status           AdminCommentsResponseSchemaCommentsStatus `json:"status"`
+		SectionTeacherId *int                                  `json:"sectionTeacherId"`
+		Status           AdminCommentsResponseSchemaDataStatus `json:"status"`
 		Teacher          *struct {
 			Id     int    `json:"id"`
 			NameCn string `json:"nameCn"`
@@ -1679,16 +1643,22 @@ type AdminCommentsResponseSchema struct {
 		User      *struct {
 			Name *string `json:"name"`
 		} `json:"user"`
-		UserId     *string                                       `json:"userId"`
-		Visibility AdminCommentsResponseSchemaCommentsVisibility `json:"visibility"`
-	} `json:"comments"`
+		UserId     *string                                   `json:"userId"`
+		Visibility AdminCommentsResponseSchemaDataVisibility `json:"visibility"`
+	} `json:"data"`
+	Pagination struct {
+		Page       int `json:"page"`
+		PageSize   int `json:"pageSize"`
+		Total      int `json:"total"`
+		TotalPages int `json:"totalPages"`
+	} `json:"pagination"`
 }
 
-// AdminCommentsResponseSchemaCommentsStatus defines model for AdminCommentsResponseSchema.Comments.Status.
-type AdminCommentsResponseSchemaCommentsStatus string
+// AdminCommentsResponseSchemaDataStatus defines model for AdminCommentsResponseSchema.Data.Status.
+type AdminCommentsResponseSchemaDataStatus string
 
-// AdminCommentsResponseSchemaCommentsVisibility defines model for AdminCommentsResponseSchema.Comments.Visibility.
-type AdminCommentsResponseSchemaCommentsVisibility string
+// AdminCommentsResponseSchemaDataVisibility defines model for AdminCommentsResponseSchema.Data.Visibility.
+type AdminCommentsResponseSchemaDataVisibility string
 
 // AdminCreateSuspensionRequestSchema defines model for adminCreateSuspensionRequestSchema.
 type AdminCreateSuspensionRequestSchema struct {
@@ -1711,7 +1681,7 @@ type AdminCreateSuspensionRequestSchema_ExpiresAt struct {
 
 // AdminDescriptionsResponseSchema defines model for adminDescriptionsResponseSchema.
 type AdminDescriptionsResponseSchema struct {
-	Descriptions []struct {
+	Data []struct {
 		Content string `json:"content"`
 		Course  *struct {
 			Code   string `json:"code"`
@@ -1759,12 +1729,18 @@ type AdminDescriptionsResponseSchema struct {
 		} `json:"teacher"`
 		TeacherId *int      `json:"teacherId"`
 		UpdatedAt time.Time `json:"updatedAt"`
-	} `json:"descriptions"`
+	} `json:"data"`
+	Pagination struct {
+		Page       int `json:"page"`
+		PageSize   int `json:"pageSize"`
+		Total      int `json:"total"`
+		TotalPages int `json:"totalPages"`
+	} `json:"pagination"`
 }
 
 // AdminHomeworksResponseSchema defines model for adminHomeworksResponseSchema.
 type AdminHomeworksResponseSchema struct {
-	Homeworks []struct {
+	Data []struct {
 		CreatedAt time.Time `json:"createdAt"`
 		CreatedBy *struct {
 			Id       string  `json:"id"`
@@ -1799,7 +1775,13 @@ type AdminHomeworksResponseSchema struct {
 			Name     *string `json:"name"`
 			Username *string `json:"username"`
 		} `json:"updatedBy"`
-	} `json:"homeworks"`
+	} `json:"data"`
+	Pagination struct {
+		Page       int `json:"page"`
+		PageSize   int `json:"pageSize"`
+		Total      int `json:"total"`
+		TotalPages int `json:"totalPages"`
+	} `json:"pagination"`
 }
 
 // AdminModerateCommentRequestSchema defines model for adminModerateCommentRequestSchema.
@@ -1922,7 +1904,7 @@ type AdminSuspensionResponseSchema struct {
 
 // AdminSuspensionsResponseSchema defines model for adminSuspensionsResponseSchema.
 type AdminSuspensionsResponseSchema struct {
-	Suspensions []struct {
+	Data []struct {
 		CreatedAt   time.Time  `json:"createdAt"`
 		CreatedById *string    `json:"createdById"`
 		ExpiresAt   *time.Time `json:"expiresAt"`
@@ -1936,7 +1918,7 @@ type AdminSuspensionsResponseSchema struct {
 			Name *string `json:"name"`
 		} `json:"user,omitempty"`
 		UserId string `json:"userId"`
-	} `json:"suspensions"`
+	} `json:"data"`
 }
 
 // AdminUpdateUserRequestSchema defines model for adminUpdateUserRequestSchema.
@@ -3827,55 +3809,63 @@ type CommentUpdateResponseSchema struct {
 
 // CommentsListResponseSchema defines model for commentsListResponseSchema.
 type CommentsListResponseSchema struct {
-	Comments    []UnderscoreUnderscoreSchema1 `json:"comments"`
-	HiddenCount int                           `json:"hiddenCount"`
-	Target      struct {
-		CourseId                  *int                                       `json:"courseId"`
-		CourseJwId                *int                                       `json:"courseJwId"`
-		CourseName                *string                                    `json:"courseName"`
-		HomeworkId                *string                                    `json:"homeworkId"`
-		HomeworkSectionCode       *string                                    `json:"homeworkSectionCode"`
-		HomeworkSectionJwId       *int                                       `json:"homeworkSectionJwId"`
-		HomeworkTitle             *string                                    `json:"homeworkTitle"`
-		SectionCode               *string                                    `json:"sectionCode"`
-		SectionId                 *int                                       `json:"sectionId"`
-		SectionJwId               *int                                       `json:"sectionJwId"`
-		SectionTeacherCourseJwId  *int                                       `json:"sectionTeacherCourseJwId"`
-		SectionTeacherCourseName  *string                                    `json:"sectionTeacherCourseName"`
-		SectionTeacherId          *int                                       `json:"sectionTeacherId"`
-		SectionTeacherSectionCode *string                                    `json:"sectionTeacherSectionCode"`
-		SectionTeacherSectionId   *int                                       `json:"sectionTeacherSectionId"`
-		SectionTeacherSectionJwId *int                                       `json:"sectionTeacherSectionJwId"`
-		SectionTeacherTeacherId   *int                                       `json:"sectionTeacherTeacherId"`
-		SectionTeacherTeacherName *string                                    `json:"sectionTeacherTeacherName"`
-		TargetId                  CommentsListResponseSchema_Target_TargetId `json:"targetId"`
-		TeacherId                 *int                                       `json:"teacherId"`
-		TeacherName               *string                                    `json:"teacherName"`
-		Type                      string                                     `json:"type"`
-	} `json:"target"`
-	Viewer struct {
-		Image               *string    `json:"image"`
-		IsAdmin             bool       `json:"isAdmin"`
-		IsAuthenticated     bool       `json:"isAuthenticated"`
-		IsSuspended         bool       `json:"isSuspended"`
-		Name                *string    `json:"name"`
-		SuspensionExpiresAt *time.Time `json:"suspensionExpiresAt"`
-		SuspensionReason    *string    `json:"suspensionReason"`
-		UserId              *string    `json:"userId"`
-	} `json:"viewer"`
+	Data []UnderscoreUnderscoreSchema1 `json:"data"`
+	Meta struct {
+		HiddenCount int `json:"hiddenCount"`
+		Target      struct {
+			CourseId                  *int                                            `json:"courseId"`
+			CourseJwId                *int                                            `json:"courseJwId"`
+			CourseName                *string                                         `json:"courseName"`
+			HomeworkId                *string                                         `json:"homeworkId"`
+			HomeworkSectionCode       *string                                         `json:"homeworkSectionCode"`
+			HomeworkSectionJwId       *int                                            `json:"homeworkSectionJwId"`
+			HomeworkTitle             *string                                         `json:"homeworkTitle"`
+			SectionCode               *string                                         `json:"sectionCode"`
+			SectionId                 *int                                            `json:"sectionId"`
+			SectionJwId               *int                                            `json:"sectionJwId"`
+			SectionTeacherCourseJwId  *int                                            `json:"sectionTeacherCourseJwId"`
+			SectionTeacherCourseName  *string                                         `json:"sectionTeacherCourseName"`
+			SectionTeacherId          *int                                            `json:"sectionTeacherId"`
+			SectionTeacherSectionCode *string                                         `json:"sectionTeacherSectionCode"`
+			SectionTeacherSectionId   *int                                            `json:"sectionTeacherSectionId"`
+			SectionTeacherSectionJwId *int                                            `json:"sectionTeacherSectionJwId"`
+			SectionTeacherTeacherId   *int                                            `json:"sectionTeacherTeacherId"`
+			SectionTeacherTeacherName *string                                         `json:"sectionTeacherTeacherName"`
+			TargetId                  CommentsListResponseSchema_Meta_Target_TargetId `json:"targetId"`
+			TeacherId                 *int                                            `json:"teacherId"`
+			TeacherName               *string                                         `json:"teacherName"`
+			Type                      string                                          `json:"type"`
+		} `json:"target"`
+		Viewer struct {
+			Image               *string    `json:"image"`
+			IsAdmin             bool       `json:"isAdmin"`
+			IsAuthenticated     bool       `json:"isAuthenticated"`
+			IsSuspended         bool       `json:"isSuspended"`
+			Name                *string    `json:"name"`
+			SuspensionExpiresAt *time.Time `json:"suspensionExpiresAt"`
+			SuspensionReason    *string    `json:"suspensionReason"`
+			UserId              *string    `json:"userId"`
+		} `json:"viewer"`
+	} `json:"meta"`
+	Pagination struct {
+		Page       int `json:"page"`
+		PageSize   int `json:"pageSize"`
+		Total      int `json:"total"`
+		TotalPages int `json:"totalPages"`
+	} `json:"pagination"`
 }
 
-// CommentsListResponseSchemaTargetTargetId0 defines model for .
-type CommentsListResponseSchemaTargetTargetId0 = int
+// CommentsListResponseSchemaMetaTargetTargetId0 defines model for .
+type CommentsListResponseSchemaMetaTargetTargetId0 = int
 
-// CommentsListResponseSchemaTargetTargetId1 defines model for .
-type CommentsListResponseSchemaTargetTargetId1 = string
+// CommentsListResponseSchemaMetaTargetTargetId1 defines model for .
+type CommentsListResponseSchemaMetaTargetTargetId1 = string
 
-// CommentsListResponseSchemaTargetTargetId2 defines model for CommentsListResponseSchema.Target.TargetId.2.
-type CommentsListResponseSchemaTargetTargetId2 string
+// CommentsListResponseSchemaMetaTargetTargetId2 defines model for CommentsListResponseSchema.Meta.Target.TargetId.2.
+type CommentsListResponseSchemaMetaTargetTargetId2 string
 
-// CommentsListResponseSchema_Target_TargetId defines model for CommentsListResponseSchema.Target.TargetId.
-type CommentsListResponseSchema_Target_TargetId struct {
+// CommentsListResponseSchema_Meta_Target_TargetId defines model for CommentsListResponseSchema.Meta.Target.TargetId.
+type CommentsListResponseSchema_Meta_Target_TargetId struct {
 	union json.RawMessage
 }
 
@@ -5951,29 +5941,6 @@ type PublicUserProfileResponseSchema struct {
 	} `json:"weeks"`
 }
 
-// ReadinessResponseSchema defines model for readinessResponseSchema.
-type ReadinessResponseSchema struct {
-	Checks struct {
-		Database struct {
-			DurationMs float32                                     `json:"durationMs"`
-			Status     ReadinessResponseSchemaChecksDatabaseStatus `json:"status"`
-		} `json:"database"`
-		Storage struct {
-			Binding string  `json:"binding"`
-			Reason  *string `json:"reason,omitempty"`
-			Status  string  `json:"status"`
-		} `json:"storage"`
-	} `json:"checks"`
-	Status        ReadinessResponseSchemaStatus `json:"status"`
-	UptimeSeconds float32                       `json:"uptimeSeconds"`
-}
-
-// ReadinessResponseSchemaChecksDatabaseStatus defines model for ReadinessResponseSchema.Checks.Database.Status.
-type ReadinessResponseSchemaChecksDatabaseStatus string
-
-// ReadinessResponseSchemaStatus defines model for ReadinessResponseSchema.Status.
-type ReadinessResponseSchemaStatus string
-
 // SectionDetailSchema defines model for sectionDetailSchema.
 type SectionDetailSchema struct {
 	ActualPeriods *int `json:"actualPeriods"`
@@ -6900,22 +6867,36 @@ type UploadRenameResponseSchema struct {
 
 // UploadsListResponseSchema defines model for uploadsListResponseSchema.
 type UploadsListResponseSchema struct {
-	MaxFileSizeBytes int `json:"maxFileSizeBytes"`
-	QuotaBytes       int `json:"quotaBytes"`
-	Uploads          []struct {
+	Data []struct {
 		CreatedAt time.Time `json:"createdAt"`
 		Filename  string    `json:"filename"`
 		Id        string    `json:"id"`
 		Key       string    `json:"key"`
 		Size      int       `json:"size"`
-	} `json:"uploads"`
-	UsedBytes int `json:"usedBytes"`
+	} `json:"data"`
+	Meta struct {
+		MaxFileSizeBytes int `json:"maxFileSizeBytes"`
+		QuotaBytes       int `json:"quotaBytes"`
+		UsedBytes        int `json:"usedBytes"`
+	} `json:"meta"`
+	Pagination struct {
+		Page       int `json:"page"`
+		PageSize   int `json:"pageSize"`
+		Total      int `json:"total"`
+		TotalPages int `json:"totalPages"`
+	} `json:"pagination"`
 }
 
 // ListAdminCommentsParams defines parameters for ListAdminComments.
 type ListAdminCommentsParams struct {
 	Status *ListAdminCommentsParamsStatus `form:"status,omitempty" json:"status,omitempty"`
-	Limit  *int64                         `form:"limit,omitempty" json:"limit,omitempty"`
+	Page   *int64                         `form:"page,omitempty" json:"page,omitempty"`
+
+	// PageSize Number of items per page.
+	PageSize *int64 `form:"pageSize,omitempty" json:"pageSize,omitempty"`
+
+	// Limit Deprecated alias for pageSize. pageSize takes precedence when both are supplied.
+	Limit *int64 `form:"limit,omitempty" json:"limit,omitempty"`
 }
 
 // ListAdminCommentsParamsStatus defines parameters for ListAdminComments.
@@ -6926,7 +6907,13 @@ type ListAdminDescriptionsParams struct {
 	TargetType *ListAdminDescriptionsParamsTargetType `form:"targetType,omitempty" json:"targetType,omitempty"`
 	HasContent *ListAdminDescriptionsParamsHasContent `form:"hasContent,omitempty" json:"hasContent,omitempty"`
 	Search     *string                                `form:"search,omitempty" json:"search,omitempty"`
-	Limit      *int64                                 `form:"limit,omitempty" json:"limit,omitempty"`
+	Page       *int64                                 `form:"page,omitempty" json:"page,omitempty"`
+
+	// PageSize Number of items per page.
+	PageSize *int64 `form:"pageSize,omitempty" json:"pageSize,omitempty"`
+
+	// Limit Deprecated alias for pageSize. pageSize takes precedence when both are supplied.
+	Limit *int64 `form:"limit,omitempty" json:"limit,omitempty"`
 }
 
 // ListAdminDescriptionsParamsTargetType defines parameters for ListAdminDescriptions.
@@ -6939,7 +6926,13 @@ type ListAdminDescriptionsParamsHasContent string
 type ListAdminHomeworksParams struct {
 	Status *ListAdminHomeworksParamsStatus `form:"status,omitempty" json:"status,omitempty"`
 	Search *string                         `form:"search,omitempty" json:"search,omitempty"`
-	Limit  *int64                          `form:"limit,omitempty" json:"limit,omitempty"`
+	Page   *int64                          `form:"page,omitempty" json:"page,omitempty"`
+
+	// PageSize Number of items per page.
+	PageSize *int64 `form:"pageSize,omitempty" json:"pageSize,omitempty"`
+
+	// Limit Deprecated alias for pageSize. pageSize takes precedence when both are supplied.
+	Limit *int64 `form:"limit,omitempty" json:"limit,omitempty"`
 }
 
 // ListAdminHomeworksParamsStatus defines parameters for ListAdminHomeworks.
@@ -6949,7 +6942,12 @@ type ListAdminHomeworksParamsStatus string
 type ListAdminUsersParams struct {
 	Search *string `form:"search,omitempty" json:"search,omitempty"`
 	Page   *int64  `form:"page,omitempty" json:"page,omitempty"`
-	Limit  *int64  `form:"limit,omitempty" json:"limit,omitempty"`
+
+	// PageSize Number of items per page.
+	PageSize *int64 `form:"pageSize,omitempty" json:"pageSize,omitempty"`
+
+	// Limit Deprecated alias for pageSize. pageSize takes precedence when both are supplied.
+	Limit *int64 `form:"limit,omitempty" json:"limit,omitempty"`
 }
 
 // QueryBusParams defines parameters for QueryBus.
@@ -6999,6 +6997,13 @@ type ListCommentsParams struct {
 	TeacherId        *int64                       `form:"teacherId,omitempty" json:"teacherId,omitempty"`
 	HomeworkId       *string                      `form:"homeworkId,omitempty" json:"homeworkId,omitempty"`
 	SectionTeacherId *int64                       `form:"sectionTeacherId,omitempty" json:"sectionTeacherId,omitempty"`
+	Page             *int64                       `form:"page,omitempty" json:"page,omitempty"`
+
+	// PageSize Number of items per page.
+	PageSize *int64 `form:"pageSize,omitempty" json:"pageSize,omitempty"`
+
+	// Limit Deprecated alias for pageSize. pageSize takes precedence when both are supplied.
+	Limit *int64 `form:"limit,omitempty" json:"limit,omitempty"`
 }
 
 // ListCommentsParamsTargetType defines parameters for ListComments.
@@ -7019,7 +7024,12 @@ type ListCoursesParams struct {
 	CategoryId       *int64  `form:"categoryId,omitempty" json:"categoryId,omitempty"`
 	ClassTypeId      *int64  `form:"classTypeId,omitempty" json:"classTypeId,omitempty"`
 	Page             *int64  `form:"page,omitempty" json:"page,omitempty"`
-	Limit            *int64  `form:"limit,omitempty" json:"limit,omitempty"`
+
+	// PageSize Number of items per page.
+	PageSize *int64 `form:"pageSize,omitempty" json:"pageSize,omitempty"`
+
+	// Limit Deprecated alias for pageSize. pageSize takes precedence when both are supplied.
+	Limit *int64 `form:"limit,omitempty" json:"limit,omitempty"`
 }
 
 // VisitDashboardLinkParams defines parameters for VisitDashboardLink.
@@ -7087,7 +7097,12 @@ type ListSchedulesParams struct {
 	DateFrom    *string `form:"dateFrom,omitempty" json:"dateFrom,omitempty"`
 	DateTo      *string `form:"dateTo,omitempty" json:"dateTo,omitempty"`
 	Page        *int64  `form:"page,omitempty" json:"page,omitempty"`
-	Limit       *int64  `form:"limit,omitempty" json:"limit,omitempty"`
+
+	// PageSize Number of items per page.
+	PageSize *int64 `form:"pageSize,omitempty" json:"pageSize,omitempty"`
+
+	// Limit Deprecated alias for pageSize. pageSize takes precedence when both are supplied.
+	Limit *int64 `form:"limit,omitempty" json:"limit,omitempty"`
 }
 
 // ListSectionsParams defines parameters for ListSections.
@@ -7104,7 +7119,12 @@ type ListSectionsParams struct {
 	Ids          *string `form:"ids,omitempty" json:"ids,omitempty"`
 	JwIds        *string `form:"jwIds,omitempty" json:"jwIds,omitempty"`
 	Page         *int64  `form:"page,omitempty" json:"page,omitempty"`
-	Limit        *int64  `form:"limit,omitempty" json:"limit,omitempty"`
+
+	// PageSize Number of items per page.
+	PageSize *int64 `form:"pageSize,omitempty" json:"pageSize,omitempty"`
+
+	// Limit Deprecated alias for pageSize. pageSize takes precedence when both are supplied.
+	Limit *int64 `form:"limit,omitempty" json:"limit,omitempty"`
 }
 
 // GetSectionsCalendarParams defines parameters for GetSectionsCalendar.
@@ -7121,7 +7141,12 @@ type GetSectionSchedulesParams struct {
 
 // ListSemestersParams defines parameters for ListSemesters.
 type ListSemestersParams struct {
-	Page  *int64 `form:"page,omitempty" json:"page,omitempty"`
+	Page *int64 `form:"page,omitempty" json:"page,omitempty"`
+
+	// PageSize Number of items per page.
+	PageSize *int64 `form:"pageSize,omitempty" json:"pageSize,omitempty"`
+
+	// Limit Deprecated alias for pageSize. pageSize takes precedence when both are supplied.
 	Limit *int64 `form:"limit,omitempty" json:"limit,omitempty"`
 }
 
@@ -7130,7 +7155,12 @@ type ListTeachersParams struct {
 	DepartmentId *int64  `form:"departmentId,omitempty" json:"departmentId,omitempty"`
 	Search       *string `form:"search,omitempty" json:"search,omitempty"`
 	Page         *int64  `form:"page,omitempty" json:"page,omitempty"`
-	Limit        *int64  `form:"limit,omitempty" json:"limit,omitempty"`
+
+	// PageSize Number of items per page.
+	PageSize *int64 `form:"pageSize,omitempty" json:"pageSize,omitempty"`
+
+	// Limit Deprecated alias for pageSize. pageSize takes precedence when both are supplied.
+	Limit *int64 `form:"limit,omitempty" json:"limit,omitempty"`
 }
 
 // ListTodosParams defines parameters for ListTodos.
@@ -7147,6 +7177,17 @@ type ListTodosParamsCompleted string
 
 // ListTodosParamsPriority defines parameters for ListTodos.
 type ListTodosParamsPriority string
+
+// ListUploadsParams defines parameters for ListUploads.
+type ListUploadsParams struct {
+	Page *int64 `form:"page,omitempty" json:"page,omitempty"`
+
+	// PageSize Number of items per page.
+	PageSize *int64 `form:"pageSize,omitempty" json:"pageSize,omitempty"`
+
+	// Limit Deprecated alias for pageSize. pageSize takes precedence when both are supplied.
+	Limit *int64 `form:"limit,omitempty" json:"limit,omitempty"`
+}
 
 // PutApiUploadsObjectParams defines parameters for PutApiUploadsObject.
 type PutApiUploadsObjectParams struct {
@@ -7999,22 +8040,22 @@ func (t *CommentCreateRequestSchema_TeacherId) UnmarshalJSON(b []byte) error {
 	return err
 }
 
-// AsCommentsListResponseSchemaTargetTargetId0 returns the union data inside the CommentsListResponseSchema_Target_TargetId as a CommentsListResponseSchemaTargetTargetId0
-func (t CommentsListResponseSchema_Target_TargetId) AsCommentsListResponseSchemaTargetTargetId0() (CommentsListResponseSchemaTargetTargetId0, error) {
-	var body CommentsListResponseSchemaTargetTargetId0
+// AsCommentsListResponseSchemaMetaTargetTargetId0 returns the union data inside the CommentsListResponseSchema_Meta_Target_TargetId as a CommentsListResponseSchemaMetaTargetTargetId0
+func (t CommentsListResponseSchema_Meta_Target_TargetId) AsCommentsListResponseSchemaMetaTargetTargetId0() (CommentsListResponseSchemaMetaTargetTargetId0, error) {
+	var body CommentsListResponseSchemaMetaTargetTargetId0
 	err := json.Unmarshal(t.union, &body)
 	return body, err
 }
 
-// FromCommentsListResponseSchemaTargetTargetId0 overwrites any union data inside the CommentsListResponseSchema_Target_TargetId as the provided CommentsListResponseSchemaTargetTargetId0
-func (t *CommentsListResponseSchema_Target_TargetId) FromCommentsListResponseSchemaTargetTargetId0(v CommentsListResponseSchemaTargetTargetId0) error {
+// FromCommentsListResponseSchemaMetaTargetTargetId0 overwrites any union data inside the CommentsListResponseSchema_Meta_Target_TargetId as the provided CommentsListResponseSchemaMetaTargetTargetId0
+func (t *CommentsListResponseSchema_Meta_Target_TargetId) FromCommentsListResponseSchemaMetaTargetTargetId0(v CommentsListResponseSchemaMetaTargetTargetId0) error {
 	b, err := json.Marshal(v)
 	t.union = b
 	return err
 }
 
-// MergeCommentsListResponseSchemaTargetTargetId0 performs a merge with any union data inside the CommentsListResponseSchema_Target_TargetId, using the provided CommentsListResponseSchemaTargetTargetId0
-func (t *CommentsListResponseSchema_Target_TargetId) MergeCommentsListResponseSchemaTargetTargetId0(v CommentsListResponseSchemaTargetTargetId0) error {
+// MergeCommentsListResponseSchemaMetaTargetTargetId0 performs a merge with any union data inside the CommentsListResponseSchema_Meta_Target_TargetId, using the provided CommentsListResponseSchemaMetaTargetTargetId0
+func (t *CommentsListResponseSchema_Meta_Target_TargetId) MergeCommentsListResponseSchemaMetaTargetTargetId0(v CommentsListResponseSchemaMetaTargetTargetId0) error {
 	b, err := json.Marshal(v)
 	if err != nil {
 		return err
@@ -8025,22 +8066,22 @@ func (t *CommentsListResponseSchema_Target_TargetId) MergeCommentsListResponseSc
 	return err
 }
 
-// AsCommentsListResponseSchemaTargetTargetId1 returns the union data inside the CommentsListResponseSchema_Target_TargetId as a CommentsListResponseSchemaTargetTargetId1
-func (t CommentsListResponseSchema_Target_TargetId) AsCommentsListResponseSchemaTargetTargetId1() (CommentsListResponseSchemaTargetTargetId1, error) {
-	var body CommentsListResponseSchemaTargetTargetId1
+// AsCommentsListResponseSchemaMetaTargetTargetId1 returns the union data inside the CommentsListResponseSchema_Meta_Target_TargetId as a CommentsListResponseSchemaMetaTargetTargetId1
+func (t CommentsListResponseSchema_Meta_Target_TargetId) AsCommentsListResponseSchemaMetaTargetTargetId1() (CommentsListResponseSchemaMetaTargetTargetId1, error) {
+	var body CommentsListResponseSchemaMetaTargetTargetId1
 	err := json.Unmarshal(t.union, &body)
 	return body, err
 }
 
-// FromCommentsListResponseSchemaTargetTargetId1 overwrites any union data inside the CommentsListResponseSchema_Target_TargetId as the provided CommentsListResponseSchemaTargetTargetId1
-func (t *CommentsListResponseSchema_Target_TargetId) FromCommentsListResponseSchemaTargetTargetId1(v CommentsListResponseSchemaTargetTargetId1) error {
+// FromCommentsListResponseSchemaMetaTargetTargetId1 overwrites any union data inside the CommentsListResponseSchema_Meta_Target_TargetId as the provided CommentsListResponseSchemaMetaTargetTargetId1
+func (t *CommentsListResponseSchema_Meta_Target_TargetId) FromCommentsListResponseSchemaMetaTargetTargetId1(v CommentsListResponseSchemaMetaTargetTargetId1) error {
 	b, err := json.Marshal(v)
 	t.union = b
 	return err
 }
 
-// MergeCommentsListResponseSchemaTargetTargetId1 performs a merge with any union data inside the CommentsListResponseSchema_Target_TargetId, using the provided CommentsListResponseSchemaTargetTargetId1
-func (t *CommentsListResponseSchema_Target_TargetId) MergeCommentsListResponseSchemaTargetTargetId1(v CommentsListResponseSchemaTargetTargetId1) error {
+// MergeCommentsListResponseSchemaMetaTargetTargetId1 performs a merge with any union data inside the CommentsListResponseSchema_Meta_Target_TargetId, using the provided CommentsListResponseSchemaMetaTargetTargetId1
+func (t *CommentsListResponseSchema_Meta_Target_TargetId) MergeCommentsListResponseSchemaMetaTargetTargetId1(v CommentsListResponseSchemaMetaTargetTargetId1) error {
 	b, err := json.Marshal(v)
 	if err != nil {
 		return err
@@ -8051,22 +8092,22 @@ func (t *CommentsListResponseSchema_Target_TargetId) MergeCommentsListResponseSc
 	return err
 }
 
-// AsCommentsListResponseSchemaTargetTargetId2 returns the union data inside the CommentsListResponseSchema_Target_TargetId as a CommentsListResponseSchemaTargetTargetId2
-func (t CommentsListResponseSchema_Target_TargetId) AsCommentsListResponseSchemaTargetTargetId2() (CommentsListResponseSchemaTargetTargetId2, error) {
-	var body CommentsListResponseSchemaTargetTargetId2
+// AsCommentsListResponseSchemaMetaTargetTargetId2 returns the union data inside the CommentsListResponseSchema_Meta_Target_TargetId as a CommentsListResponseSchemaMetaTargetTargetId2
+func (t CommentsListResponseSchema_Meta_Target_TargetId) AsCommentsListResponseSchemaMetaTargetTargetId2() (CommentsListResponseSchemaMetaTargetTargetId2, error) {
+	var body CommentsListResponseSchemaMetaTargetTargetId2
 	err := json.Unmarshal(t.union, &body)
 	return body, err
 }
 
-// FromCommentsListResponseSchemaTargetTargetId2 overwrites any union data inside the CommentsListResponseSchema_Target_TargetId as the provided CommentsListResponseSchemaTargetTargetId2
-func (t *CommentsListResponseSchema_Target_TargetId) FromCommentsListResponseSchemaTargetTargetId2(v CommentsListResponseSchemaTargetTargetId2) error {
+// FromCommentsListResponseSchemaMetaTargetTargetId2 overwrites any union data inside the CommentsListResponseSchema_Meta_Target_TargetId as the provided CommentsListResponseSchemaMetaTargetTargetId2
+func (t *CommentsListResponseSchema_Meta_Target_TargetId) FromCommentsListResponseSchemaMetaTargetTargetId2(v CommentsListResponseSchemaMetaTargetTargetId2) error {
 	b, err := json.Marshal(v)
 	t.union = b
 	return err
 }
 
-// MergeCommentsListResponseSchemaTargetTargetId2 performs a merge with any union data inside the CommentsListResponseSchema_Target_TargetId, using the provided CommentsListResponseSchemaTargetTargetId2
-func (t *CommentsListResponseSchema_Target_TargetId) MergeCommentsListResponseSchemaTargetTargetId2(v CommentsListResponseSchemaTargetTargetId2) error {
+// MergeCommentsListResponseSchemaMetaTargetTargetId2 performs a merge with any union data inside the CommentsListResponseSchema_Meta_Target_TargetId, using the provided CommentsListResponseSchemaMetaTargetTargetId2
+func (t *CommentsListResponseSchema_Meta_Target_TargetId) MergeCommentsListResponseSchemaMetaTargetTargetId2(v CommentsListResponseSchemaMetaTargetTargetId2) error {
 	b, err := json.Marshal(v)
 	if err != nil {
 		return err
@@ -8077,12 +8118,12 @@ func (t *CommentsListResponseSchema_Target_TargetId) MergeCommentsListResponseSc
 	return err
 }
 
-func (t CommentsListResponseSchema_Target_TargetId) MarshalJSON() ([]byte, error) {
+func (t CommentsListResponseSchema_Meta_Target_TargetId) MarshalJSON() ([]byte, error) {
 	b, err := t.union.MarshalJSON()
 	return b, err
 }
 
-func (t *CommentsListResponseSchema_Target_TargetId) UnmarshalJSON(b []byte) error {
+func (t *CommentsListResponseSchema_Meta_Target_TargetId) UnmarshalJSON(b []byte) error {
 	err := t.union.UnmarshalJSON(b)
 	return err
 }
@@ -10357,7 +10398,7 @@ type ClientInterface interface {
 	UpdateTodo(ctx context.Context, id string, body UpdateTodoJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// ListUploads request
-	ListUploads(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
+	ListUploads(ctx context.Context, params *ListUploadsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// CreateUploadWithBody request with any body
 	CreateUploadWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -11575,8 +11616,8 @@ func (c *Client) UpdateTodo(ctx context.Context, id string, body UpdateTodoJSONR
 	return c.Client.Do(req)
 }
 
-func (c *Client) ListUploads(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewListUploadsRequest(c.Server)
+func (c *Client) ListUploads(ctx context.Context, params *ListUploadsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListUploadsRequest(c.Server, params)
 	if err != nil {
 		return nil, err
 	}
@@ -11745,6 +11786,38 @@ func NewListAdminCommentsRequest(server string, params *ListAdminCommentsParams)
 
 		}
 
+		if params.Page != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "page", *params.Page, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "integer", Format: "int64"}); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.PageSize != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "pageSize", *params.PageSize, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "integer", Format: "int64"}); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
 		if params.Limit != nil {
 
 			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "limit", *params.Limit, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "integer", Format: "int64"}); err != nil {
@@ -11889,6 +11962,38 @@ func NewListAdminDescriptionsRequest(server string, params *ListAdminDescription
 
 		}
 
+		if params.Page != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "page", *params.Page, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "integer", Format: "int64"}); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.PageSize != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "pageSize", *params.PageSize, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "integer", Format: "int64"}); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
 		if params.Limit != nil {
 
 			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "limit", *params.Limit, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "integer", Format: "int64"}); err != nil {
@@ -12004,6 +12109,38 @@ func NewListAdminHomeworksRequest(server string, params *ListAdminHomeworksParam
 		if params.Search != nil {
 
 			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "search", *params.Search, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.Page != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "page", *params.Page, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "integer", Format: "int64"}); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.PageSize != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "pageSize", *params.PageSize, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "integer", Format: "int64"}); err != nil {
 				return nil, err
 			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
 				return nil, err
@@ -12220,6 +12357,22 @@ func NewListAdminUsersRequest(server string, params *ListAdminUsersParams) (*htt
 		if params.Page != nil {
 
 			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "page", *params.Page, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "integer", Format: "int64"}); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.PageSize != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "pageSize", *params.PageSize, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "integer", Format: "int64"}); err != nil {
 				return nil, err
 			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
 				return nil, err
@@ -13086,6 +13239,54 @@ func NewListCommentsRequest(server string, params *ListCommentsParams) (*http.Re
 
 		}
 
+		if params.Page != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "page", *params.Page, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "integer", Format: "int64"}); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.PageSize != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "pageSize", *params.PageSize, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "integer", Format: "int64"}); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.Limit != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "limit", *params.Limit, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "integer", Format: "int64"}); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
 		queryURL.RawQuery = queryValues.Encode()
 	}
 
@@ -13480,6 +13681,22 @@ func NewListCoursesRequest(server string, params *ListCoursesParams) (*http.Requ
 		if params.Page != nil {
 
 			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "page", *params.Page, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "integer", Format: "int64"}); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.PageSize != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "pageSize", *params.PageSize, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "integer", Format: "int64"}); err != nil {
 				return nil, err
 			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
 				return nil, err
@@ -14745,6 +14962,22 @@ func NewListSchedulesRequest(server string, params *ListSchedulesParams) (*http.
 
 		}
 
+		if params.PageSize != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "pageSize", *params.PageSize, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "integer", Format: "int64"}); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
 		if params.Limit != nil {
 
 			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "limit", *params.Limit, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "integer", Format: "int64"}); err != nil {
@@ -14973,6 +15206,22 @@ func NewListSectionsRequest(server string, params *ListSectionsParams) (*http.Re
 		if params.Page != nil {
 
 			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "page", *params.Page, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "integer", Format: "int64"}); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.PageSize != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "pageSize", *params.PageSize, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "integer", Format: "int64"}); err != nil {
 				return nil, err
 			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
 				return nil, err
@@ -15326,6 +15575,22 @@ func NewListSemestersRequest(server string, params *ListSemestersParams) (*http.
 
 		}
 
+		if params.PageSize != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "pageSize", *params.PageSize, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "integer", Format: "int64"}); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
 		if params.Limit != nil {
 
 			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "limit", *params.Limit, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "integer", Format: "int64"}); err != nil {
@@ -15437,6 +15702,22 @@ func NewListTeachersRequest(server string, params *ListTeachersParams) (*http.Re
 		if params.Page != nil {
 
 			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "page", *params.Page, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "integer", Format: "int64"}); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.PageSize != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "pageSize", *params.PageSize, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "integer", Format: "int64"}); err != nil {
 				return nil, err
 			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
 				return nil, err
@@ -15826,7 +16107,7 @@ func NewUpdateTodoRequestWithBody(server string, id string, contentType string, 
 }
 
 // NewListUploadsRequest generates requests for ListUploads
-func NewListUploadsRequest(server string) (*http.Request, error) {
+func NewListUploadsRequest(server string, params *ListUploadsParams) (*http.Request, error) {
 	var err error
 
 	serverURL, err := url.Parse(server)
@@ -15842,6 +16123,60 @@ func NewListUploadsRequest(server string) (*http.Request, error) {
 	queryURL, err := serverURL.Parse(operationPath)
 	if err != nil {
 		return nil, err
+	}
+
+	if params != nil {
+		queryValues := queryURL.Query()
+
+		if params.Page != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "page", *params.Page, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "integer", Format: "int64"}); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.PageSize != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "pageSize", *params.PageSize, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "integer", Format: "int64"}); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.Limit != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "limit", *params.Limit, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "integer", Format: "int64"}); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		queryURL.RawQuery = queryValues.Encode()
 	}
 
 	req, err := http.NewRequest("GET", queryURL.String(), nil)
@@ -16462,7 +16797,7 @@ type ClientWithResponsesInterface interface {
 	UpdateTodoWithResponse(ctx context.Context, id string, body UpdateTodoJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateTodoResponse, error)
 
 	// ListUploadsWithResponse request
-	ListUploadsWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*ListUploadsResponse, error)
+	ListUploadsWithResponse(ctx context.Context, params *ListUploadsParams, reqEditors ...RequestEditorFn) (*ListUploadsResponse, error)
 
 	// CreateUploadWithBodyWithResponse request with any body
 	CreateUploadWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateUploadResponse, error)
@@ -16667,7 +17002,7 @@ func (r ListAdminSuspensionsResponse) StatusCode() int {
 type CreateAdminSuspensionResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON200      *AdminSuspensionResponseSchema
+	JSON201      *AdminSuspensionResponseSchema
 	JSON400      *OpenApiErrorSchema
 	JSON401      *OpenApiErrorSchema
 	JSON403      *OpenApiErrorSchema
@@ -17082,7 +17417,7 @@ func (r ListCommentsResponse) StatusCode() int {
 type CreateCommentResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON200      *IdResponseSchema
+	JSON201      *IdResponseSchema
 	JSON400      *OpenApiErrorSchema
 	JSON401      *OpenApiErrorSchema
 	JSON403      *OpenApiErrorSchema
@@ -17472,7 +17807,7 @@ func (r ListHomeworksResponse) StatusCode() int {
 type CreateHomeworkResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON200      *HomeworkCreateResponseSchema
+	JSON201      *HomeworkCreateResponseSchema
 	JSON400      *OpenApiErrorSchema
 	JSON401      *OpenApiErrorSchema
 	JSON403      *OpenApiErrorSchema
@@ -18061,7 +18396,7 @@ func (r ListTodosResponse) StatusCode() int {
 type CreateTodoResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON200      *IdResponseSchema
+	JSON201      *IdResponseSchema
 	JSON400      *OpenApiErrorSchema
 	JSON401      *OpenApiErrorSchema
 }
@@ -18185,6 +18520,7 @@ type ListUploadsResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *UploadsListResponseSchema
+	JSON400      *OpenApiErrorSchema
 	JSON401      *OpenApiErrorSchema
 }
 
@@ -19243,8 +19579,8 @@ func (c *ClientWithResponses) UpdateTodoWithResponse(ctx context.Context, id str
 }
 
 // ListUploadsWithResponse request returning *ListUploadsResponse
-func (c *ClientWithResponses) ListUploadsWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*ListUploadsResponse, error) {
-	rsp, err := c.ListUploads(ctx, reqEditors...)
+func (c *ClientWithResponses) ListUploadsWithResponse(ctx context.Context, params *ListUploadsParams, reqEditors ...RequestEditorFn) (*ListUploadsResponse, error) {
+	rsp, err := c.ListUploads(ctx, params, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
@@ -19660,12 +19996,12 @@ func ParseCreateAdminSuspensionResponse(rsp *http.Response) (*CreateAdminSuspens
 	}
 
 	switch {
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 201:
 		var dest AdminSuspensionResponseSchema
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
-		response.JSON200 = &dest
+		response.JSON201 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
 		var dest OpenApiErrorSchema
@@ -20389,12 +20725,12 @@ func ParseCreateCommentResponse(rsp *http.Response) (*CreateCommentResponse, err
 	}
 
 	switch {
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 201:
 		var dest IdResponseSchema
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
-		response.JSON200 = &dest
+		response.JSON201 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
 		var dest OpenApiErrorSchema
@@ -21065,12 +21401,12 @@ func ParseCreateHomeworkResponse(rsp *http.Response) (*CreateHomeworkResponse, e
 	}
 
 	switch {
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 201:
 		var dest HomeworkCreateResponseSchema
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
-		response.JSON200 = &dest
+		response.JSON201 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
 		var dest OpenApiErrorSchema
@@ -21988,12 +22324,12 @@ func ParseCreateTodoResponse(rsp *http.Response) (*CreateTodoResponse, error) {
 	}
 
 	switch {
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 201:
 		var dest IdResponseSchema
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
-		response.JSON200 = &dest
+		response.JSON201 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
 		var dest OpenApiErrorSchema
@@ -22215,6 +22551,13 @@ func ParseListUploadsResponse(rsp *http.Response) (*ListUploadsResponse, error) 
 			return nil, err
 		}
 		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest OpenApiErrorSchema
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
 		var dest OpenApiErrorSchema
