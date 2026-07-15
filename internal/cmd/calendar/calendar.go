@@ -90,10 +90,13 @@ func newCmdSet() *cobra.Command {
 		Short: "Replace calendar section subscriptions",
 		Args:  cobra.MinimumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
+			if strings.TrimSpace(semesterID) == "" {
+				return fmt.Errorf("--semester-id is required for calendar set")
+			}
 			return runCalendarBatch(cmd, args, openapi.CalendarSubscriptionBatchRequestSchemaActionSet, semesterID)
 		},
 	}
-	cmd.Flags().StringVar(&semesterID, "semester-id", "", "Semester ID to narrow code matches")
+	cmd.Flags().StringVar(&semesterID, "semester-id", "", "Semester ID whose subscriptions will be replaced")
 	return cmd
 }
 
