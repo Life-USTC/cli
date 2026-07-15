@@ -51,6 +51,16 @@ func newMatchSectionCodesBody(codes []string, semesterID string) openapi.MatchSe
 	}
 }
 
+func newSemesterScopedSubscriptionSetBody(sectionIDs []int, semesterID string) openapi.BatchUpdateCalendarSubscriptionJSONRequestBody {
+	semesterIDUnion := openapi.CalendarSubscriptionBatchRequestSchema_SemesterId{}
+	_ = semesterIDUnion.FromCalendarSubscriptionBatchRequestSchemaSemesterId0(semesterID)
+	return openapi.BatchUpdateCalendarSubscriptionJSONRequestBody{
+		Action:     openapi.CalendarSubscriptionBatchRequestSchemaActionSet,
+		SectionIds: &sectionIDs,
+		SemesterId: &semesterIDUnion,
+	}
+}
+
 func NewCmdSchool() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "school",
@@ -485,6 +495,7 @@ func newCmdSchoolSync() *cobra.Command {
 			}
 
 			allSectionIDs := map[int]struct{}{}
+			sectionIDsBySemester := map[string]map[int]struct{}{}
 			var allCurriculum []ustcschool.CurriculumItem
 			var allCodes []string
 			var matchedCodes []any
@@ -511,8 +522,14 @@ func newCmdSchoolSync() *cobra.Command {
 					return err
 				}
 				matchMap := cmdutil.AsMap(matchRaw)
+				semesterSectionIDs := sectionIDsBySemester[lifeSemesterID]
+				if semesterSectionIDs == nil {
+					semesterSectionIDs = map[int]struct{}{}
+					sectionIDsBySemester[lifeSemesterID] = semesterSectionIDs
+				}
 				for _, sectionID := range extractSectionIDs(matchMap["sections"]) {
 					allSectionIDs[sectionID] = struct{}{}
+					semesterSectionIDs[sectionID] = struct{}{}
 				}
 				allCurriculum = append(allCurriculum, curriculum.Items...)
 				allCodes = append(allCodes, codes...)
@@ -545,14 +562,22 @@ func newCmdSchoolSync() *cobra.Command {
 			}
 
 			if !dryRun && len(sectionIDs) > 0 {
-				subscribeRaw, err := api.ParseResponseRaw(apiClient.BatchUpdateCalendarSubscription(cmd.Context(), openapi.BatchUpdateCalendarSubscriptionJSONRequestBody{
-					Action:     openapi.CalendarSubscriptionBatchRequestSchemaActionSet,
-					SectionIds: &sectionIDs,
-				}))
-				if err != nil {
-					return err
+				semesterIDs := make([]string, 0, len(sectionIDsBySemester))
+				for lifeSemesterID := range sectionIDsBySemester {
+					semesterIDs = append(semesterIDs, lifeSemesterID)
 				}
-				result["subscription"] = subscribeRaw
+				slices.Sort(semesterIDs)
+				for _, lifeSemesterID := range semesterIDs {
+					semesterSectionIDs := sortedIntsFromSet(sectionIDsBySemester[lifeSemesterID])
+					if len(semesterSectionIDs) == 0 {
+						continue
+					}
+					subscribeRaw, err := api.ParseResponseRaw(apiClient.BatchUpdateCalendarSubscription(cmd.Context(), newSemesterScopedSubscriptionSetBody(semesterSectionIDs, lifeSemesterID)))
+					if err != nil {
+						return err
+					}
+					result["subscription"] = subscribeRaw
+				}
 			}
 
 			if output.IsJSON() {
