@@ -16859,6 +16859,8 @@ type ModerateAdminCommentResponse struct {
 	JSON401      *OpenApiErrorSchema
 	JSON403      *OpenApiErrorSchema
 	JSON404      *OpenApiErrorSchema
+	JSON429      *OpenApiErrorSchema
+	JSON503      *OpenApiErrorSchema
 }
 
 // Status returns HTTPResponse.Status
@@ -16909,6 +16911,8 @@ type UpdateAdminDescriptionResponse struct {
 	JSON401      *OpenApiErrorSchema
 	JSON403      *OpenApiErrorSchema
 	JSON404      *OpenApiErrorSchema
+	JSON429      *OpenApiErrorSchema
+	JSON503      *OpenApiErrorSchema
 }
 
 // Status returns HTTPResponse.Status
@@ -16958,6 +16962,8 @@ type DeleteAdminHomeworkResponse struct {
 	JSON401      *OpenApiErrorSchema
 	JSON403      *OpenApiErrorSchema
 	JSON404      *OpenApiErrorSchema
+	JSON429      *OpenApiErrorSchema
+	JSON503      *OpenApiErrorSchema
 }
 
 // Status returns HTTPResponse.Status
@@ -17007,6 +17013,8 @@ type CreateAdminSuspensionResponse struct {
 	JSON401      *OpenApiErrorSchema
 	JSON403      *OpenApiErrorSchema
 	JSON404      *OpenApiErrorSchema
+	JSON429      *OpenApiErrorSchema
+	JSON503      *OpenApiErrorSchema
 }
 
 // Status returns HTTPResponse.Status
@@ -17032,6 +17040,8 @@ type UpdateAdminSuspensionResponse struct {
 	JSON401      *OpenApiErrorSchema
 	JSON403      *OpenApiErrorSchema
 	JSON404      *OpenApiErrorSchema
+	JSON429      *OpenApiErrorSchema
+	JSON503      *OpenApiErrorSchema
 }
 
 // Status returns HTTPResponse.Status
@@ -17082,6 +17092,8 @@ type UpdateAdminUserResponse struct {
 	JSON401      *OpenApiErrorSchema
 	JSON403      *OpenApiErrorSchema
 	JSON404      *OpenApiErrorSchema
+	JSON429      *OpenApiErrorSchema
+	JSON503      *OpenApiErrorSchema
 }
 
 // Status returns HTTPResponse.Status
@@ -17176,6 +17188,8 @@ type SetBusPreferencesResponse struct {
 	JSON200      *BusPreferenceResponseSchema
 	JSON400      *OpenApiErrorSchema
 	JSON401      *OpenApiErrorSchema
+	JSON429      *OpenApiErrorSchema
+	JSON503      *OpenApiErrorSchema
 }
 
 // Status returns HTTPResponse.Status
@@ -17225,6 +17239,8 @@ type DeleteApiCalendarSubscriptionsResponse struct {
 	JSON400      *OpenApiErrorSchema
 	JSON401      *OpenApiErrorSchema
 	JSON404      *OpenApiErrorSchema
+	JSON429      *OpenApiErrorSchema
+	JSON503      *OpenApiErrorSchema
 }
 
 // Status returns HTTPResponse.Status
@@ -17250,6 +17266,8 @@ type AppendCalendarSubscriptionSectionsResponse struct {
 	JSON400      *OpenApiErrorSchema
 	JSON401      *OpenApiErrorSchema
 	JSON404      *OpenApiErrorSchema
+	JSON429      *OpenApiErrorSchema
+	JSON503      *OpenApiErrorSchema
 }
 
 // Status returns HTTPResponse.Status
@@ -17274,6 +17292,8 @@ type SetCalendarSubscriptionResponse struct {
 	JSON200      *CalendarSubscriptionCreateResponseSchema
 	JSON400      *OpenApiErrorSchema
 	JSON401      *OpenApiErrorSchema
+	JSON429      *OpenApiErrorSchema
+	JSON503      *OpenApiErrorSchema
 }
 
 // Status returns HTTPResponse.Status
@@ -17299,6 +17319,8 @@ type BatchUpdateCalendarSubscriptionResponse struct {
 	JSON400      *OpenApiErrorSchema
 	JSON401      *OpenApiErrorSchema
 	JSON404      *OpenApiErrorSchema
+	JSON429      *OpenApiErrorSchema
+	JSON503      *OpenApiErrorSchema
 }
 
 // Status returns HTTPResponse.Status
@@ -17347,6 +17369,8 @@ type PostApiCalendarSubscriptionsImportCodesResponse struct {
 	JSON400      *OpenApiErrorSchema
 	JSON401      *OpenApiErrorSchema
 	JSON404      *OpenApiErrorSchema
+	JSON429      *OpenApiErrorSchema
+	JSON503      *OpenApiErrorSchema
 }
 
 // Status returns HTTPResponse.Status
@@ -17422,6 +17446,8 @@ type CreateCommentResponse struct {
 	JSON401      *OpenApiErrorSchema
 	JSON403      *OpenApiErrorSchema
 	JSON404      *OpenApiErrorSchema
+	JSON429      *OpenApiErrorSchema
+	JSON503      *OpenApiErrorSchema
 }
 
 // Status returns HTTPResponse.Status
@@ -17447,6 +17473,8 @@ type DeleteApiCommentsBatchResponse struct {
 	JSON400      *OpenApiErrorSchema
 	JSON401      *OpenApiErrorSchema
 	JSON403      *OpenApiErrorSchema
+	JSON429      *OpenApiErrorSchema
+	JSON503      *OpenApiErrorSchema
 }
 
 // Status returns HTTPResponse.Status
@@ -17472,6 +17500,8 @@ type DeleteCommentResponse struct {
 	JSON401      *OpenApiErrorSchema
 	JSON403      *OpenApiErrorSchema
 	JSON404      *OpenApiErrorSchema
+	JSON429      *OpenApiErrorSchema
+	JSON503      *OpenApiErrorSchema
 }
 
 // Status returns HTTPResponse.Status
@@ -17522,6 +17552,8 @@ type UpdateCommentResponse struct {
 	JSON401      *OpenApiErrorSchema
 	JSON403      *OpenApiErrorSchema
 	JSON404      *OpenApiErrorSchema
+	JSON429      *OpenApiErrorSchema
+	JSON503      *OpenApiErrorSchema
 }
 
 // Status returns HTTPResponse.Status
@@ -17547,6 +17579,8 @@ type RemoveCommentReactionResponse struct {
 	JSON400      *OpenApiErrorSchema
 	JSON401      *OpenApiErrorSchema
 	JSON403      *OpenApiErrorSchema
+	JSON429      *OpenApiErrorSchema
+	JSON503      *OpenApiErrorSchema
 }
 
 // Status returns HTTPResponse.Status
@@ -17573,6 +17607,8 @@ type AddCommentReactionResponse struct {
 	JSON401      *OpenApiErrorSchema
 	JSON403      *OpenApiErrorSchema
 	JSON404      *OpenApiErrorSchema
+	JSON429      *OpenApiErrorSchema
+	JSON503      *OpenApiErrorSchema
 }
 
 // Status returns HTTPResponse.Status
@@ -17644,7 +17680,9 @@ type PinDashboardLinkResponse struct {
 	JSON200      *DashboardLinkPinResponseSchema
 	JSON400      *DashboardLinkPinResponseSchema
 	JSON401      *DashboardLinkPinResponseSchema
+	JSON429      *OpenApiErrorSchema
 	JSON500      *DashboardLinkPinResponseSchema
+	JSON503      *OpenApiErrorSchema
 }
 
 // Status returns HTTPResponse.Status
@@ -17669,7 +17707,9 @@ type PostApiDashboardLinksPinBatchResponse struct {
 	JSON200      *DashboardLinkPinResponseSchema
 	JSON400      *DashboardLinkPinResponseSchema
 	JSON401      *OpenApiErrorSchema
+	JSON429      *OpenApiErrorSchema
 	JSON500      *DashboardLinkPinResponseSchema
+	JSON503      *OpenApiErrorSchema
 }
 
 // Status returns HTTPResponse.Status
@@ -17762,6 +17802,8 @@ type UpsertDescriptionResponse struct {
 	JSON401      *OpenApiErrorSchema
 	JSON403      *OpenApiErrorSchema
 	JSON404      *OpenApiErrorSchema
+	JSON429      *OpenApiErrorSchema
+	JSON503      *OpenApiErrorSchema
 }
 
 // Status returns HTTPResponse.Status
@@ -17812,6 +17854,8 @@ type CreateHomeworkResponse struct {
 	JSON401      *OpenApiErrorSchema
 	JSON403      *OpenApiErrorSchema
 	JSON404      *OpenApiErrorSchema
+	JSON429      *OpenApiErrorSchema
+	JSON503      *OpenApiErrorSchema
 }
 
 // Status returns HTTPResponse.Status
@@ -17836,6 +17880,8 @@ type PutApiHomeworksCompletionsResponse struct {
 	JSON200      *HomeworkCompletionBatchResponseSchema
 	JSON400      *OpenApiErrorSchema
 	JSON401      *OpenApiErrorSchema
+	JSON429      *OpenApiErrorSchema
+	JSON503      *OpenApiErrorSchema
 }
 
 // Status returns HTTPResponse.Status
@@ -17861,6 +17907,8 @@ type DeleteHomeworkResponse struct {
 	JSON401      *OpenApiErrorSchema
 	JSON403      *OpenApiErrorSchema
 	JSON404      *OpenApiErrorSchema
+	JSON429      *OpenApiErrorSchema
+	JSON503      *OpenApiErrorSchema
 }
 
 // Status returns HTTPResponse.Status
@@ -17887,6 +17935,8 @@ type UpdateHomeworkResponse struct {
 	JSON401      *OpenApiErrorSchema
 	JSON403      *OpenApiErrorSchema
 	JSON404      *OpenApiErrorSchema
+	JSON429      *OpenApiErrorSchema
+	JSON503      *OpenApiErrorSchema
 }
 
 // Status returns HTTPResponse.Status
@@ -17912,6 +17962,8 @@ type SetHomeworkCompletionResponse struct {
 	JSON400      *OpenApiErrorSchema
 	JSON401      *OpenApiErrorSchema
 	JSON404      *OpenApiErrorSchema
+	JSON429      *OpenApiErrorSchema
+	JSON503      *OpenApiErrorSchema
 }
 
 // Status returns HTTPResponse.Status
@@ -18399,6 +18451,8 @@ type CreateTodoResponse struct {
 	JSON201      *IdResponseSchema
 	JSON400      *OpenApiErrorSchema
 	JSON401      *OpenApiErrorSchema
+	JSON429      *OpenApiErrorSchema
+	JSON503      *OpenApiErrorSchema
 }
 
 // Status returns HTTPResponse.Status
@@ -18423,6 +18477,8 @@ type DeleteApiTodosBatchResponse struct {
 	JSON200      *TodoBatchDeleteResponseSchema
 	JSON400      *OpenApiErrorSchema
 	JSON401      *OpenApiErrorSchema
+	JSON429      *OpenApiErrorSchema
+	JSON503      *OpenApiErrorSchema
 }
 
 // Status returns HTTPResponse.Status
@@ -18447,6 +18503,8 @@ type PatchApiTodosBatchResponse struct {
 	JSON200      *TodoCompletionBatchResponseSchema
 	JSON400      *OpenApiErrorSchema
 	JSON401      *OpenApiErrorSchema
+	JSON429      *OpenApiErrorSchema
+	JSON503      *OpenApiErrorSchema
 }
 
 // Status returns HTTPResponse.Status
@@ -18472,6 +18530,8 @@ type DeleteTodoResponse struct {
 	JSON401      *OpenApiErrorSchema
 	JSON403      *OpenApiErrorSchema
 	JSON404      *OpenApiErrorSchema
+	JSON429      *OpenApiErrorSchema
+	JSON503      *OpenApiErrorSchema
 }
 
 // Status returns HTTPResponse.Status
@@ -18498,6 +18558,8 @@ type UpdateTodoResponse struct {
 	JSON401      *OpenApiErrorSchema
 	JSON403      *OpenApiErrorSchema
 	JSON404      *OpenApiErrorSchema
+	JSON429      *OpenApiErrorSchema
+	JSON503      *OpenApiErrorSchema
 }
 
 // Status returns HTTPResponse.Status
@@ -18548,6 +18610,8 @@ type CreateUploadResponse struct {
 	JSON401      *OpenApiErrorSchema
 	JSON403      *OpenApiErrorSchema
 	JSON413      *OpenApiErrorSchema
+	JSON429      *OpenApiErrorSchema
+	JSON503      *OpenApiErrorSchema
 }
 
 // Status returns HTTPResponse.Status
@@ -18573,6 +18637,8 @@ type CompleteUploadResponse struct {
 	JSON400      *OpenApiErrorSchema
 	JSON401      *OpenApiErrorSchema
 	JSON403      *OpenApiErrorSchema
+	JSON429      *OpenApiErrorSchema
+	JSON503      *OpenApiErrorSchema
 }
 
 // Status returns HTTPResponse.Status
@@ -18599,6 +18665,8 @@ type PutApiUploadsObjectResponse struct {
 	JSON401      *OpenApiErrorSchema
 	JSON403      *OpenApiErrorSchema
 	JSON413      *OpenApiErrorSchema
+	JSON429      *OpenApiErrorSchema
+	JSON503      *OpenApiErrorSchema
 }
 
 // Status returns HTTPResponse.Status
@@ -18624,7 +18692,9 @@ type DeleteUploadResponse struct {
 	JSON401      *OpenApiErrorSchema
 	JSON403      *OpenApiErrorSchema
 	JSON404      *OpenApiErrorSchema
+	JSON429      *OpenApiErrorSchema
 	JSON502      *OpenApiErrorSchema
+	JSON503      *OpenApiErrorSchema
 }
 
 // Status returns HTTPResponse.Status
@@ -18651,6 +18721,8 @@ type UpdateUploadResponse struct {
 	JSON401      *OpenApiErrorSchema
 	JSON403      *OpenApiErrorSchema
 	JSON404      *OpenApiErrorSchema
+	JSON429      *OpenApiErrorSchema
+	JSON503      *OpenApiErrorSchema
 }
 
 // Status returns HTTPResponse.Status
@@ -19763,6 +19835,20 @@ func ParseModerateAdminCommentResponse(rsp *http.Response) (*ModerateAdminCommen
 		}
 		response.JSON404 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 429:
+		var dest OpenApiErrorSchema
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON429 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 503:
+		var dest OpenApiErrorSchema
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON503 = &dest
+
 	}
 
 	return response, nil
@@ -19857,6 +19943,20 @@ func ParseUpdateAdminDescriptionResponse(rsp *http.Response) (*UpdateAdminDescri
 		}
 		response.JSON404 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 429:
+		var dest OpenApiErrorSchema
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON429 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 503:
+		var dest OpenApiErrorSchema
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON503 = &dest
+
 	}
 
 	return response, nil
@@ -19943,6 +20043,20 @@ func ParseDeleteAdminHomeworkResponse(rsp *http.Response) (*DeleteAdminHomeworkR
 			return nil, err
 		}
 		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 429:
+		var dest OpenApiErrorSchema
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON429 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 503:
+		var dest OpenApiErrorSchema
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON503 = &dest
 
 	}
 
@@ -20031,6 +20145,20 @@ func ParseCreateAdminSuspensionResponse(rsp *http.Response) (*CreateAdminSuspens
 		}
 		response.JSON404 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 429:
+		var dest OpenApiErrorSchema
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON429 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 503:
+		var dest OpenApiErrorSchema
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON503 = &dest
+
 	}
 
 	return response, nil
@@ -20077,6 +20205,20 @@ func ParseUpdateAdminSuspensionResponse(rsp *http.Response) (*UpdateAdminSuspens
 			return nil, err
 		}
 		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 429:
+		var dest OpenApiErrorSchema
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON429 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 503:
+		var dest OpenApiErrorSchema
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON503 = &dest
 
 	}
 
@@ -20171,6 +20313,20 @@ func ParseUpdateAdminUserResponse(rsp *http.Response) (*UpdateAdminUserResponse,
 			return nil, err
 		}
 		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 429:
+		var dest OpenApiErrorSchema
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON429 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 503:
+		var dest OpenApiErrorSchema
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON503 = &dest
 
 	}
 
@@ -20318,6 +20474,20 @@ func ParseSetBusPreferencesResponse(rsp *http.Response) (*SetBusPreferencesRespo
 		}
 		response.JSON401 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 429:
+		var dest OpenApiErrorSchema
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON429 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 503:
+		var dest OpenApiErrorSchema
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON503 = &dest
+
 	}
 
 	return response, nil
@@ -20405,6 +20575,20 @@ func ParseDeleteApiCalendarSubscriptionsResponse(rsp *http.Response) (*DeleteApi
 		}
 		response.JSON404 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 429:
+		var dest OpenApiErrorSchema
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON429 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 503:
+		var dest OpenApiErrorSchema
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON503 = &dest
+
 	}
 
 	return response, nil
@@ -20452,6 +20636,20 @@ func ParseAppendCalendarSubscriptionSectionsResponse(rsp *http.Response) (*Appen
 		}
 		response.JSON404 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 429:
+		var dest OpenApiErrorSchema
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON429 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 503:
+		var dest OpenApiErrorSchema
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON503 = &dest
+
 	}
 
 	return response, nil
@@ -20491,6 +20689,20 @@ func ParseSetCalendarSubscriptionResponse(rsp *http.Response) (*SetCalendarSubsc
 			return nil, err
 		}
 		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 429:
+		var dest OpenApiErrorSchema
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON429 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 503:
+		var dest OpenApiErrorSchema
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON503 = &dest
 
 	}
 
@@ -20538,6 +20750,20 @@ func ParseBatchUpdateCalendarSubscriptionResponse(rsp *http.Response) (*BatchUpd
 			return nil, err
 		}
 		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 429:
+		var dest OpenApiErrorSchema
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON429 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 503:
+		var dest OpenApiErrorSchema
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON503 = &dest
 
 	}
 
@@ -20618,6 +20844,20 @@ func ParsePostApiCalendarSubscriptionsImportCodesResponse(rsp *http.Response) (*
 			return nil, err
 		}
 		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 429:
+		var dest OpenApiErrorSchema
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON429 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 503:
+		var dest OpenApiErrorSchema
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON503 = &dest
 
 	}
 
@@ -20760,6 +21000,20 @@ func ParseCreateCommentResponse(rsp *http.Response) (*CreateCommentResponse, err
 		}
 		response.JSON404 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 429:
+		var dest OpenApiErrorSchema
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON429 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 503:
+		var dest OpenApiErrorSchema
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON503 = &dest
+
 	}
 
 	return response, nil
@@ -20807,6 +21061,20 @@ func ParseDeleteApiCommentsBatchResponse(rsp *http.Response) (*DeleteApiComments
 		}
 		response.JSON403 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 429:
+		var dest OpenApiErrorSchema
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON429 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 503:
+		var dest OpenApiErrorSchema
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON503 = &dest
+
 	}
 
 	return response, nil
@@ -20853,6 +21121,20 @@ func ParseDeleteCommentResponse(rsp *http.Response) (*DeleteCommentResponse, err
 			return nil, err
 		}
 		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 429:
+		var dest OpenApiErrorSchema
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON429 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 503:
+		var dest OpenApiErrorSchema
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON503 = &dest
 
 	}
 
@@ -20948,6 +21230,20 @@ func ParseUpdateCommentResponse(rsp *http.Response) (*UpdateCommentResponse, err
 		}
 		response.JSON404 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 429:
+		var dest OpenApiErrorSchema
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON429 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 503:
+		var dest OpenApiErrorSchema
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON503 = &dest
+
 	}
 
 	return response, nil
@@ -20994,6 +21290,20 @@ func ParseRemoveCommentReactionResponse(rsp *http.Response) (*RemoveCommentReact
 			return nil, err
 		}
 		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 429:
+		var dest OpenApiErrorSchema
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON429 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 503:
+		var dest OpenApiErrorSchema
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON503 = &dest
 
 	}
 
@@ -21048,6 +21358,20 @@ func ParseAddCommentReactionResponse(rsp *http.Response) (*AddCommentReactionRes
 			return nil, err
 		}
 		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 429:
+		var dest OpenApiErrorSchema
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON429 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 503:
+		var dest OpenApiErrorSchema
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON503 = &dest
 
 	}
 
@@ -21162,12 +21486,26 @@ func ParsePinDashboardLinkResponse(rsp *http.Response) (*PinDashboardLinkRespons
 		}
 		response.JSON401 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 429:
+		var dest OpenApiErrorSchema
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON429 = &dest
+
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
 		var dest DashboardLinkPinResponseSchema
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
 		response.JSON500 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 503:
+		var dest OpenApiErrorSchema
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON503 = &dest
 
 	}
 
@@ -21209,12 +21547,26 @@ func ParsePostApiDashboardLinksPinBatchResponse(rsp *http.Response) (*PostApiDas
 		}
 		response.JSON401 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 429:
+		var dest OpenApiErrorSchema
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON429 = &dest
+
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
 		var dest DashboardLinkPinResponseSchema
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
 		response.JSON500 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 503:
+		var dest OpenApiErrorSchema
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON503 = &dest
 
 	}
 
@@ -21342,6 +21694,20 @@ func ParseUpsertDescriptionResponse(rsp *http.Response) (*UpsertDescriptionRespo
 		}
 		response.JSON404 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 429:
+		var dest OpenApiErrorSchema
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON429 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 503:
+		var dest OpenApiErrorSchema
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON503 = &dest
+
 	}
 
 	return response, nil
@@ -21436,6 +21802,20 @@ func ParseCreateHomeworkResponse(rsp *http.Response) (*CreateHomeworkResponse, e
 		}
 		response.JSON404 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 429:
+		var dest OpenApiErrorSchema
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON429 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 503:
+		var dest OpenApiErrorSchema
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON503 = &dest
+
 	}
 
 	return response, nil
@@ -21475,6 +21855,20 @@ func ParsePutApiHomeworksCompletionsResponse(rsp *http.Response) (*PutApiHomewor
 			return nil, err
 		}
 		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 429:
+		var dest OpenApiErrorSchema
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON429 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 503:
+		var dest OpenApiErrorSchema
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON503 = &dest
 
 	}
 
@@ -21522,6 +21916,20 @@ func ParseDeleteHomeworkResponse(rsp *http.Response) (*DeleteHomeworkResponse, e
 			return nil, err
 		}
 		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 429:
+		var dest OpenApiErrorSchema
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON429 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 503:
+		var dest OpenApiErrorSchema
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON503 = &dest
 
 	}
 
@@ -21577,6 +21985,20 @@ func ParseUpdateHomeworkResponse(rsp *http.Response) (*UpdateHomeworkResponse, e
 		}
 		response.JSON404 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 429:
+		var dest OpenApiErrorSchema
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON429 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 503:
+		var dest OpenApiErrorSchema
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON503 = &dest
+
 	}
 
 	return response, nil
@@ -21623,6 +22045,20 @@ func ParseSetHomeworkCompletionResponse(rsp *http.Response) (*SetHomeworkComplet
 			return nil, err
 		}
 		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 429:
+		var dest OpenApiErrorSchema
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON429 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 503:
+		var dest OpenApiErrorSchema
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON503 = &dest
 
 	}
 
@@ -22345,6 +22781,20 @@ func ParseCreateTodoResponse(rsp *http.Response) (*CreateTodoResponse, error) {
 		}
 		response.JSON401 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 429:
+		var dest OpenApiErrorSchema
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON429 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 503:
+		var dest OpenApiErrorSchema
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON503 = &dest
+
 	}
 
 	return response, nil
@@ -22385,6 +22835,20 @@ func ParseDeleteApiTodosBatchResponse(rsp *http.Response) (*DeleteApiTodosBatchR
 		}
 		response.JSON401 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 429:
+		var dest OpenApiErrorSchema
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON429 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 503:
+		var dest OpenApiErrorSchema
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON503 = &dest
+
 	}
 
 	return response, nil
@@ -22424,6 +22888,20 @@ func ParsePatchApiTodosBatchResponse(rsp *http.Response) (*PatchApiTodosBatchRes
 			return nil, err
 		}
 		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 429:
+		var dest OpenApiErrorSchema
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON429 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 503:
+		var dest OpenApiErrorSchema
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON503 = &dest
 
 	}
 
@@ -22471,6 +22949,20 @@ func ParseDeleteTodoResponse(rsp *http.Response) (*DeleteTodoResponse, error) {
 			return nil, err
 		}
 		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 429:
+		var dest OpenApiErrorSchema
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON429 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 503:
+		var dest OpenApiErrorSchema
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON503 = &dest
 
 	}
 
@@ -22525,6 +23017,20 @@ func ParseUpdateTodoResponse(rsp *http.Response) (*UpdateTodoResponse, error) {
 			return nil, err
 		}
 		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 429:
+		var dest OpenApiErrorSchema
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON429 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 503:
+		var dest OpenApiErrorSchema
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON503 = &dest
 
 	}
 
@@ -22620,6 +23126,20 @@ func ParseCreateUploadResponse(rsp *http.Response) (*CreateUploadResponse, error
 		}
 		response.JSON413 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 429:
+		var dest OpenApiErrorSchema
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON429 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 503:
+		var dest OpenApiErrorSchema
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON503 = &dest
+
 	}
 
 	return response, nil
@@ -22666,6 +23186,20 @@ func ParseCompleteUploadResponse(rsp *http.Response) (*CompleteUploadResponse, e
 			return nil, err
 		}
 		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 429:
+		var dest OpenApiErrorSchema
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON429 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 503:
+		var dest OpenApiErrorSchema
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON503 = &dest
 
 	}
 
@@ -22721,6 +23255,20 @@ func ParsePutApiUploadsObjectResponse(rsp *http.Response) (*PutApiUploadsObjectR
 		}
 		response.JSON413 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 429:
+		var dest OpenApiErrorSchema
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON429 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 503:
+		var dest OpenApiErrorSchema
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON503 = &dest
+
 	}
 
 	return response, nil
@@ -22768,12 +23316,26 @@ func ParseDeleteUploadResponse(rsp *http.Response) (*DeleteUploadResponse, error
 		}
 		response.JSON404 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 429:
+		var dest OpenApiErrorSchema
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON429 = &dest
+
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 502:
 		var dest OpenApiErrorSchema
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
 		response.JSON502 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 503:
+		var dest OpenApiErrorSchema
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON503 = &dest
 
 	}
 
@@ -22828,6 +23390,20 @@ func ParseUpdateUploadResponse(rsp *http.Response) (*UpdateUploadResponse, error
 			return nil, err
 		}
 		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 429:
+		var dest OpenApiErrorSchema
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON429 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 503:
+		var dest OpenApiErrorSchema
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON503 = &dest
 
 	}
 
