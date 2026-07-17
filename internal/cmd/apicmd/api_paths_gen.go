@@ -6,6 +6,7 @@ var generatedAPIPaths = []string{
 	"/.well-known/oauth-authorization-server/api/auth",
 	"/.well-known/oauth-authorization-server/api/mcp",
 	"/.well-known/oauth-protected-resource",
+	"/.well-known/oauth-protected-resource/api/graphql",
 	"/.well-known/oauth-protected-resource/api/mcp",
 	"/.well-known/openid-configuration",
 	"/.well-known/openid-configuration/api/auth",
