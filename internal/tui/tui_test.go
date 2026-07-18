@@ -7,6 +7,8 @@ import (
 	"github.com/Life-USTC/CLI/internal/output"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
+	"github.com/fatih/color"
+	"github.com/muesli/termenv"
 )
 
 func TestSearchResultFromInputs(t *testing.T) {
@@ -136,6 +138,53 @@ func TestSearchTableEditReturnsToSearchWithoutQuitting(t *testing.T) {
 	}
 }
 
+func TestSearchTableEnterSelectsHighlightedRow(t *testing.T) {
+	m := newTableModel(SearchTable{
+		OnSelect: func(map[string]any) error { return nil },
+	})
+	m.mode = tableModeResults
+	m.selected = 1
+	m.result.Rows = []map[string]any{
+		{"jwId": float64(101)},
+		{"jwId": float64(202)},
+	}
+
+	updated, cmd := m.Update(tea.KeyMsg{Type: tea.KeyEnter})
+	m = updated.(tableModel)
+	if cmd == nil {
+		t.Fatal("enter should quit the TUI before opening the selected result")
+	}
+	if _, ok := cmd().(tea.QuitMsg); !ok {
+		t.Fatalf("enter command = %T, want tea.QuitMsg", cmd())
+	}
+	if got := m.selection["jwId"]; got != float64(202) {
+		t.Fatalf("selected jwId = %v, want 202", got)
+	}
+}
+
+func TestSearchTableNoColorUsesAsciiProfile(t *testing.T) {
+	previousProfile := lipgloss.ColorProfile()
+	previousNoColor := output.Current.NoColor
+	previousFatihNoColor := color.NoColor
+	lipgloss.SetColorProfile(termenv.ANSI256)
+	output.Current.NoColor = true
+	color.NoColor = false
+	t.Cleanup(func() {
+		lipgloss.SetColorProfile(previousProfile)
+		output.Current.NoColor = previousNoColor
+		color.NoColor = previousFatihNoColor
+	})
+
+	restore := configureSearchTableColors()
+	if got := lipgloss.ColorProfile(); got != termenv.Ascii {
+		t.Fatalf("color profile = %v, want Ascii", got)
+	}
+	restore()
+	if got := lipgloss.ColorProfile(); got != termenv.ANSI256 {
+		t.Fatalf("restored color profile = %v, want ANSI256", got)
+	}
+}
+
 func TestSearchTableCanPageInsideResults(t *testing.T) {
 	var got SearchResult
 	m := newTableModel(SearchTable{
@@ -183,6 +232,7 @@ func TestSearchTableResultsFitCompactWindow(t *testing.T) {
 		Fetch: func(SearchResult) (TableResult, error) {
 			return TableResult{}, nil
 		},
+		OnSelect: func(map[string]any) error { return nil },
 	})
 	updated, _ := m.Update(tea.WindowSizeMsg{Width: 40, Height: 12})
 	m = updated.(tableModel)
@@ -207,6 +257,69 @@ func TestSearchTableResultsFitCompactWindow(t *testing.T) {
 	}
 	if renderedHeight := lipgloss.Height(rendered); renderedHeight > 12 {
 		t.Fatalf("rendered height = %d, want <= 12\n%s", renderedHeight, rendered)
+	}
+	if !strings.Contains(rendered, "enter open") {
+		t.Fatalf("compact results did not show the selection action:\n%s", rendered)
+	}
+}
+
+func TestSearchTableSelectedCJKRowDoesNotWrapWithColor(t *testing.T) {
+	previousProfile := lipgloss.ColorProfile()
+	lipgloss.SetColorProfile(termenv.ANSI256)
+	t.Cleanup(func() {
+		lipgloss.SetColorProfile(previousProfile)
+	})
+
+	m := newTableModel(SearchTable{
+		Columns: []output.Column{
+			{Header: "Code", Key: "code"},
+			{Header: "Name", Key: "namePrimary"},
+			{Header: "Level", Key: "educationLevel.name"},
+			{Header: "JW ID", Key: "jwId"},
+		},
+		OnSelect: func(map[string]any) error { return nil },
+	})
+	m.mode = tableModeResults
+	m.result = TableResult{
+		Rows: []map[string]any{
+			{
+				"code":           "MATH101",
+				"namePrimary":    "数学分析(B1)",
+				"educationLevel": map[string]any{"name": "Undergraduate"},
+				"jwId":           "course-jw-id-1",
+			},
+			{
+				"code":           "MATH102",
+				"namePrimary":    "线性代数(A)",
+				"educationLevel": map[string]any{"name": "Undergraduate"},
+				"jwId":           "course-jw-id-2",
+			},
+		},
+		Total: 2,
+		Page:  1,
+	}
+
+	for _, size := range []struct {
+		width  int
+		height int
+	}{
+		{width: 80, height: 24},
+		{width: 40, height: 12},
+	} {
+		updated, _ := m.Update(tea.WindowSizeMsg{Width: size.width, Height: size.height})
+		sized := updated.(tableModel)
+		selected := sized.View()
+		sized.selected = len(sized.result.Rows)
+		unselected := sized.View()
+		if selectedHeight, unselectedHeight := lipgloss.Height(selected), lipgloss.Height(unselected); selectedHeight != unselectedHeight {
+			t.Fatalf("%dx%d selected view height = %d, unselected view height = %d\nselected:\n%s\nunselected:\n%s", size.width, size.height, selectedHeight, unselectedHeight, selected, unselected)
+		}
+		if selectedHeight := lipgloss.Height(selected); selectedHeight > size.height {
+			t.Fatalf("%dx%d selected view height = %d\n%s", size.width, size.height, selectedHeight, selected)
+		}
+		if selectedWidth := lipgloss.Width(selected); selectedWidth > size.width {
+			t.Fatalf("%dx%d selected view width = %d\n%s", size.width, size.height, selectedWidth, selected)
+		}
 	}
 }
 
