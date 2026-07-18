@@ -250,6 +250,10 @@ func openBrowser(url string) error {
 	return cmd.Start()
 }
 
+func callbackRedirectURI(addr net.Addr) string {
+	return fmt.Sprintf("http://%s/callback", addr.String())
+}
+
 // Login runs the full OAuth2 Authorization Code + PKCE flow.
 // Returns a credential to store.
 func Login(server string) (*config.Credential, error) {
@@ -274,8 +278,7 @@ func Login(server string) (*config.Credential, error) {
 	if err != nil {
 		return nil, err
 	}
-	port := listener.Addr().(*net.TCPAddr).Port
-	redirectURI := fmt.Sprintf("http://localhost:%d/callback", port)
+	redirectURI := callbackRedirectURI(listener.Addr())
 
 	// Register client
 	clientInfo, err := registerClient(regEndpoint, redirectURI)
