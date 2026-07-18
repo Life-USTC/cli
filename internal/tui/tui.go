@@ -9,7 +9,9 @@ import (
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
+	"github.com/fatih/color"
 	"github.com/mattn/go-runewidth"
+	"github.com/muesli/termenv"
 )
 
 type SearchForm struct {
@@ -36,6 +38,7 @@ type SearchTable struct {
 	Form         SearchForm
 	Columns      []output.Column
 	Fetch        func(SearchResult) (TableResult, error)
+	OnSelect     func(map[string]any) error
 	EmptyMessage string
 }
 
@@ -48,17 +51,18 @@ const (
 )
 
 type tableModel struct {
-	spec     SearchTable
-	inputs   []textinput.Model
-	focus    int
-	err      string
-	mode     tableMode
-	query    SearchResult
-	result   TableResult
-	selected int
-	scroll   int
-	width    int
-	height   int
+	spec      SearchTable
+	inputs    []textinput.Model
+	focus     int
+	err       string
+	mode      tableMode
+	query     SearchResult
+	result    TableResult
+	selected  int
+	selection map[string]any
+	scroll    int
+	width     int
+	height    int
 }
 
 type tableFetchMsg struct {
@@ -70,9 +74,29 @@ func RunSearchTable(spec SearchTable) error {
 	if spec.Fetch == nil {
 		return fmt.Errorf("missing TUI fetch function")
 	}
+	restoreColorProfile := configureSearchTableColors()
+	defer restoreColorProfile()
+
 	model := newTableModel(spec)
-	_, err := tea.NewProgram(model, tea.WithAltScreen()).Run()
-	return err
+	finalModel, err := tea.NewProgram(model, tea.WithAltScreen()).Run()
+	if err != nil {
+		return err
+	}
+	if result, ok := finalModel.(tableModel); ok && result.selection != nil && spec.OnSelect != nil {
+		return spec.OnSelect(result.selection)
+	}
+	return nil
+}
+
+func configureSearchTableColors() func() {
+	if !output.Current.NoColor && !color.NoColor {
+		return func() {}
+	}
+	previous := lipgloss.ColorProfile()
+	lipgloss.SetColorProfile(termenv.Ascii)
+	return func() {
+		lipgloss.SetColorProfile(previous)
+	}
 }
 
 func newTableModel(spec SearchTable) tableModel {
@@ -191,7 +215,16 @@ func (m tableModel) updateResults(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 	switch msg.String() {
 	case "ctrl+c", "esc", "q":
 		return m, tea.Quit
-	case "/", "e", "enter":
+	case "/", "e":
+		m.mode = tableModeSearch
+		m.err = ""
+		m = m.focusInput(0)
+		return m, nil
+	case "enter":
+		if m.spec.OnSelect != nil && len(m.result.Rows) > 0 {
+			m.selection = m.result.Rows[m.selected]
+			return m, tea.Quit
+		}
 		m.mode = tableModeSearch
 		m.err = ""
 		m = m.focusInput(0)
@@ -288,7 +321,7 @@ func (m tableModel) searchView() string {
 	}
 
 	body := lipgloss.JoinVertical(lipgloss.Left, parts...)
-	return formBoxStyle.Width(contentWidth).Render(body)
+	return renderFormBox(body, contentWidth)
 }
 
 func (m tableModel) loadingView() string {
@@ -302,7 +335,7 @@ func (m tableModel) loadingView() string {
 		"",
 		mutedStyle.Render("esc quit"),
 	)
-	return formBoxStyle.Width(contentWidth).Render(body)
+	return renderFormBox(body, contentWidth)
 }
 
 func (m tableModel) resultsView() string {
@@ -324,10 +357,10 @@ func (m tableModel) resultsView() string {
 			mutedStyle.Width(contentWidth).Render(helpText),
 		)
 		body := lipgloss.JoinVertical(lipgloss.Left, parts...)
-		return formBoxStyle.Width(contentWidth).Render(body)
+		return renderFormBox(body, contentWidth)
 	}
 
-	parts = append(parts, mutedStyle.Render(resultSummary(m.result)))
+	parts = append(parts, mutedStyle.Width(contentWidth).Render(resultSummary(m.result)))
 	if len(m.result.Rows) == 0 {
 		msg := m.spec.EmptyMessage
 		if msg == "" {
@@ -350,7 +383,15 @@ func (m tableModel) resultsView() string {
 		parts = append(parts, "", mutedStyle.Width(contentWidth).Render(helpText))
 	}
 	body := lipgloss.JoinVertical(lipgloss.Left, parts...)
-	return formBoxStyle.Width(contentWidth).Render(body)
+	return renderFormBox(body, contentWidth)
+}
+
+func renderFormBox(body string, width int) string {
+	lines := strings.Split(body, "\n")
+	for i, line := range lines {
+		lines[i] = line + strings.Repeat(" ", max(0, width-lipgloss.Width(line)))
+	}
+	return formBoxStyle.Render(strings.Join(lines, "\n"))
 }
 
 func (m tableModel) renderTable(width int) string {
@@ -366,7 +407,7 @@ func (m tableModel) renderTable(width int) string {
 		absolute := m.scroll + i
 		line := tableLine(cols, row, colWidths, gap, width, false)
 		if absolute == m.selected {
-			line = selectedRowStyle.Width(width).Render(line)
+			line = selectedRowStyle.Render(line)
 		}
 		lines = append(lines, line)
 	}
@@ -427,20 +468,40 @@ func (m tableModel) canPageNext() bool {
 
 func (m tableModel) resultsHelpText(compact bool) string {
 	if compact {
+		if m.spec.OnSelect != nil && len(m.result.Rows) > 0 {
+			if m.canPageNext() || m.currentPage() > 1 {
+				return "enter open • p/n • / edit • esc"
+			}
+			return "enter open • ↑/↓ • / edit • esc"
+		}
 		if m.canPageNext() || m.currentPage() > 1 {
 			return "p/n page  •  / edit  •  esc"
 		}
 		return "↑/↓  •  r  •  / edit  •  esc"
 	}
-	parts := []string{"↑/↓ move", "r refresh"}
-	if m.currentPage() > 1 {
-		parts = append(parts, "p prev")
+	if m.spec.OnSelect == nil || len(m.result.Rows) == 0 {
+		parts := []string{"↑/↓ move", "r refresh"}
+		if m.currentPage() > 1 {
+			parts = append(parts, "p prev")
+		}
+		if m.canPageNext() {
+			parts = append(parts, "n next")
+		}
+		parts = append(parts, "/ edit search", "esc quit")
+		return strings.Join(parts, "  •  ")
 	}
-	if m.canPageNext() {
+	parts := make([]string, 0, 6)
+	parts = append(parts, "enter open")
+	parts = append(parts, "↑/↓ move", "r refresh")
+	if m.currentPage() > 1 && m.canPageNext() {
+		parts = append(parts, "p/n page")
+	} else if m.currentPage() > 1 {
+		parts = append(parts, "p prev")
+	} else if m.canPageNext() {
 		parts = append(parts, "n next")
 	}
-	parts = append(parts, "/ edit search", "esc quit")
-	return strings.Join(parts, "  •  ")
+	parts = append(parts, "/ edit", "esc quit")
+	return strings.Join(parts, " • ")
 }
 
 func (m tableModel) focusNext() tableModel {
@@ -476,8 +537,6 @@ func (m tableModel) resultFromInputs() (SearchResult, error) {
 		Page:   0,
 	}, nil
 }
-
-
 
 func (m tableModel) searchContentWidth() int {
 	return contentWidth(m.width, maxFormOuterWidth)
@@ -614,7 +673,6 @@ func tableLine(cols []output.Column, row map[string]any, widths []int, gap, widt
 func tableCell(row map[string]any, col output.Column) string {
 	return output.FormatCellPlain(output.Resolve(row, col.Key))
 }
-
 
 func padCell(value string, width int) string {
 	if runewidth.StringWidth(value) > width {
