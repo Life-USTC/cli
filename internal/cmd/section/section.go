@@ -107,6 +107,9 @@ func runSectionList(cmd *cobra.Command, opts sectionListOpts) error {
 				}
 				return tui.TableResult{Rows: list.Rows, Total: list.Total, Page: list.Page}, nil
 			},
+			OnSelect: func(row map[string]any) error {
+				return runSectionView(cmd, fmt.Sprint(row["jwId"]))
+			},
 			EmptyMessage: "No sections found. Try a broader search.",
 		})
 	}
@@ -156,7 +159,7 @@ func sectionListColumns() []output.Column {
 		{Header: "Course", Key: "course.namePrimary"},
 		{Header: "Semester", Key: "semester.name"},
 		{Header: "Campus", Key: "campus.name"},
-		{Header: "ID", Key: "id"},
+		{Header: "JW ID", Key: "jwId"},
 	}
 }
 
@@ -194,60 +197,64 @@ func newCmdView() *cobra.Command {
 		Short:   "View section details",
 		Args:    cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			c, err := api.NewTypedClient(cmdutil.ServerFromCmd(cmd), false)
-			if err != nil {
-				return err
-			}
-			jwID, err := cmdutil.Int64PtrIfSet(args[0])
-			if err != nil {
-				return err
-			}
-			data, err := api.ParseResponseRaw(c.GetSection(api.Ctx(), *jwID))
-			if err != nil {
-				return err
-			}
-			if output.IsJSON() {
-				return output.JSON(data)
-			}
-			m := cmdutil.AsMap(data)
-			output.KVWithTitle([]output.KVPair{
-				{Key: "ID", Value: output.Resolve(m, "id")},
-				{Key: "Code", Value: output.Resolve(m, "code")},
-				{Key: "Course", Value: output.Resolve(m, "course.namePrimary")},
-				{Key: "Semester", Value: output.Resolve(m, "semester.name")},
-				{Key: "Campus", Value: output.Resolve(m, "campus.name")},
-			}, "Section")
-
-			if teachers, ok := m["teachers"].([]any); ok && len(teachers) > 0 {
-				fmt.Println()
-				output.Bold("  Teachers")
-				rows := cmdutil.RowsFromAny(teachers)
-				output.Table(rows, []output.Column{
-					{Header: "ID", Key: "id"},
-					{Header: "Name", Key: "namePrimary"},
-					{Header: "Name (EN)", Key: "nameSecondary"},
-					{Header: "Department", Key: "department.name"},
-				})
-			}
-
-			if schedules, ok := m["schedules"].([]any); ok && len(schedules) > 0 {
-				fmt.Println()
-				output.Bold("  Schedules")
-				rows := cmdutil.RowsFromAny(schedules)
-				for _, row := range rows {
-					normalizeScheduleRow(row)
-				}
-				output.Table(rows, []output.Column{
-					{Header: "ID", Key: "id"},
-					{Header: "Day", Key: "weekday"},
-					{Header: "Start", Key: "startTime"},
-					{Header: "End", Key: "endTime"},
-					{Header: "Place", Key: "customPlace"},
-				})
-			}
-			return nil
+			return runSectionView(cmd, args[0])
 		},
 	}
+}
+
+func runSectionView(cmd *cobra.Command, id string) error {
+	c, err := api.NewTypedClient(cmdutil.ServerFromCmd(cmd), false)
+	if err != nil {
+		return err
+	}
+	jwID, err := cmdutil.Int64PtrIfSet(id)
+	if err != nil {
+		return err
+	}
+	data, err := api.ParseResponseRaw(c.GetSection(api.Ctx(), *jwID, nil))
+	if err != nil {
+		return err
+	}
+	if output.IsJSON() {
+		return output.JSON(data)
+	}
+	m := cmdutil.AsMap(data)
+	output.KVWithTitle([]output.KVPair{
+		{Key: "ID", Value: output.Resolve(m, "id")},
+		{Key: "Code", Value: output.Resolve(m, "code")},
+		{Key: "Course", Value: output.Resolve(m, "course.namePrimary")},
+		{Key: "Semester", Value: output.Resolve(m, "semester.name")},
+		{Key: "Campus", Value: output.Resolve(m, "campus.name")},
+	}, "Section")
+
+	if teachers, ok := m["teachers"].([]any); ok && len(teachers) > 0 {
+		fmt.Println()
+		output.Bold("  Teachers")
+		rows := cmdutil.RowsFromAny(teachers)
+		output.Table(rows, []output.Column{
+			{Header: "ID", Key: "id"},
+			{Header: "Name", Key: "namePrimary"},
+			{Header: "Name (EN)", Key: "nameSecondary"},
+			{Header: "Department", Key: "department.name"},
+		})
+	}
+
+	if schedules, ok := m["schedules"].([]any); ok && len(schedules) > 0 {
+		fmt.Println()
+		output.Bold("  Schedules")
+		rows := cmdutil.RowsFromAny(schedules)
+		for _, row := range rows {
+			normalizeScheduleRow(row)
+		}
+		output.Table(rows, []output.Column{
+			{Header: "ID", Key: "id"},
+			{Header: "Day", Key: "weekday"},
+			{Header: "Start", Key: "startTime"},
+			{Header: "End", Key: "endTime"},
+			{Header: "Place", Key: "customPlace"},
+		})
+	}
+	return nil
 }
 
 func newCmdSchedules() *cobra.Command {

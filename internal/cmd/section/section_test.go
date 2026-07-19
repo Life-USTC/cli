@@ -119,3 +119,11 @@ func TestNormalizeScheduleRow_FullRow(t *testing.T) {
 		t.Errorf("endTime: got %v, want 10:40", got)
 	}
 }
+
+func TestSectionListUsesViewIdentifier(t *testing.T) {
+	columns := sectionListColumns()
+	last := columns[len(columns)-1]
+	if last.Header != "JW ID" || last.Key != "jwId" {
+		t.Fatalf("last column = %#v, want JW ID backed by jwId", last)
+	}
+}

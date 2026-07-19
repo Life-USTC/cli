@@ -3,12 +3,39 @@ package auth
 import (
 	"crypto/rand"
 	"crypto/rsa"
+	"net"
+	"net/url"
+	"strconv"
 	"testing"
 	"time"
 
 	"github.com/go-jose/go-jose/v4"
 	"github.com/go-jose/go-jose/v4/jwt"
 )
+
+func TestCallbackRedirectURIMatchesLoopbackListener(t *testing.T) {
+	listener, err := net.Listen("tcp", "127.0.0.1:0")
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() {
+		_ = listener.Close()
+	})
+
+	redirect, err := url.Parse(callbackRedirectURI(listener.Addr()))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if redirect.Hostname() != "127.0.0.1" {
+		t.Fatalf("redirect hostname = %q, want 127.0.0.1", redirect.Hostname())
+	}
+	if redirect.Port() != strconv.Itoa(listener.Addr().(*net.TCPAddr).Port) {
+		t.Fatalf("redirect port = %q, listener = %q", redirect.Port(), listener.Addr())
+	}
+	if redirect.Path != "/callback" {
+		t.Fatalf("redirect path = %q, want /callback", redirect.Path)
+	}
+}
 
 func TestVerifiedTokenToCredentialUsesFallbacks(t *testing.T) {
 	vt := &VerifiedToken{

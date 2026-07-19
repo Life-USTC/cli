@@ -1379,6 +1379,42 @@ func (e RemoveCommentReactionParamsType) Valid() bool {
 	}
 }
 
+// Defines values for ListCoursesParamsLocale.
+const (
+	ListCoursesParamsLocaleEnUs ListCoursesParamsLocale = "en-us"
+	ListCoursesParamsLocaleZhCn ListCoursesParamsLocale = "zh-cn"
+)
+
+// Valid indicates whether the value is a known member of the ListCoursesParamsLocale enum.
+func (e ListCoursesParamsLocale) Valid() bool {
+	switch e {
+	case ListCoursesParamsLocaleEnUs:
+		return true
+	case ListCoursesParamsLocaleZhCn:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for GetCourseParamsLocale.
+const (
+	GetCourseParamsLocaleEnUs GetCourseParamsLocale = "en-us"
+	GetCourseParamsLocaleZhCn GetCourseParamsLocale = "zh-cn"
+)
+
+// Valid indicates whether the value is a known member of the GetCourseParamsLocale enum.
+func (e GetCourseParamsLocale) Valid() bool {
+	switch e {
+	case GetCourseParamsLocaleEnUs:
+		return true
+	case GetCourseParamsLocaleZhCn:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for GetDescriptionParamsTargetType.
 const (
 	GetDescriptionParamsTargetTypeCourse   GetDescriptionParamsTargetType = "course"
@@ -1451,6 +1487,132 @@ func (e GetApiMeSubscriptionsSchedulesParamsLocale) Valid() bool {
 	case GetApiMeSubscriptionsSchedulesParamsLocaleEnUs:
 		return true
 	case GetApiMeSubscriptionsSchedulesParamsLocaleZhCn:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ListSchedulesParamsLocale.
+const (
+	ListSchedulesParamsLocaleEnUs ListSchedulesParamsLocale = "en-us"
+	ListSchedulesParamsLocaleZhCn ListSchedulesParamsLocale = "zh-cn"
+)
+
+// Valid indicates whether the value is a known member of the ListSchedulesParamsLocale enum.
+func (e ListSchedulesParamsLocale) Valid() bool {
+	switch e {
+	case ListSchedulesParamsLocaleEnUs:
+		return true
+	case ListSchedulesParamsLocaleZhCn:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ListSectionsParamsLocale.
+const (
+	ListSectionsParamsLocaleEnUs ListSectionsParamsLocale = "en-us"
+	ListSectionsParamsLocaleZhCn ListSectionsParamsLocale = "zh-cn"
+)
+
+// Valid indicates whether the value is a known member of the ListSectionsParamsLocale enum.
+func (e ListSectionsParamsLocale) Valid() bool {
+	switch e {
+	case ListSectionsParamsLocaleEnUs:
+		return true
+	case ListSectionsParamsLocaleZhCn:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for GetSectionParamsLocale.
+const (
+	GetSectionParamsLocaleEnUs GetSectionParamsLocale = "en-us"
+	GetSectionParamsLocaleZhCn GetSectionParamsLocale = "zh-cn"
+)
+
+// Valid indicates whether the value is a known member of the GetSectionParamsLocale enum.
+func (e GetSectionParamsLocale) Valid() bool {
+	switch e {
+	case GetSectionParamsLocaleEnUs:
+		return true
+	case GetSectionParamsLocaleZhCn:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for GetSectionScheduleGroupsParamsLocale.
+const (
+	GetSectionScheduleGroupsParamsLocaleEnUs GetSectionScheduleGroupsParamsLocale = "en-us"
+	GetSectionScheduleGroupsParamsLocaleZhCn GetSectionScheduleGroupsParamsLocale = "zh-cn"
+)
+
+// Valid indicates whether the value is a known member of the GetSectionScheduleGroupsParamsLocale enum.
+func (e GetSectionScheduleGroupsParamsLocale) Valid() bool {
+	switch e {
+	case GetSectionScheduleGroupsParamsLocaleEnUs:
+		return true
+	case GetSectionScheduleGroupsParamsLocaleZhCn:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for GetSectionSchedulesParamsLocale.
+const (
+	GetSectionSchedulesParamsLocaleEnUs GetSectionSchedulesParamsLocale = "en-us"
+	GetSectionSchedulesParamsLocaleZhCn GetSectionSchedulesParamsLocale = "zh-cn"
+)
+
+// Valid indicates whether the value is a known member of the GetSectionSchedulesParamsLocale enum.
+func (e GetSectionSchedulesParamsLocale) Valid() bool {
+	switch e {
+	case GetSectionSchedulesParamsLocaleEnUs:
+		return true
+	case GetSectionSchedulesParamsLocaleZhCn:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for ListTeachersParamsLocale.
+const (
+	ListTeachersParamsLocaleEnUs ListTeachersParamsLocale = "en-us"
+	ListTeachersParamsLocaleZhCn ListTeachersParamsLocale = "zh-cn"
+)
+
+// Valid indicates whether the value is a known member of the ListTeachersParamsLocale enum.
+func (e ListTeachersParamsLocale) Valid() bool {
+	switch e {
+	case ListTeachersParamsLocaleEnUs:
+		return true
+	case ListTeachersParamsLocaleZhCn:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for GetTeacherParamsLocale.
+const (
+	EnUs GetTeacherParamsLocale = "en-us"
+	ZhCn GetTeacherParamsLocale = "zh-cn"
+)
+
+// Valid indicates whether the value is a known member of the GetTeacherParamsLocale enum.
+func (e GetTeacherParamsLocale) Valid() bool {
+	switch e {
+	case EnUs:
+		return true
+	case ZhCn:
 		return true
 	default:
 		return false
@@ -1531,11 +1693,12 @@ type UnderscoreUnderscoreSchema0 struct {
 		Type             string `json:"type"`
 		ViewerHasReacted bool   `json:"viewerHasReacted"`
 	} `json:"reactions"`
-	Replies    []UnderscoreUnderscoreSchema0 `json:"replies"`
-	RootId     *string                       `json:"rootId"`
-	Status     string                        `json:"status"`
-	UpdatedAt  time.Time                     `json:"updatedAt"`
-	Visibility string                        `json:"visibility"`
+	RenderedBody string                        `json:"renderedBody"`
+	Replies      []UnderscoreUnderscoreSchema0 `json:"replies"`
+	RootId       *string                       `json:"rootId"`
+	Status       string                        `json:"status"`
+	UpdatedAt    time.Time                     `json:"updatedAt"`
+	Visibility   string                        `json:"visibility"`
 }
 
 // UnderscoreUnderscoreSchema1 defines model for __schema1.
@@ -1573,11 +1736,12 @@ type UnderscoreUnderscoreSchema1 struct {
 		Type             string `json:"type"`
 		ViewerHasReacted bool   `json:"viewerHasReacted"`
 	} `json:"reactions"`
-	Replies    []UnderscoreUnderscoreSchema1 `json:"replies"`
-	RootId     *string                       `json:"rootId"`
-	Status     string                        `json:"status"`
-	UpdatedAt  time.Time                     `json:"updatedAt"`
-	Visibility string                        `json:"visibility"`
+	RenderedBody string                        `json:"renderedBody"`
+	Replies      []UnderscoreUnderscoreSchema1 `json:"replies"`
+	RootId       *string                       `json:"rootId"`
+	Status       string                        `json:"status"`
+	UpdatedAt    time.Time                     `json:"updatedAt"`
+	Visibility   string                        `json:"visibility"`
 }
 
 // AdminCommentsResponseSchema defines model for adminCommentsResponseSchema.
@@ -2361,6 +2525,7 @@ type CalendarSubscriptionAppendResponseSchema struct {
 			PeriodsPerWeek          *int            `json:"periodsPerWeek"`
 			PracticePeriods         *float32        `json:"practicePeriods"`
 			Remark                  *string         `json:"remark"`
+			RetiredAt               *time.Time      `json:"retiredAt,omitempty"`
 			RoomTypeId              *int            `json:"roomTypeId"`
 			ScheduleJsonParams      interface{}     `json:"scheduleJsonParams"`
 			ScheduleRemark          *string         `json:"scheduleRemark"`
@@ -2368,6 +2533,7 @@ type CalendarSubscriptionAppendResponseSchema struct {
 			SelectedStdCount        *int            `json:"selectedStdCount"`
 			Semester                *SemesterSchema `json:"semester"`
 			SemesterId              *int            `json:"semesterId"`
+			SourceLastSeenAt        *time.Time      `json:"sourceLastSeenAt,omitempty"`
 			StdCount                *int            `json:"stdCount"`
 			SuggestScheduleWeekInfo *string         `json:"suggestScheduleWeekInfo"`
 			SuggestScheduleWeeks    interface{}     `json:"suggestScheduleWeeks"`
@@ -2514,6 +2680,7 @@ type CalendarSubscriptionBatchResponseSchema struct {
 		PeriodsPerWeek          *int            `json:"periodsPerWeek"`
 		PracticePeriods         *float32        `json:"practicePeriods"`
 		Remark                  *string         `json:"remark"`
+		RetiredAt               *time.Time      `json:"retiredAt,omitempty"`
 		RoomTypeId              *int            `json:"roomTypeId"`
 		ScheduleJsonParams      interface{}     `json:"scheduleJsonParams"`
 		ScheduleRemark          *string         `json:"scheduleRemark"`
@@ -2521,6 +2688,7 @@ type CalendarSubscriptionBatchResponseSchema struct {
 		SelectedStdCount        *int            `json:"selectedStdCount"`
 		Semester                *SemesterSchema `json:"semester"`
 		SemesterId              *int            `json:"semesterId"`
+		SourceLastSeenAt        *time.Time      `json:"sourceLastSeenAt,omitempty"`
 		StdCount                *int            `json:"stdCount"`
 		SuggestScheduleWeekInfo *string         `json:"suggestScheduleWeekInfo"`
 		SuggestScheduleWeeks    interface{}     `json:"suggestScheduleWeeks"`
@@ -2643,6 +2811,7 @@ type CalendarSubscriptionBatchResponseSchema struct {
 			PeriodsPerWeek          *int            `json:"periodsPerWeek"`
 			PracticePeriods         *float32        `json:"practicePeriods"`
 			Remark                  *string         `json:"remark"`
+			RetiredAt               *time.Time      `json:"retiredAt,omitempty"`
 			RoomTypeId              *int            `json:"roomTypeId"`
 			ScheduleJsonParams      interface{}     `json:"scheduleJsonParams"`
 			ScheduleRemark          *string         `json:"scheduleRemark"`
@@ -2650,6 +2819,7 @@ type CalendarSubscriptionBatchResponseSchema struct {
 			SelectedStdCount        *int            `json:"selectedStdCount"`
 			Semester                *SemesterSchema `json:"semester"`
 			SemesterId              *int            `json:"semesterId"`
+			SourceLastSeenAt        *time.Time      `json:"sourceLastSeenAt,omitempty"`
 			StdCount                *int            `json:"stdCount"`
 			SuggestScheduleWeekInfo *string         `json:"suggestScheduleWeekInfo"`
 			SuggestScheduleWeeks    interface{}     `json:"suggestScheduleWeeks"`
@@ -2786,6 +2956,7 @@ type CalendarSubscriptionCreateResponseSchema struct {
 			PeriodsPerWeek          *int            `json:"periodsPerWeek"`
 			PracticePeriods         *float32        `json:"practicePeriods"`
 			Remark                  *string         `json:"remark"`
+			RetiredAt               *time.Time      `json:"retiredAt,omitempty"`
 			RoomTypeId              *int            `json:"roomTypeId"`
 			ScheduleJsonParams      interface{}     `json:"scheduleJsonParams"`
 			ScheduleRemark          *string         `json:"scheduleRemark"`
@@ -2793,6 +2964,7 @@ type CalendarSubscriptionCreateResponseSchema struct {
 			SelectedStdCount        *int            `json:"selectedStdCount"`
 			Semester                *SemesterSchema `json:"semester"`
 			SemesterId              *int            `json:"semesterId"`
+			SourceLastSeenAt        *time.Time      `json:"sourceLastSeenAt,omitempty"`
 			StdCount                *int            `json:"stdCount"`
 			SuggestScheduleWeekInfo *string         `json:"suggestScheduleWeekInfo"`
 			SuggestScheduleWeeks    interface{}     `json:"suggestScheduleWeeks"`
@@ -2913,6 +3085,7 @@ type CalendarSubscriptionImportResponseSchema struct {
 		PeriodsPerWeek          *int            `json:"periodsPerWeek"`
 		PracticePeriods         *float32        `json:"practicePeriods"`
 		Remark                  *string         `json:"remark"`
+		RetiredAt               *time.Time      `json:"retiredAt,omitempty"`
 		RoomTypeId              *int            `json:"roomTypeId"`
 		ScheduleJsonParams      interface{}     `json:"scheduleJsonParams"`
 		ScheduleRemark          *string         `json:"scheduleRemark"`
@@ -2920,6 +3093,7 @@ type CalendarSubscriptionImportResponseSchema struct {
 		SelectedStdCount        *int            `json:"selectedStdCount"`
 		Semester                *SemesterSchema `json:"semester"`
 		SemesterId              *int            `json:"semesterId"`
+		SourceLastSeenAt        *time.Time      `json:"sourceLastSeenAt,omitempty"`
 		StdCount                *int            `json:"stdCount"`
 		SuggestScheduleWeekInfo *string         `json:"suggestScheduleWeekInfo"`
 		SuggestScheduleWeeks    interface{}     `json:"suggestScheduleWeeks"`
@@ -3034,6 +3208,7 @@ type CalendarSubscriptionImportResponseSchema struct {
 		PeriodsPerWeek          *int            `json:"periodsPerWeek"`
 		PracticePeriods         *float32        `json:"practicePeriods"`
 		Remark                  *string         `json:"remark"`
+		RetiredAt               *time.Time      `json:"retiredAt,omitempty"`
 		RoomTypeId              *int            `json:"roomTypeId"`
 		ScheduleJsonParams      interface{}     `json:"scheduleJsonParams"`
 		ScheduleRemark          *string         `json:"scheduleRemark"`
@@ -3041,6 +3216,7 @@ type CalendarSubscriptionImportResponseSchema struct {
 		SelectedStdCount        *int            `json:"selectedStdCount"`
 		Semester                *SemesterSchema `json:"semester"`
 		SemesterId              *int            `json:"semesterId"`
+		SourceLastSeenAt        *time.Time      `json:"sourceLastSeenAt,omitempty"`
 		StdCount                *int            `json:"stdCount"`
 		SuggestScheduleWeekInfo *string         `json:"suggestScheduleWeekInfo"`
 		SuggestScheduleWeeks    interface{}     `json:"suggestScheduleWeeks"`
@@ -3156,6 +3332,7 @@ type CalendarSubscriptionImportResponseSchema struct {
 		PeriodsPerWeek          *int            `json:"periodsPerWeek"`
 		PracticePeriods         *float32        `json:"practicePeriods"`
 		Remark                  *string         `json:"remark"`
+		RetiredAt               *time.Time      `json:"retiredAt,omitempty"`
 		RoomTypeId              *int            `json:"roomTypeId"`
 		ScheduleJsonParams      interface{}     `json:"scheduleJsonParams"`
 		ScheduleRemark          *string         `json:"scheduleRemark"`
@@ -3163,6 +3340,7 @@ type CalendarSubscriptionImportResponseSchema struct {
 		SelectedStdCount        *int            `json:"selectedStdCount"`
 		Semester                *SemesterSchema `json:"semester"`
 		SemesterId              *int            `json:"semesterId"`
+		SourceLastSeenAt        *time.Time      `json:"sourceLastSeenAt,omitempty"`
 		StdCount                *int            `json:"stdCount"`
 		SuggestScheduleWeekInfo *string         `json:"suggestScheduleWeekInfo"`
 		SuggestScheduleWeeks    interface{}     `json:"suggestScheduleWeeks"`
@@ -3285,6 +3463,7 @@ type CalendarSubscriptionImportResponseSchema struct {
 			PeriodsPerWeek          *int            `json:"periodsPerWeek"`
 			PracticePeriods         *float32        `json:"practicePeriods"`
 			Remark                  *string         `json:"remark"`
+			RetiredAt               *time.Time      `json:"retiredAt,omitempty"`
 			RoomTypeId              *int            `json:"roomTypeId"`
 			ScheduleJsonParams      interface{}     `json:"scheduleJsonParams"`
 			ScheduleRemark          *string         `json:"scheduleRemark"`
@@ -3292,6 +3471,7 @@ type CalendarSubscriptionImportResponseSchema struct {
 			SelectedStdCount        *int            `json:"selectedStdCount"`
 			Semester                *SemesterSchema `json:"semester"`
 			SemesterId              *int            `json:"semesterId"`
+			SourceLastSeenAt        *time.Time      `json:"sourceLastSeenAt,omitempty"`
 			StdCount                *int            `json:"stdCount"`
 			SuggestScheduleWeekInfo *string         `json:"suggestScheduleWeekInfo"`
 			SuggestScheduleWeeks    interface{}     `json:"suggestScheduleWeeks"`
@@ -3433,6 +3613,7 @@ type CalendarSubscriptionQueryResponseSchema struct {
 		PeriodsPerWeek          *int            `json:"periodsPerWeek"`
 		PracticePeriods         *float32        `json:"practicePeriods"`
 		Remark                  *string         `json:"remark"`
+		RetiredAt               *time.Time      `json:"retiredAt,omitempty"`
 		RoomTypeId              *int            `json:"roomTypeId"`
 		ScheduleJsonParams      interface{}     `json:"scheduleJsonParams"`
 		ScheduleRemark          *string         `json:"scheduleRemark"`
@@ -3440,6 +3621,7 @@ type CalendarSubscriptionQueryResponseSchema struct {
 		SelectedStdCount        *int            `json:"selectedStdCount"`
 		Semester                *SemesterSchema `json:"semester"`
 		SemesterId              *int            `json:"semesterId"`
+		SourceLastSeenAt        *time.Time      `json:"sourceLastSeenAt,omitempty"`
 		StdCount                *int            `json:"stdCount"`
 		SuggestScheduleWeekInfo *string         `json:"suggestScheduleWeekInfo"`
 		SuggestScheduleWeeks    interface{}     `json:"suggestScheduleWeeks"`
@@ -3575,6 +3757,7 @@ type CalendarSubscriptionRemoveResponseSchema struct {
 			PeriodsPerWeek          *int            `json:"periodsPerWeek"`
 			PracticePeriods         *float32        `json:"practicePeriods"`
 			Remark                  *string         `json:"remark"`
+			RetiredAt               *time.Time      `json:"retiredAt,omitempty"`
 			RoomTypeId              *int            `json:"roomTypeId"`
 			ScheduleJsonParams      interface{}     `json:"scheduleJsonParams"`
 			ScheduleRemark          *string         `json:"scheduleRemark"`
@@ -3582,6 +3765,7 @@ type CalendarSubscriptionRemoveResponseSchema struct {
 			SelectedStdCount        *int            `json:"selectedStdCount"`
 			Semester                *SemesterSchema `json:"semester"`
 			SemesterId              *int            `json:"semesterId"`
+			SourceLastSeenAt        *time.Time      `json:"sourceLastSeenAt,omitempty"`
 			StdCount                *int            `json:"stdCount"`
 			SuggestScheduleWeekInfo *string         `json:"suggestScheduleWeekInfo"`
 			SuggestScheduleWeeks    interface{}     `json:"suggestScheduleWeeks"`
@@ -3958,6 +4142,7 @@ type CompactOverviewResponseSchema struct {
 				PeriodsPerWeek          *int            `json:"periodsPerWeek"`
 				PracticePeriods         *float32        `json:"practicePeriods"`
 				Remark                  *string         `json:"remark"`
+				RetiredAt               *time.Time      `json:"retiredAt,omitempty"`
 				RoomTypeId              *int            `json:"roomTypeId"`
 				ScheduleJsonParams      interface{}     `json:"scheduleJsonParams"`
 				ScheduleRemark          *string         `json:"scheduleRemark"`
@@ -3965,6 +4150,7 @@ type CompactOverviewResponseSchema struct {
 				SelectedStdCount        *int            `json:"selectedStdCount"`
 				Semester                *SemesterSchema `json:"semester"`
 				SemesterId              *int            `json:"semesterId"`
+				SourceLastSeenAt        *time.Time      `json:"sourceLastSeenAt,omitempty"`
 				StdCount                *int            `json:"stdCount"`
 				SuggestScheduleWeekInfo *string         `json:"suggestScheduleWeekInfo"`
 				SuggestScheduleWeeks    interface{}     `json:"suggestScheduleWeeks"`
@@ -4053,6 +4239,7 @@ type CompactOverviewResponseSchema struct {
 				PeriodsPerWeek          *int            `json:"periodsPerWeek"`
 				PracticePeriods         *float32        `json:"practicePeriods"`
 				Remark                  *string         `json:"remark"`
+				RetiredAt               *time.Time      `json:"retiredAt,omitempty"`
 				RoomTypeId              *int            `json:"roomTypeId"`
 				ScheduleJsonParams      interface{}     `json:"scheduleJsonParams"`
 				ScheduleRemark          *string         `json:"scheduleRemark"`
@@ -4060,6 +4247,7 @@ type CompactOverviewResponseSchema struct {
 				SelectedStdCount        *int            `json:"selectedStdCount"`
 				Semester                *SemesterSchema `json:"semester"`
 				SemesterId              *int            `json:"semesterId"`
+				SourceLastSeenAt        *time.Time      `json:"sourceLastSeenAt,omitempty"`
 				StdCount                *int            `json:"stdCount"`
 				SuggestScheduleWeekInfo *string         `json:"suggestScheduleWeekInfo"`
 				SuggestScheduleWeeks    interface{}     `json:"suggestScheduleWeeks"`
@@ -4187,6 +4375,7 @@ type CompactOverviewResponseSchema struct {
 				PeriodsPerWeek          *int            `json:"periodsPerWeek"`
 				PracticePeriods         *float32        `json:"practicePeriods"`
 				Remark                  *string         `json:"remark"`
+				RetiredAt               *time.Time      `json:"retiredAt,omitempty"`
 				RoomTypeId              *int            `json:"roomTypeId"`
 				ScheduleJsonParams      interface{}     `json:"scheduleJsonParams"`
 				ScheduleRemark          *string         `json:"scheduleRemark"`
@@ -4194,6 +4383,7 @@ type CompactOverviewResponseSchema struct {
 				SelectedStdCount        *int            `json:"selectedStdCount"`
 				Semester                *SemesterSchema `json:"semester"`
 				SemesterId              *int            `json:"semesterId"`
+				SourceLastSeenAt        *time.Time      `json:"sourceLastSeenAt,omitempty"`
 				StdCount                *int            `json:"stdCount"`
 				SuggestScheduleWeekInfo *string         `json:"suggestScheduleWeekInfo"`
 				SuggestScheduleWeeks    interface{}     `json:"suggestScheduleWeeks"`
@@ -4336,6 +4526,7 @@ type CourseDetailSchema struct {
 		PeriodsPerWeek          *int            `json:"periodsPerWeek"`
 		PracticePeriods         *float32        `json:"practicePeriods"`
 		Remark                  *string         `json:"remark"`
+		RetiredAt               *time.Time      `json:"retiredAt,omitempty"`
 		RoomTypeId              *int            `json:"roomTypeId"`
 		ScheduleJsonParams      interface{}     `json:"scheduleJsonParams"`
 		ScheduleRemark          *string         `json:"scheduleRemark"`
@@ -4343,6 +4534,7 @@ type CourseDetailSchema struct {
 		SelectedStdCount        *int            `json:"selectedStdCount"`
 		Semester                *SemesterSchema `json:"semester"`
 		SemesterId              *int            `json:"semesterId"`
+		SourceLastSeenAt        *time.Time      `json:"sourceLastSeenAt,omitempty"`
 		StdCount                *int            `json:"stdCount"`
 		SuggestScheduleWeekInfo *string         `json:"suggestScheduleWeekInfo"`
 		SuggestScheduleWeeks    interface{}     `json:"suggestScheduleWeeks"`
@@ -4468,6 +4660,7 @@ type CurrentCalendarSubscriptionResponseSchema struct {
 			PeriodsPerWeek          *int            `json:"periodsPerWeek"`
 			PracticePeriods         *float32        `json:"practicePeriods"`
 			Remark                  *string         `json:"remark"`
+			RetiredAt               *time.Time      `json:"retiredAt,omitempty"`
 			RoomTypeId              *int            `json:"roomTypeId"`
 			ScheduleJsonParams      interface{}     `json:"scheduleJsonParams"`
 			ScheduleRemark          *string         `json:"scheduleRemark"`
@@ -4475,6 +4668,7 @@ type CurrentCalendarSubscriptionResponseSchema struct {
 			SelectedStdCount        *int            `json:"selectedStdCount"`
 			Semester                *SemesterSchema `json:"semester"`
 			SemesterId              *int            `json:"semesterId"`
+			SourceLastSeenAt        *time.Time      `json:"sourceLastSeenAt,omitempty"`
 			StdCount                *int            `json:"stdCount"`
 			SuggestScheduleWeekInfo *string         `json:"suggestScheduleWeekInfo"`
 			SuggestScheduleWeeks    interface{}     `json:"suggestScheduleWeeks"`
@@ -4652,7 +4846,8 @@ type DescriptionsResponseSchema struct {
 			Name     *string `json:"name"`
 			Username *string `json:"username"`
 		} `json:"lastEditedBy"`
-		UpdatedAt time.Time `json:"updatedAt"`
+		RenderedHtml string    `json:"renderedHtml"`
+		UpdatedAt    time.Time `json:"updatedAt"`
 	} `json:"description"`
 	History []struct {
 		CreatedAt time.Time `json:"createdAt"`
@@ -4952,6 +5147,7 @@ type HomeworkCreateResponseSchema struct {
 			PeriodsPerWeek          *int            `json:"periodsPerWeek"`
 			PracticePeriods         *float32        `json:"practicePeriods"`
 			Remark                  *string         `json:"remark"`
+			RetiredAt               *time.Time      `json:"retiredAt,omitempty"`
 			RoomTypeId              *int            `json:"roomTypeId"`
 			ScheduleJsonParams      interface{}     `json:"scheduleJsonParams"`
 			ScheduleRemark          *string         `json:"scheduleRemark"`
@@ -4959,6 +5155,7 @@ type HomeworkCreateResponseSchema struct {
 			SelectedStdCount        *int            `json:"selectedStdCount"`
 			Semester                *SemesterSchema `json:"semester"`
 			SemesterId              *int            `json:"semesterId"`
+			SourceLastSeenAt        *time.Time      `json:"sourceLastSeenAt,omitempty"`
 			StdCount                *int            `json:"stdCount"`
 			SuggestScheduleWeekInfo *string         `json:"suggestScheduleWeekInfo"`
 			SuggestScheduleWeeks    interface{}     `json:"suggestScheduleWeeks"`
@@ -5103,6 +5300,7 @@ type HomeworkUpdateResponseSchema struct {
 			PeriodsPerWeek          *int            `json:"periodsPerWeek"`
 			PracticePeriods         *float32        `json:"practicePeriods"`
 			Remark                  *string         `json:"remark"`
+			RetiredAt               *time.Time      `json:"retiredAt,omitempty"`
 			RoomTypeId              *int            `json:"roomTypeId"`
 			ScheduleJsonParams      interface{}     `json:"scheduleJsonParams"`
 			ScheduleRemark          *string         `json:"scheduleRemark"`
@@ -5110,6 +5308,7 @@ type HomeworkUpdateResponseSchema struct {
 			SelectedStdCount        *int            `json:"selectedStdCount"`
 			Semester                *SemesterSchema `json:"semester"`
 			SemesterId              *int            `json:"semesterId"`
+			SourceLastSeenAt        *time.Time      `json:"sourceLastSeenAt,omitempty"`
 			StdCount                *int            `json:"stdCount"`
 			SuggestScheduleWeekInfo *string         `json:"suggestScheduleWeekInfo"`
 			SuggestScheduleWeeks    interface{}     `json:"suggestScheduleWeeks"`
@@ -5225,6 +5424,7 @@ type HomeworksListResponseSchema struct {
 			PeriodsPerWeek          *int            `json:"periodsPerWeek"`
 			PracticePeriods         *float32        `json:"practicePeriods"`
 			Remark                  *string         `json:"remark"`
+			RetiredAt               *time.Time      `json:"retiredAt,omitempty"`
 			RoomTypeId              *int            `json:"roomTypeId"`
 			ScheduleJsonParams      interface{}     `json:"scheduleJsonParams"`
 			ScheduleRemark          *string         `json:"scheduleRemark"`
@@ -5232,6 +5432,7 @@ type HomeworksListResponseSchema struct {
 			SelectedStdCount        *int            `json:"selectedStdCount"`
 			Semester                *SemesterSchema `json:"semester"`
 			SemesterId              *int            `json:"semesterId"`
+			SourceLastSeenAt        *time.Time      `json:"sourceLastSeenAt,omitempty"`
 			StdCount                *int            `json:"stdCount"`
 			SuggestScheduleWeekInfo *string         `json:"suggestScheduleWeekInfo"`
 			SuggestScheduleWeeks    interface{}     `json:"suggestScheduleWeeks"`
@@ -5386,6 +5587,7 @@ type MatchSectionCodesResponseSchema struct {
 		PeriodsPerWeek          *int            `json:"periodsPerWeek"`
 		PracticePeriods         *float32        `json:"practicePeriods"`
 		Remark                  *string         `json:"remark"`
+		RetiredAt               *time.Time      `json:"retiredAt,omitempty"`
 		RoomTypeId              *int            `json:"roomTypeId"`
 		ScheduleJsonParams      interface{}     `json:"scheduleJsonParams"`
 		ScheduleRemark          *string         `json:"scheduleRemark"`
@@ -5393,6 +5595,7 @@ type MatchSectionCodesResponseSchema struct {
 		SelectedStdCount        *int            `json:"selectedStdCount"`
 		Semester                *SemesterSchema `json:"semester"`
 		SemesterId              *int            `json:"semesterId"`
+		SourceLastSeenAt        *time.Time      `json:"sourceLastSeenAt,omitempty"`
 		StdCount                *int            `json:"stdCount"`
 		SuggestScheduleWeekInfo *string         `json:"suggestScheduleWeekInfo"`
 		SuggestScheduleWeeks    interface{}     `json:"suggestScheduleWeeks"`
@@ -5753,6 +5956,7 @@ type PaginatedScheduleResponseSchema struct {
 			PeriodsPerWeek          *int            `json:"periodsPerWeek"`
 			PracticePeriods         *float32        `json:"practicePeriods"`
 			Remark                  *string         `json:"remark"`
+			RetiredAt               *time.Time      `json:"retiredAt,omitempty"`
 			RoomTypeId              *int            `json:"roomTypeId"`
 			ScheduleJsonParams      interface{}     `json:"scheduleJsonParams"`
 			ScheduleRemark          *string         `json:"scheduleRemark"`
@@ -5760,6 +5964,7 @@ type PaginatedScheduleResponseSchema struct {
 			SelectedStdCount        *int            `json:"selectedStdCount"`
 			Semester                *SemesterSchema `json:"semester"`
 			SemesterId              *int            `json:"semesterId"`
+			SourceLastSeenAt        *time.Time      `json:"sourceLastSeenAt,omitempty"`
 			StdCount                *int            `json:"stdCount"`
 			SuggestScheduleWeekInfo *string         `json:"suggestScheduleWeekInfo"`
 			SuggestScheduleWeeks    interface{}     `json:"suggestScheduleWeeks"`
@@ -6057,11 +6262,12 @@ type SectionDetailSchema struct {
 		NameCn    string  `json:"nameCn"`
 		NameEn    *string `json:"nameEn"`
 	} `json:"openDepartment"`
-	OpenDepartmentId *int     `json:"openDepartmentId"`
-	Period           *int     `json:"period"`
-	PeriodsPerWeek   *int     `json:"periodsPerWeek"`
-	PracticePeriods  *float32 `json:"practicePeriods"`
-	Remark           *string  `json:"remark"`
+	OpenDepartmentId *int       `json:"openDepartmentId"`
+	Period           *int       `json:"period"`
+	PeriodsPerWeek   *int       `json:"periodsPerWeek"`
+	PracticePeriods  *float32   `json:"practicePeriods"`
+	Remark           *string    `json:"remark"`
+	RetiredAt        *time.Time `json:"retiredAt,omitempty"`
 	RoomType         *struct {
 		Code   string  `json:"code"`
 		Id     int     `json:"id"`
@@ -6104,6 +6310,7 @@ type SectionDetailSchema struct {
 	SelectedStdCount        *int            `json:"selectedStdCount"`
 	Semester                *SemesterSchema `json:"semester"`
 	SemesterId              *int            `json:"semesterId"`
+	SourceLastSeenAt        *time.Time      `json:"sourceLastSeenAt,omitempty"`
 	StdCount                *int            `json:"stdCount"`
 	SuggestScheduleWeekInfo *string         `json:"suggestScheduleWeekInfo"`
 	SuggestScheduleWeeks    interface{}     `json:"suggestScheduleWeeks"`
@@ -6289,6 +6496,7 @@ type SubscribedHomeworksResponseSchema struct {
 			PeriodsPerWeek          *int            `json:"periodsPerWeek"`
 			PracticePeriods         *float32        `json:"practicePeriods"`
 			Remark                  *string         `json:"remark"`
+			RetiredAt               *time.Time      `json:"retiredAt,omitempty"`
 			RoomTypeId              *int            `json:"roomTypeId"`
 			ScheduleJsonParams      interface{}     `json:"scheduleJsonParams"`
 			ScheduleRemark          *string         `json:"scheduleRemark"`
@@ -6296,6 +6504,7 @@ type SubscribedHomeworksResponseSchema struct {
 			SelectedStdCount        *int            `json:"selectedStdCount"`
 			Semester                *SemesterSchema `json:"semester"`
 			SemesterId              *int            `json:"semesterId"`
+			SourceLastSeenAt        *time.Time      `json:"sourceLastSeenAt,omitempty"`
 			StdCount                *int            `json:"stdCount"`
 			SuggestScheduleWeekInfo *string         `json:"suggestScheduleWeekInfo"`
 			SuggestScheduleWeeks    interface{}     `json:"suggestScheduleWeeks"`
@@ -6438,6 +6647,7 @@ type SubscribedSchedulesResponseSchema struct {
 			PeriodsPerWeek          *int            `json:"periodsPerWeek"`
 			PracticePeriods         *float32        `json:"practicePeriods"`
 			Remark                  *string         `json:"remark"`
+			RetiredAt               *time.Time      `json:"retiredAt,omitempty"`
 			RoomTypeId              *int            `json:"roomTypeId"`
 			ScheduleJsonParams      interface{}     `json:"scheduleJsonParams"`
 			ScheduleRemark          *string         `json:"scheduleRemark"`
@@ -6445,6 +6655,7 @@ type SubscribedSchedulesResponseSchema struct {
 			SelectedStdCount        *int            `json:"selectedStdCount"`
 			Semester                *SemesterSchema `json:"semester"`
 			SemesterId              *int            `json:"semesterId"`
+			SourceLastSeenAt        *time.Time      `json:"sourceLastSeenAt,omitempty"`
 			StdCount                *int            `json:"stdCount"`
 			SuggestScheduleWeekInfo *string         `json:"suggestScheduleWeekInfo"`
 			SuggestScheduleWeeks    interface{}     `json:"suggestScheduleWeeks"`
@@ -6584,6 +6795,7 @@ type TeacherDetailSchema struct {
 		PeriodsPerWeek          *int            `json:"periodsPerWeek"`
 		PracticePeriods         *float32        `json:"practicePeriods"`
 		Remark                  *string         `json:"remark"`
+		RetiredAt               *time.Time      `json:"retiredAt,omitempty"`
 		RoomTypeId              *int            `json:"roomTypeId"`
 		ScheduleJsonParams      interface{}     `json:"scheduleJsonParams"`
 		ScheduleRemark          *string         `json:"scheduleRemark"`
@@ -6591,6 +6803,7 @@ type TeacherDetailSchema struct {
 		SelectedStdCount        *int            `json:"selectedStdCount"`
 		Semester                *SemesterSchema `json:"semester"`
 		SemesterId              *int            `json:"semesterId"`
+		SourceLastSeenAt        *time.Time      `json:"sourceLastSeenAt,omitempty"`
 		StdCount                *int            `json:"stdCount"`
 		SuggestScheduleWeekInfo *string         `json:"suggestScheduleWeekInfo"`
 		SuggestScheduleWeeks    interface{}     `json:"suggestScheduleWeeks"`
@@ -7019,11 +7232,12 @@ type RemoveCommentReactionParamsType string
 
 // ListCoursesParams defines parameters for ListCourses.
 type ListCoursesParams struct {
-	Search           *string `form:"search,omitempty" json:"search,omitempty"`
-	EducationLevelId *int64  `form:"educationLevelId,omitempty" json:"educationLevelId,omitempty"`
-	CategoryId       *int64  `form:"categoryId,omitempty" json:"categoryId,omitempty"`
-	ClassTypeId      *int64  `form:"classTypeId,omitempty" json:"classTypeId,omitempty"`
-	Page             *int64  `form:"page,omitempty" json:"page,omitempty"`
+	Locale           *ListCoursesParamsLocale `form:"locale,omitempty" json:"locale,omitempty"`
+	Search           *string                  `form:"search,omitempty" json:"search,omitempty"`
+	EducationLevelId *int64                   `form:"educationLevelId,omitempty" json:"educationLevelId,omitempty"`
+	CategoryId       *int64                   `form:"categoryId,omitempty" json:"categoryId,omitempty"`
+	ClassTypeId      *int64                   `form:"classTypeId,omitempty" json:"classTypeId,omitempty"`
+	Page             *int64                   `form:"page,omitempty" json:"page,omitempty"`
 
 	// PageSize Number of items per page.
 	PageSize *int64 `form:"pageSize,omitempty" json:"pageSize,omitempty"`
@@ -7031,6 +7245,17 @@ type ListCoursesParams struct {
 	// Limit Deprecated alias for pageSize. pageSize takes precedence when both are supplied.
 	Limit *int64 `form:"limit,omitempty" json:"limit,omitempty"`
 }
+
+// ListCoursesParamsLocale defines parameters for ListCourses.
+type ListCoursesParamsLocale string
+
+// GetCourseParams defines parameters for GetCourse.
+type GetCourseParams struct {
+	Locale *GetCourseParamsLocale `form:"locale,omitempty" json:"locale,omitempty"`
+}
+
+// GetCourseParamsLocale defines parameters for GetCourse.
+type GetCourseParamsLocale string
 
 // VisitDashboardLinkParams defines parameters for VisitDashboardLink.
 type VisitDashboardLinkParams struct {
@@ -7086,17 +7311,18 @@ type GetApiMeSubscriptionsSchedulesParamsLocale string
 
 // ListSchedulesParams defines parameters for ListSchedules.
 type ListSchedulesParams struct {
-	SectionId   *int64  `form:"sectionId,omitempty" json:"sectionId,omitempty"`
-	SectionJwId *int64  `form:"sectionJwId,omitempty" json:"sectionJwId,omitempty"`
-	SectionCode *string `form:"sectionCode,omitempty" json:"sectionCode,omitempty"`
-	TeacherId   *int64  `form:"teacherId,omitempty" json:"teacherId,omitempty"`
-	TeacherCode *string `form:"teacherCode,omitempty" json:"teacherCode,omitempty"`
-	RoomId      *int64  `form:"roomId,omitempty" json:"roomId,omitempty"`
-	RoomJwId    *int64  `form:"roomJwId,omitempty" json:"roomJwId,omitempty"`
-	Weekday     *int64  `form:"weekday,omitempty" json:"weekday,omitempty"`
-	DateFrom    *string `form:"dateFrom,omitempty" json:"dateFrom,omitempty"`
-	DateTo      *string `form:"dateTo,omitempty" json:"dateTo,omitempty"`
-	Page        *int64  `form:"page,omitempty" json:"page,omitempty"`
+	Locale      *ListSchedulesParamsLocale `form:"locale,omitempty" json:"locale,omitempty"`
+	SectionId   *int64                     `form:"sectionId,omitempty" json:"sectionId,omitempty"`
+	SectionJwId *int64                     `form:"sectionJwId,omitempty" json:"sectionJwId,omitempty"`
+	SectionCode *string                    `form:"sectionCode,omitempty" json:"sectionCode,omitempty"`
+	TeacherId   *int64                     `form:"teacherId,omitempty" json:"teacherId,omitempty"`
+	TeacherCode *string                    `form:"teacherCode,omitempty" json:"teacherCode,omitempty"`
+	RoomId      *int64                     `form:"roomId,omitempty" json:"roomId,omitempty"`
+	RoomJwId    *int64                     `form:"roomJwId,omitempty" json:"roomJwId,omitempty"`
+	Weekday     *int64                     `form:"weekday,omitempty" json:"weekday,omitempty"`
+	DateFrom    *string                    `form:"dateFrom,omitempty" json:"dateFrom,omitempty"`
+	DateTo      *string                    `form:"dateTo,omitempty" json:"dateTo,omitempty"`
+	Page        *int64                     `form:"page,omitempty" json:"page,omitempty"`
 
 	// PageSize Number of items per page.
 	PageSize *int64 `form:"pageSize,omitempty" json:"pageSize,omitempty"`
@@ -7104,21 +7330,25 @@ type ListSchedulesParams struct {
 	// Limit Deprecated alias for pageSize. pageSize takes precedence when both are supplied.
 	Limit *int64 `form:"limit,omitempty" json:"limit,omitempty"`
 }
+
+// ListSchedulesParamsLocale defines parameters for ListSchedules.
+type ListSchedulesParamsLocale string
 
 // ListSectionsParams defines parameters for ListSections.
 type ListSectionsParams struct {
-	CourseId     *int64  `form:"courseId,omitempty" json:"courseId,omitempty"`
-	CourseJwId   *int64  `form:"courseJwId,omitempty" json:"courseJwId,omitempty"`
-	SemesterId   *int64  `form:"semesterId,omitempty" json:"semesterId,omitempty"`
-	SemesterJwId *int64  `form:"semesterJwId,omitempty" json:"semesterJwId,omitempty"`
-	CampusId     *int64  `form:"campusId,omitempty" json:"campusId,omitempty"`
-	DepartmentId *int64  `form:"departmentId,omitempty" json:"departmentId,omitempty"`
-	TeacherId    *int64  `form:"teacherId,omitempty" json:"teacherId,omitempty"`
-	TeacherCode  *string `form:"teacherCode,omitempty" json:"teacherCode,omitempty"`
-	Search       *string `form:"search,omitempty" json:"search,omitempty"`
-	Ids          *string `form:"ids,omitempty" json:"ids,omitempty"`
-	JwIds        *string `form:"jwIds,omitempty" json:"jwIds,omitempty"`
-	Page         *int64  `form:"page,omitempty" json:"page,omitempty"`
+	Locale       *ListSectionsParamsLocale `form:"locale,omitempty" json:"locale,omitempty"`
+	CourseId     *int64                    `form:"courseId,omitempty" json:"courseId,omitempty"`
+	CourseJwId   *int64                    `form:"courseJwId,omitempty" json:"courseJwId,omitempty"`
+	SemesterId   *int64                    `form:"semesterId,omitempty" json:"semesterId,omitempty"`
+	SemesterJwId *int64                    `form:"semesterJwId,omitempty" json:"semesterJwId,omitempty"`
+	CampusId     *int64                    `form:"campusId,omitempty" json:"campusId,omitempty"`
+	DepartmentId *int64                    `form:"departmentId,omitempty" json:"departmentId,omitempty"`
+	TeacherId    *int64                    `form:"teacherId,omitempty" json:"teacherId,omitempty"`
+	TeacherCode  *string                   `form:"teacherCode,omitempty" json:"teacherCode,omitempty"`
+	Search       *string                   `form:"search,omitempty" json:"search,omitempty"`
+	Ids          *string                   `form:"ids,omitempty" json:"ids,omitempty"`
+	JwIds        *string                   `form:"jwIds,omitempty" json:"jwIds,omitempty"`
+	Page         *int64                    `form:"page,omitempty" json:"page,omitempty"`
 
 	// PageSize Number of items per page.
 	PageSize *int64 `form:"pageSize,omitempty" json:"pageSize,omitempty"`
@@ -7126,18 +7356,41 @@ type ListSectionsParams struct {
 	// Limit Deprecated alias for pageSize. pageSize takes precedence when both are supplied.
 	Limit *int64 `form:"limit,omitempty" json:"limit,omitempty"`
 }
+
+// ListSectionsParamsLocale defines parameters for ListSections.
+type ListSectionsParamsLocale string
 
 // GetSectionsCalendarParams defines parameters for GetSectionsCalendar.
 type GetSectionsCalendarParams struct {
 	SectionIds string `form:"sectionIds" json:"sectionIds"`
 }
 
+// GetSectionParams defines parameters for GetSection.
+type GetSectionParams struct {
+	Locale *GetSectionParamsLocale `form:"locale,omitempty" json:"locale,omitempty"`
+}
+
+// GetSectionParamsLocale defines parameters for GetSection.
+type GetSectionParamsLocale string
+
+// GetSectionScheduleGroupsParams defines parameters for GetSectionScheduleGroups.
+type GetSectionScheduleGroupsParams struct {
+	Locale *GetSectionScheduleGroupsParamsLocale `form:"locale,omitempty" json:"locale,omitempty"`
+}
+
+// GetSectionScheduleGroupsParamsLocale defines parameters for GetSectionScheduleGroups.
+type GetSectionScheduleGroupsParamsLocale string
+
 // GetSectionSchedulesParams defines parameters for GetSectionSchedules.
 type GetSectionSchedulesParams struct {
-	DateFrom *string `form:"dateFrom,omitempty" json:"dateFrom,omitempty"`
-	DateTo   *string `form:"dateTo,omitempty" json:"dateTo,omitempty"`
-	Limit    *int64  `form:"limit,omitempty" json:"limit,omitempty"`
+	Locale   *GetSectionSchedulesParamsLocale `form:"locale,omitempty" json:"locale,omitempty"`
+	DateFrom *string                          `form:"dateFrom,omitempty" json:"dateFrom,omitempty"`
+	DateTo   *string                          `form:"dateTo,omitempty" json:"dateTo,omitempty"`
+	Limit    *int64                           `form:"limit,omitempty" json:"limit,omitempty"`
 }
+
+// GetSectionSchedulesParamsLocale defines parameters for GetSectionSchedules.
+type GetSectionSchedulesParamsLocale string
 
 // ListSemestersParams defines parameters for ListSemesters.
 type ListSemestersParams struct {
@@ -7152,9 +7405,10 @@ type ListSemestersParams struct {
 
 // ListTeachersParams defines parameters for ListTeachers.
 type ListTeachersParams struct {
-	DepartmentId *int64  `form:"departmentId,omitempty" json:"departmentId,omitempty"`
-	Search       *string `form:"search,omitempty" json:"search,omitempty"`
-	Page         *int64  `form:"page,omitempty" json:"page,omitempty"`
+	Locale       *ListTeachersParamsLocale `form:"locale,omitempty" json:"locale,omitempty"`
+	DepartmentId *int64                    `form:"departmentId,omitempty" json:"departmentId,omitempty"`
+	Search       *string                   `form:"search,omitempty" json:"search,omitempty"`
+	Page         *int64                    `form:"page,omitempty" json:"page,omitempty"`
 
 	// PageSize Number of items per page.
 	PageSize *int64 `form:"pageSize,omitempty" json:"pageSize,omitempty"`
@@ -7162,6 +7416,17 @@ type ListTeachersParams struct {
 	// Limit Deprecated alias for pageSize. pageSize takes precedence when both are supplied.
 	Limit *int64 `form:"limit,omitempty" json:"limit,omitempty"`
 }
+
+// ListTeachersParamsLocale defines parameters for ListTeachers.
+type ListTeachersParamsLocale string
+
+// GetTeacherParams defines parameters for GetTeacher.
+type GetTeacherParams struct {
+	Locale *GetTeacherParamsLocale `form:"locale,omitempty" json:"locale,omitempty"`
+}
+
+// GetTeacherParamsLocale defines parameters for GetTeacher.
+type GetTeacherParamsLocale string
 
 // ListTodosParams defines parameters for ListTodos.
 type ListTodosParams struct {
@@ -10256,7 +10521,7 @@ type ClientInterface interface {
 	ListCourses(ctx context.Context, params *ListCoursesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// GetCourse request
-	GetCourse(ctx context.Context, jwId int64, reqEditors ...RequestEditorFn) (*http.Response, error)
+	GetCourse(ctx context.Context, jwId int64, params *GetCourseParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// PinDashboardLinkWithBody request with any body
 	PinDashboardLinkWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -10348,13 +10613,13 @@ type ClientInterface interface {
 	MatchSectionCodes(ctx context.Context, body MatchSectionCodesJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// GetSection request
-	GetSection(ctx context.Context, jwId int64, reqEditors ...RequestEditorFn) (*http.Response, error)
+	GetSection(ctx context.Context, jwId int64, params *GetSectionParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// GetSectionCalendar request
 	GetSectionCalendar(ctx context.Context, jwId int64, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// GetSectionScheduleGroups request
-	GetSectionScheduleGroups(ctx context.Context, jwId int64, reqEditors ...RequestEditorFn) (*http.Response, error)
+	GetSectionScheduleGroups(ctx context.Context, jwId int64, params *GetSectionScheduleGroupsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// GetSectionSchedules request
 	GetSectionSchedules(ctx context.Context, jwId int64, params *GetSectionSchedulesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -10369,7 +10634,7 @@ type ClientInterface interface {
 	ListTeachers(ctx context.Context, params *ListTeachersParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// GetTeacher request
-	GetTeacher(ctx context.Context, id int64, reqEditors ...RequestEditorFn) (*http.Response, error)
+	GetTeacher(ctx context.Context, id int64, params *GetTeacherParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// ListTodos request
 	ListTodos(ctx context.Context, params *ListTodosParams, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -10992,8 +11257,8 @@ func (c *Client) ListCourses(ctx context.Context, params *ListCoursesParams, req
 	return c.Client.Do(req)
 }
 
-func (c *Client) GetCourse(ctx context.Context, jwId int64, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewGetCourseRequest(c.Server, jwId)
+func (c *Client) GetCourse(ctx context.Context, jwId int64, params *GetCourseParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetCourseRequest(c.Server, jwId, params)
 	if err != nil {
 		return nil, err
 	}
@@ -11400,8 +11665,8 @@ func (c *Client) MatchSectionCodes(ctx context.Context, body MatchSectionCodesJS
 	return c.Client.Do(req)
 }
 
-func (c *Client) GetSection(ctx context.Context, jwId int64, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewGetSectionRequest(c.Server, jwId)
+func (c *Client) GetSection(ctx context.Context, jwId int64, params *GetSectionParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetSectionRequest(c.Server, jwId, params)
 	if err != nil {
 		return nil, err
 	}
@@ -11424,8 +11689,8 @@ func (c *Client) GetSectionCalendar(ctx context.Context, jwId int64, reqEditors 
 	return c.Client.Do(req)
 }
 
-func (c *Client) GetSectionScheduleGroups(ctx context.Context, jwId int64, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewGetSectionScheduleGroupsRequest(c.Server, jwId)
+func (c *Client) GetSectionScheduleGroups(ctx context.Context, jwId int64, params *GetSectionScheduleGroupsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetSectionScheduleGroupsRequest(c.Server, jwId, params)
 	if err != nil {
 		return nil, err
 	}
@@ -11484,8 +11749,8 @@ func (c *Client) ListTeachers(ctx context.Context, params *ListTeachersParams, r
 	return c.Client.Do(req)
 }
 
-func (c *Client) GetTeacher(ctx context.Context, id int64, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewGetTeacherRequest(c.Server, id)
+func (c *Client) GetTeacher(ctx context.Context, id int64, params *GetTeacherParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetTeacherRequest(c.Server, id, params)
 	if err != nil {
 		return nil, err
 	}
@@ -13614,6 +13879,22 @@ func NewListCoursesRequest(server string, params *ListCoursesParams) (*http.Requ
 	if params != nil {
 		queryValues := queryURL.Query()
 
+		if params.Locale != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "locale", *params.Locale, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
 		if params.Search != nil {
 
 			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "search", *params.Search, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
@@ -13738,7 +14019,7 @@ func NewListCoursesRequest(server string, params *ListCoursesParams) (*http.Requ
 }
 
 // NewGetCourseRequest generates requests for GetCourse
-func NewGetCourseRequest(server string, jwId int64) (*http.Request, error) {
+func NewGetCourseRequest(server string, jwId int64, params *GetCourseParams) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
@@ -13761,6 +14042,28 @@ func NewGetCourseRequest(server string, jwId int64) (*http.Request, error) {
 	queryURL, err := serverURL.Parse(operationPath)
 	if err != nil {
 		return nil, err
+	}
+
+	if params != nil {
+		queryValues := queryURL.Query()
+
+		if params.Locale != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "locale", *params.Locale, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		queryURL.RawQuery = queryValues.Encode()
 	}
 
 	req, err := http.NewRequest("GET", queryURL.String(), nil)
@@ -14786,6 +15089,22 @@ func NewListSchedulesRequest(server string, params *ListSchedulesParams) (*http.
 	if params != nil {
 		queryValues := queryURL.Query()
 
+		if params.Locale != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "locale", *params.Locale, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
 		if params.SectionId != nil {
 
 			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "sectionId", *params.SectionId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "integer", Format: "int64"}); err != nil {
@@ -15026,6 +15345,22 @@ func NewListSectionsRequest(server string, params *ListSectionsParams) (*http.Re
 
 	if params != nil {
 		queryValues := queryURL.Query()
+
+		if params.Locale != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "locale", *params.Locale, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
 
 		if params.CourseId != nil {
 
@@ -15348,7 +15683,7 @@ func NewMatchSectionCodesRequestWithBody(server string, contentType string, body
 }
 
 // NewGetSectionRequest generates requests for GetSection
-func NewGetSectionRequest(server string, jwId int64) (*http.Request, error) {
+func NewGetSectionRequest(server string, jwId int64, params *GetSectionParams) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
@@ -15371,6 +15706,28 @@ func NewGetSectionRequest(server string, jwId int64) (*http.Request, error) {
 	queryURL, err := serverURL.Parse(operationPath)
 	if err != nil {
 		return nil, err
+	}
+
+	if params != nil {
+		queryValues := queryURL.Query()
+
+		if params.Locale != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "locale", *params.Locale, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		queryURL.RawQuery = queryValues.Encode()
 	}
 
 	req, err := http.NewRequest("GET", queryURL.String(), nil)
@@ -15416,7 +15773,7 @@ func NewGetSectionCalendarRequest(server string, jwId int64) (*http.Request, err
 }
 
 // NewGetSectionScheduleGroupsRequest generates requests for GetSectionScheduleGroups
-func NewGetSectionScheduleGroupsRequest(server string, jwId int64) (*http.Request, error) {
+func NewGetSectionScheduleGroupsRequest(server string, jwId int64, params *GetSectionScheduleGroupsParams) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
@@ -15439,6 +15796,28 @@ func NewGetSectionScheduleGroupsRequest(server string, jwId int64) (*http.Reques
 	queryURL, err := serverURL.Parse(operationPath)
 	if err != nil {
 		return nil, err
+	}
+
+	if params != nil {
+		queryValues := queryURL.Query()
+
+		if params.Locale != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "locale", *params.Locale, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		queryURL.RawQuery = queryValues.Encode()
 	}
 
 	req, err := http.NewRequest("GET", queryURL.String(), nil)
@@ -15477,6 +15856,22 @@ func NewGetSectionSchedulesRequest(server string, jwId int64, params *GetSection
 
 	if params != nil {
 		queryValues := queryURL.Query()
+
+		if params.Locale != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "locale", *params.Locale, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
 
 		if params.DateFrom != nil {
 
@@ -15667,6 +16062,22 @@ func NewListTeachersRequest(server string, params *ListTeachersParams) (*http.Re
 	if params != nil {
 		queryValues := queryURL.Query()
 
+		if params.Locale != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "locale", *params.Locale, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
 		if params.DepartmentId != nil {
 
 			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "departmentId", *params.DepartmentId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "integer", Format: "int64"}); err != nil {
@@ -15759,7 +16170,7 @@ func NewListTeachersRequest(server string, params *ListTeachersParams) (*http.Re
 }
 
 // NewGetTeacherRequest generates requests for GetTeacher
-func NewGetTeacherRequest(server string, id int64) (*http.Request, error) {
+func NewGetTeacherRequest(server string, id int64, params *GetTeacherParams) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
@@ -15782,6 +16193,28 @@ func NewGetTeacherRequest(server string, id int64) (*http.Request, error) {
 	queryURL, err := serverURL.Parse(operationPath)
 	if err != nil {
 		return nil, err
+	}
+
+	if params != nil {
+		queryValues := queryURL.Query()
+
+		if params.Locale != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "locale", *params.Locale, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		queryURL.RawQuery = queryValues.Encode()
 	}
 
 	req, err := http.NewRequest("GET", queryURL.String(), nil)
@@ -16655,7 +17088,7 @@ type ClientWithResponsesInterface interface {
 	ListCoursesWithResponse(ctx context.Context, params *ListCoursesParams, reqEditors ...RequestEditorFn) (*ListCoursesResponse, error)
 
 	// GetCourseWithResponse request
-	GetCourseWithResponse(ctx context.Context, jwId int64, reqEditors ...RequestEditorFn) (*GetCourseResponse, error)
+	GetCourseWithResponse(ctx context.Context, jwId int64, params *GetCourseParams, reqEditors ...RequestEditorFn) (*GetCourseResponse, error)
 
 	// PinDashboardLinkWithBodyWithResponse request with any body
 	PinDashboardLinkWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PinDashboardLinkResponse, error)
@@ -16747,13 +17180,13 @@ type ClientWithResponsesInterface interface {
 	MatchSectionCodesWithResponse(ctx context.Context, body MatchSectionCodesJSONRequestBody, reqEditors ...RequestEditorFn) (*MatchSectionCodesResponse, error)
 
 	// GetSectionWithResponse request
-	GetSectionWithResponse(ctx context.Context, jwId int64, reqEditors ...RequestEditorFn) (*GetSectionResponse, error)
+	GetSectionWithResponse(ctx context.Context, jwId int64, params *GetSectionParams, reqEditors ...RequestEditorFn) (*GetSectionResponse, error)
 
 	// GetSectionCalendarWithResponse request
 	GetSectionCalendarWithResponse(ctx context.Context, jwId int64, reqEditors ...RequestEditorFn) (*GetSectionCalendarResponse, error)
 
 	// GetSectionScheduleGroupsWithResponse request
-	GetSectionScheduleGroupsWithResponse(ctx context.Context, jwId int64, reqEditors ...RequestEditorFn) (*GetSectionScheduleGroupsResponse, error)
+	GetSectionScheduleGroupsWithResponse(ctx context.Context, jwId int64, params *GetSectionScheduleGroupsParams, reqEditors ...RequestEditorFn) (*GetSectionScheduleGroupsResponse, error)
 
 	// GetSectionSchedulesWithResponse request
 	GetSectionSchedulesWithResponse(ctx context.Context, jwId int64, params *GetSectionSchedulesParams, reqEditors ...RequestEditorFn) (*GetSectionSchedulesResponse, error)
@@ -16768,7 +17201,7 @@ type ClientWithResponsesInterface interface {
 	ListTeachersWithResponse(ctx context.Context, params *ListTeachersParams, reqEditors ...RequestEditorFn) (*ListTeachersResponse, error)
 
 	// GetTeacherWithResponse request
-	GetTeacherWithResponse(ctx context.Context, id int64, reqEditors ...RequestEditorFn) (*GetTeacherResponse, error)
+	GetTeacherWithResponse(ctx context.Context, id int64, params *GetTeacherParams, reqEditors ...RequestEditorFn) (*GetTeacherResponse, error)
 
 	// ListTodosWithResponse request
 	ListTodosWithResponse(ctx context.Context, params *ListTodosParams, reqEditors ...RequestEditorFn) (*ListTodosResponse, error)
@@ -19197,8 +19630,8 @@ func (c *ClientWithResponses) ListCoursesWithResponse(ctx context.Context, param
 }
 
 // GetCourseWithResponse request returning *GetCourseResponse
-func (c *ClientWithResponses) GetCourseWithResponse(ctx context.Context, jwId int64, reqEditors ...RequestEditorFn) (*GetCourseResponse, error) {
-	rsp, err := c.GetCourse(ctx, jwId, reqEditors...)
+func (c *ClientWithResponses) GetCourseWithResponse(ctx context.Context, jwId int64, params *GetCourseParams, reqEditors ...RequestEditorFn) (*GetCourseResponse, error) {
+	rsp, err := c.GetCourse(ctx, jwId, params, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
@@ -19493,8 +19926,8 @@ func (c *ClientWithResponses) MatchSectionCodesWithResponse(ctx context.Context,
 }
 
 // GetSectionWithResponse request returning *GetSectionResponse
-func (c *ClientWithResponses) GetSectionWithResponse(ctx context.Context, jwId int64, reqEditors ...RequestEditorFn) (*GetSectionResponse, error) {
-	rsp, err := c.GetSection(ctx, jwId, reqEditors...)
+func (c *ClientWithResponses) GetSectionWithResponse(ctx context.Context, jwId int64, params *GetSectionParams, reqEditors ...RequestEditorFn) (*GetSectionResponse, error) {
+	rsp, err := c.GetSection(ctx, jwId, params, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
@@ -19511,8 +19944,8 @@ func (c *ClientWithResponses) GetSectionCalendarWithResponse(ctx context.Context
 }
 
 // GetSectionScheduleGroupsWithResponse request returning *GetSectionScheduleGroupsResponse
-func (c *ClientWithResponses) GetSectionScheduleGroupsWithResponse(ctx context.Context, jwId int64, reqEditors ...RequestEditorFn) (*GetSectionScheduleGroupsResponse, error) {
-	rsp, err := c.GetSectionScheduleGroups(ctx, jwId, reqEditors...)
+func (c *ClientWithResponses) GetSectionScheduleGroupsWithResponse(ctx context.Context, jwId int64, params *GetSectionScheduleGroupsParams, reqEditors ...RequestEditorFn) (*GetSectionScheduleGroupsResponse, error) {
+	rsp, err := c.GetSectionScheduleGroups(ctx, jwId, params, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
@@ -19556,8 +19989,8 @@ func (c *ClientWithResponses) ListTeachersWithResponse(ctx context.Context, para
 }
 
 // GetTeacherWithResponse request returning *GetTeacherResponse
-func (c *ClientWithResponses) GetTeacherWithResponse(ctx context.Context, id int64, reqEditors ...RequestEditorFn) (*GetTeacherResponse, error) {
-	rsp, err := c.GetTeacher(ctx, id, reqEditors...)
+func (c *ClientWithResponses) GetTeacherWithResponse(ctx context.Context, id int64, params *GetTeacherParams, reqEditors ...RequestEditorFn) (*GetTeacherResponse, error) {
+	rsp, err := c.GetTeacher(ctx, id, params, reqEditors...)
 	if err != nil {
 		return nil, err
 	}

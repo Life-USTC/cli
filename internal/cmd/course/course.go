@@ -85,6 +85,9 @@ func runCourseList(cmd *cobra.Command, opts courseListOpts) error {
 				}
 				return tui.TableResult{Rows: list.Rows, Total: list.Total, Page: list.Page}, nil
 			},
+			OnSelect: func(row map[string]any) error {
+				return runCourseView(cmd, fmt.Sprint(row["jwId"]))
+			},
 			EmptyMessage: "No courses found. Try a broader search.",
 		})
 	}
@@ -126,7 +129,7 @@ func courseListColumns() []output.Column {
 		{Header: "Code", Key: "code"},
 		{Header: "Name", Key: "namePrimary"},
 		{Header: "Level", Key: "educationLevel.name"},
-		{Header: "ID", Key: "id"},
+		{Header: "JW ID", Key: "jwId"},
 	}
 }
 
@@ -161,46 +164,50 @@ func newCmdView() *cobra.Command {
 		Short:   "View course details",
 		Args:    cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			c, err := api.NewTypedClient(cmdutil.ServerFromCmd(cmd), false)
-			if err != nil {
-				return err
-			}
-			jwID, err := cmdutil.Int64PtrIfSet(args[0])
-			if err != nil {
-				return err
-			}
-			data, err := api.ParseResponseRaw(c.GetCourse(api.Ctx(), *jwID))
-			if err != nil {
-				return err
-			}
-			if output.IsJSON() {
-				return output.JSON(data)
-			}
-			m := cmdutil.AsMap(data)
-			output.KVWithTitle([]output.KVPair{
-				{Key: "ID", Value: output.Resolve(m, "id")},
-				{Key: "Code", Value: output.Resolve(m, "code")},
-				{Key: "Name", Value: output.Resolve(m, "namePrimary")},
-				{Key: "Name (EN)", Value: output.Resolve(m, "nameSecondary")},
-				{Key: "Level", Value: output.Resolve(m, "educationLevel.name")},
-				{Key: "Category", Value: output.Resolve(m, "category.name")},
-				{Key: "Class type", Value: output.Resolve(m, "classType.name")},
-				{Key: "Gradation", Value: output.Resolve(m, "gradation.name")},
-				{Key: "Course type", Value: output.Resolve(m, "type.name")},
-			}, "Course")
-
-			if sections, ok := m["sections"].([]any); ok && len(sections) > 0 {
-				fmt.Println()
-				output.Bold("  Sections")
-				rows := cmdutil.RowsFromAny(sections)
-				output.Table(rows, []output.Column{
-					{Header: "ID", Key: "id"},
-					{Header: "Code", Key: "code"},
-					{Header: "Semester", Key: "semester.name"},
-					{Header: "Campus", Key: "campus.name"},
-				})
-			}
-			return nil
+			return runCourseView(cmd, args[0])
 		},
 	}
+}
+
+func runCourseView(cmd *cobra.Command, id string) error {
+	c, err := api.NewTypedClient(cmdutil.ServerFromCmd(cmd), false)
+	if err != nil {
+		return err
+	}
+	jwID, err := cmdutil.Int64PtrIfSet(id)
+	if err != nil {
+		return err
+	}
+	data, err := api.ParseResponseRaw(c.GetCourse(api.Ctx(), *jwID, nil))
+	if err != nil {
+		return err
+	}
+	if output.IsJSON() {
+		return output.JSON(data)
+	}
+	m := cmdutil.AsMap(data)
+	output.KVWithTitle([]output.KVPair{
+		{Key: "ID", Value: output.Resolve(m, "id")},
+		{Key: "Code", Value: output.Resolve(m, "code")},
+		{Key: "Name", Value: output.Resolve(m, "namePrimary")},
+		{Key: "Name (EN)", Value: output.Resolve(m, "nameSecondary")},
+		{Key: "Level", Value: output.Resolve(m, "educationLevel.name")},
+		{Key: "Category", Value: output.Resolve(m, "category.name")},
+		{Key: "Class type", Value: output.Resolve(m, "classType.name")},
+		{Key: "Gradation", Value: output.Resolve(m, "gradation.name")},
+		{Key: "Course type", Value: output.Resolve(m, "type.name")},
+	}, "Course")
+
+	if sections, ok := m["sections"].([]any); ok && len(sections) > 0 {
+		fmt.Println()
+		output.Bold("  Sections")
+		rows := cmdutil.RowsFromAny(sections)
+		output.Table(rows, []output.Column{
+			{Header: "ID", Key: "id"},
+			{Header: "Code", Key: "code"},
+			{Header: "Semester", Key: "semester.name"},
+			{Header: "Campus", Key: "campus.name"},
+		})
+	}
+	return nil
 }

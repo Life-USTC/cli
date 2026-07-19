@@ -84,6 +84,9 @@ func runTeacherList(cmd *cobra.Command, opts teacherListOpts) error {
 				}
 				return tui.TableResult{Rows: list.Rows, Total: list.Total, Page: list.Page}, nil
 			},
+			OnSelect: func(row map[string]any) error {
+				return runTeacherView(cmd, fmt.Sprint(row["id"]))
+			},
 			EmptyMessage: "No teachers found. Try a broader search.",
 		})
 	}
@@ -152,43 +155,47 @@ func newCmdView() *cobra.Command {
 		Short:   "View teacher details",
 		Args:    cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			c, err := api.NewTypedClient(cmdutil.ServerFromCmd(cmd), false)
-			if err != nil {
-				return err
-			}
-			teacherID, err := strconv.ParseInt(args[0], 10, 64)
-			if err != nil {
-				return fmt.Errorf("invalid teacher id %q: %w", args[0], err)
-			}
-			data, err := api.ParseResponseRaw(c.GetTeacher(api.Ctx(), teacherID))
-			if err != nil {
-				return err
-			}
-			if output.IsJSON() {
-				return output.JSON(data)
-			}
-			m := cmdutil.AsMap(data)
-			output.KVWithTitle([]output.KVPair{
-				{Key: "ID", Value: output.Resolve(m, "id")},
-				{Key: "Code", Value: output.Resolve(m, "code")},
-				{Key: "Name", Value: output.Resolve(m, "namePrimary")},
-				{Key: "Name (EN)", Value: output.Resolve(m, "nameSecondary")},
-				{Key: "Department", Value: output.Resolve(m, "department.name")},
-				{Key: "Title", Value: output.Resolve(m, "title")},
-			}, "Teacher")
-
-			if sections, ok := m["sections"].([]any); ok && len(sections) > 0 {
-				fmt.Println()
-				output.Bold("  Sections")
-				rows := cmdutil.RowsFromAny(sections)
-				output.Table(rows, []output.Column{
-					{Header: "ID", Key: "id"},
-					{Header: "Code", Key: "code"},
-					{Header: "Course", Key: "course.namePrimary"},
-					{Header: "Semester", Key: "semester.name"},
-				})
-			}
-			return nil
+			return runTeacherView(cmd, args[0])
 		},
 	}
+}
+
+func runTeacherView(cmd *cobra.Command, id string) error {
+	c, err := api.NewTypedClient(cmdutil.ServerFromCmd(cmd), false)
+	if err != nil {
+		return err
+	}
+	teacherID, err := strconv.ParseInt(id, 10, 64)
+	if err != nil {
+		return fmt.Errorf("invalid teacher id %q: %w", id, err)
+	}
+	data, err := api.ParseResponseRaw(c.GetTeacher(api.Ctx(), teacherID, nil))
+	if err != nil {
+		return err
+	}
+	if output.IsJSON() {
+		return output.JSON(data)
+	}
+	m := cmdutil.AsMap(data)
+	output.KVWithTitle([]output.KVPair{
+		{Key: "ID", Value: output.Resolve(m, "id")},
+		{Key: "Code", Value: output.Resolve(m, "code")},
+		{Key: "Name", Value: output.Resolve(m, "namePrimary")},
+		{Key: "Name (EN)", Value: output.Resolve(m, "nameSecondary")},
+		{Key: "Department", Value: output.Resolve(m, "department.name")},
+		{Key: "Title", Value: output.Resolve(m, "title")},
+	}, "Teacher")
+
+	if sections, ok := m["sections"].([]any); ok && len(sections) > 0 {
+		fmt.Println()
+		output.Bold("  Sections")
+		rows := cmdutil.RowsFromAny(sections)
+		output.Table(rows, []output.Column{
+			{Header: "ID", Key: "id"},
+			{Header: "Code", Key: "code"},
+			{Header: "Course", Key: "course.namePrimary"},
+			{Header: "Semester", Key: "semester.name"},
+		})
+	}
+	return nil
 }
