@@ -169,7 +169,7 @@ func runTeacherView(cmd *cobra.Command, id string) error {
 	if err != nil {
 		return fmt.Errorf("invalid teacher id %q: %w", id, err)
 	}
-	data, err := api.ParseResponseRaw(c.GetTeacher(api.Ctx(), teacherID))
+	data, err := api.ParseResponseRaw(c.GetTeacher(api.Ctx(), teacherID, nil))
 	if err != nil {
 		return err
 	}

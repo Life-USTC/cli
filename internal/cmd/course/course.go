@@ -178,7 +178,7 @@ func runCourseView(cmd *cobra.Command, id string) error {
 	if err != nil {
 		return err
 	}
-	data, err := api.ParseResponseRaw(c.GetCourse(api.Ctx(), *jwID))
+	data, err := api.ParseResponseRaw(c.GetCourse(api.Ctx(), *jwID, nil))
 	if err != nil {
 		return err
 	}
