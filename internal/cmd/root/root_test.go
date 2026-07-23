@@ -42,11 +42,11 @@ func TestUnifiedDomainContents(t *testing.T) {
 	cmd := NewCmdRoot()
 	expected := map[string][]string{
 		"catalog": {
-			"metadata", "semester", "course", "section", "teacher", "schedule", "bus",
+			"metadata", "semester", "course", "section", "teacher", "schedule", "bus", "link",
 		},
 		"workspace": {
 			"overview", "calendar", "schedule", "exam", "todo", "homework",
-			"subscription", "bus-preferences", "upload", "school",
+			"subscription", "bus-preferences", "link-pin", "upload", "school",
 		},
 		"community": {
 			"comment", "description", "section-homework",

@@ -52,13 +52,15 @@ func NewCmdWorkspaceSchedule() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			params := &openapi.GetApiMeSubscriptionsSchedulesParams{
+			params := &openapi.WorkspaceScheduleListParams{
 				DateFrom: cmdutil.StringPtrIfSet(dateFrom),
 				DateTo:   cmdutil.StringPtrIfSet(dateTo),
 				Weekday:  cmdutil.Int64PtrIfPositive(weekday),
 				Limit:    cmdutil.Int64PtrIfPositive(limit),
 			}
-			data, err := api.ParseResponseRaw(c.GetApiMeSubscriptionsSchedules(api.Ctx(), params))
+			data, err := api.ParseResponseRaw(
+				c.WorkspaceScheduleList(api.Ctx(), params),
+			)
 			if err != nil {
 				return err
 			}

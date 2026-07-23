@@ -1240,15 +1240,21 @@ func sectionsByCourseName(curriculum []ustcschool.CurriculumItem, byCode map[str
 }
 
 func fetchLifeHomeworksForSection(cmd *cobra.Command, apiClient *api.TypedClient, sectionID string) ([]map[string]any, error) {
-	includeDeleted := openapi.ListHomeworksParamsIncludeDeletedFalse
+	includeDeleted :=
+		openapi.CommunitySectionHomeworkListParamsIncludeDeletedFalse
 	parsedSectionID, err := cmdutil.Int64PtrIfSet(sectionID)
 	if err != nil {
 		return nil, err
 	}
-	raw, err := api.ParseResponseRaw(apiClient.ListHomeworks(cmd.Context(), &openapi.ListHomeworksParams{
-		SectionId:      parsedSectionID,
-		IncludeDeleted: &includeDeleted,
-	}))
+	raw, err := api.ParseResponseRaw(
+		apiClient.CommunitySectionHomeworkList(
+			cmd.Context(),
+			&openapi.CommunitySectionHomeworkListParams{
+				SectionId:      parsedSectionID,
+				IncludeDeleted: &includeDeleted,
+			},
+		),
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -1272,9 +1278,11 @@ func createLifeHomework(cmd *cobra.Command, apiClient *api.TypedClient, sectionI
 		_ = dueUnion.FromHomeworkCreateRequestSchema0SubmissionDueAt0(due)
 		schemaBody.SubmissionDueAt = &dueUnion
 	}
-	body := openapi.CreateHomeworkJSONRequestBody{}
+	body := openapi.CommunitySectionHomeworkCreateJSONRequestBody{}
 	_ = body.FromHomeworkCreateRequestSchema0(schemaBody)
-	raw, err := api.ParseResponseRaw(apiClient.CreateHomework(cmd.Context(), body))
+	raw, err := api.ParseResponseRaw(
+		apiClient.CommunitySectionHomeworkCreate(cmd.Context(), body),
+	)
 	if err != nil {
 		return nil, err
 	}

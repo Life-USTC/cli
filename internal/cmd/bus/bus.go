@@ -76,8 +76,8 @@ func runBusQuery(cmd *cobra.Command, origin, destination, dayType, now string, s
 	if err != nil {
 		return err
 	}
-	params := &openapi.QueryBusParams{}
-	data, err := api.ParseResponseRaw(c.QueryBus(api.Ctx(), params))
+	params := &openapi.CatalogBusTimetableGetParams{}
+	data, err := api.ParseResponseRaw(c.CatalogBusTimetableGet(api.Ctx(), params))
 	if err != nil {
 		return err
 	}
@@ -431,7 +431,9 @@ func newCmdPreferences() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			rawData, err := api.ParseResponseRaw(c.GetBusPreferences(api.Ctx()))
+			rawData, err := api.ParseResponseRaw(
+				c.WorkspaceBusPreferencesGet(api.Ctx()),
+			)
 			if err != nil {
 				return err
 			}
@@ -497,7 +499,13 @@ func newCmdSetPreferences() *cobra.Command {
 			if err != nil {
 				return fmt.Errorf("failed to encode body: %w", err)
 			}
-			_, err = api.ParseResponseRaw(c.SetBusPreferencesWithBody(api.Ctx(), "application/json", bytes.NewReader(bodyBytes)))
+			_, err = api.ParseResponseRaw(
+				c.WorkspaceBusPreferencesSetWithBody(
+					api.Ctx(),
+					"application/json",
+					bytes.NewReader(bodyBytes),
+				),
+			)
 			if err != nil {
 				return err
 			}

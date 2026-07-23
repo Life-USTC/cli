@@ -25,7 +25,7 @@ func NewCmdProfile() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			data, err := api.ParseResponseRaw(c.GetMe(api.Ctx()))
+			data, err := api.ParseResponseRaw(c.AccountProfileGet(api.Ctx()))
 			if err != nil {
 				return err
 			}

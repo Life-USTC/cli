@@ -5,6 +5,7 @@ import (
 
 	"github.com/Life-USTC/CLI/internal/cmd/bus"
 	"github.com/Life-USTC/CLI/internal/cmd/course"
+	"github.com/Life-USTC/CLI/internal/cmd/link"
 	"github.com/Life-USTC/CLI/internal/cmd/metadata"
 	"github.com/Life-USTC/CLI/internal/cmd/schedule"
 	"github.com/Life-USTC/CLI/internal/cmd/section"
@@ -26,6 +27,7 @@ func NewCmdCatalog() *cobra.Command {
 		teacher.NewCmdTeacher(),
 		schedule.NewCmdSchedule(),
 		bus.NewCmdBus(),
+		link.NewCmdCatalogLink(),
 	)
 	return cmd
 }
