@@ -42,16 +42,16 @@ func registerCompletionMetadata(root *cobra.Command) {
 		return filterCompletions(candidates, toComplete, ""), cobra.ShellCompDirectiveNoFileComp
 	})
 
-	registerFlagCompletion(root, []string{"todo"}, "priority", []string{
+	registerFlagCompletion(root, []string{"workspace", "todo"}, "priority", []string{
 		"low\tLow priority",
 		"medium\tMedium priority",
 		"high\tHigh priority",
 	})
 
-	registerFlagCompletion(root, []string{"comment", "list"}, "target-type", commentTargetTypeCompletions)
-	registerFlagCompletion(root, []string{"comment", "create"}, "target-type", commentTargetTypeCompletions)
-	registerFlagCompletion(root, []string{"description", "get"}, "target-type", descriptionTargetTypeCompletions)
-	registerFlagCompletion(root, []string{"description", "set"}, "target-type", descriptionTargetTypeCompletions)
+	registerFlagCompletion(root, []string{"community", "comment", "list"}, "target-type", commentTargetTypeCompletions)
+	registerFlagCompletion(root, []string{"community", "comment", "create"}, "target-type", commentTargetTypeCompletions)
+	registerFlagCompletion(root, []string{"community", "description", "get"}, "target-type", descriptionTargetTypeCompletions)
+	registerFlagCompletion(root, []string{"community", "description", "set"}, "target-type", descriptionTargetTypeCompletions)
 	registerFlagCompletion(root, []string{"api"}, "method", []string{
 		"GET\tFetch a resource",
 		"POST\tCreate or invoke an action",
@@ -60,7 +60,7 @@ func registerCompletionMetadata(root *cobra.Command) {
 		"DELETE\tDelete a resource",
 	})
 	_ = markFlagFilename(root, []string{"api"}, "input")
-	_ = markFlagFilename(root, []string{"upload", "download"}, "output")
+	_ = markFlagFilename(root, []string{"workspace", "upload", "download"}, "output")
 }
 
 func registerFlagCompletion(root *cobra.Command, path []string, flag string, completions []string) {

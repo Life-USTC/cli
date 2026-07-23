@@ -8,31 +8,69 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func TestPersonalCommandsAreTopLevel(t *testing.T) {
+func TestCommandsUseUnifiedDomainHierarchy(t *testing.T) {
 	cmd := NewCmdRoot()
 
-	todo := findCommand(cmd, "todo")
+	todo := findCommand(cmd, "workspace", "todo")
 	if todo == nil {
-		t.Fatal("top-level todo command missing")
+		t.Fatal("workspace todo command missing")
 	}
-	if findCommand(todo, "done") == nil {
-		t.Fatal("todo done command missing")
+	if findCommand(todo, "complete") == nil {
+		t.Fatal("todo complete command missing")
 	}
-	homework := findCommand(cmd, "homework")
+	if findCommand(todo, "reopen") == nil {
+		t.Fatal("todo reopen command missing")
+	}
+	homework := findCommand(cmd, "workspace", "homework")
 	if homework == nil {
-		t.Fatal("top-level homework command missing")
+		t.Fatal("workspace homework command missing")
 	}
-	if findCommand(homework, "create") == nil {
-		t.Fatal("top-level homework create command missing")
+	if findCommand(homework, "complete") == nil {
+		t.Fatal("homework complete command missing")
 	}
-	if findCommand(homework, "done") == nil {
-		t.Fatal("homework done command missing")
+	if findCommand(homework, "reopen") == nil {
+		t.Fatal("homework reopen command missing")
 	}
-	if findCommand(cmd, "me", "todo") != nil {
-		t.Fatal("stale me todo command still registered")
+	for _, stale := range []string{"me", "auth", "todo", "homework", "calendar", "upload", "course", "section", "bus", "comment"} {
+		if findCommand(cmd, stale) != nil {
+			t.Fatalf("stale top-level %q command still registered", stale)
+		}
 	}
-	if findCommand(cmd, "me", "homework") != nil {
-		t.Fatal("stale me homework command still registered")
+}
+
+func TestUnifiedDomainContents(t *testing.T) {
+	cmd := NewCmdRoot()
+	expected := map[string][]string{
+		"catalog": {
+			"metadata", "semester", "course", "section", "teacher", "schedule", "bus",
+		},
+		"workspace": {
+			"overview", "calendar", "schedule", "exam", "todo", "homework",
+			"subscription", "bus-preferences", "upload", "school",
+		},
+		"community": {
+			"comment", "description", "section-homework",
+		},
+		"account": {
+			"profile", "login", "logout", "session", "token", "locale",
+		},
+	}
+	for scope, children := range expected {
+		for _, child := range children {
+			if findCommand(cmd, scope, child) == nil {
+				t.Errorf("expected %s %s command is missing", scope, child)
+			}
+		}
+	}
+
+	if findCommand(cmd, "catalog", "bus", "preferences") != nil {
+		t.Error("personal bus preferences leaked into catalog")
+	}
+	if findCommand(cmd, "workspace", "homework", "create") != nil {
+		t.Error("shared homework creation leaked into workspace")
+	}
+	if findCommand(cmd, "workspace", "calendar", "set") != nil {
+		t.Error("section subscriptions leaked into calendar")
 	}
 }
 
@@ -86,13 +124,7 @@ func TestBashCompletionIncludesDescriptionPatch(t *testing.T) {
 func TestAllExpectedCommandsPresent(t *testing.T) {
 	cmd := NewCmdRoot()
 	for _, name := range []string{
-		"auth", "me",
-		"todo", "homework", "calendar", "upload",
-		"course", "section", "teacher", "semester", "schedule", "bus",
-		"school",
-		"comment", "description",
-		"metadata",
-		"admin",
+		"catalog", "workspace", "community", "account", "admin",
 		"config", "completion", "api",
 	} {
 		if findCommand(cmd, name) == nil {
@@ -105,26 +137,14 @@ func TestAllExpectedCommandsPresent(t *testing.T) {
 func TestCommandGroupAssignments(t *testing.T) {
 	cmd := NewCmdRoot()
 	checks := map[string]string{
-		"auth":        groupStart,
-		"me":          groupStart,
-		"todo":        groupPersonal,
-		"homework":    groupPersonal,
-		"calendar":    groupPersonal,
-		"upload":      groupPersonal,
-		"course":      groupBrowse,
-		"section":     groupBrowse,
-		"teacher":     groupBrowse,
-		"semester":    groupBrowse,
-		"schedule":    groupBrowse,
-		"bus":         groupBrowse,
-		"school":      groupBrowse,
-		"comment":     groupCommunity,
-		"description": groupCommunity,
-		"metadata":    groupRef,
-		"admin":       groupAdmin,
-		"config":      groupPlumbing,
-		"completion":  groupPlumbing,
-		"api":         groupPlumbing,
+		"catalog":    groupMain,
+		"workspace":  groupMain,
+		"community":  groupMain,
+		"account":    groupMain,
+		"admin":      groupMain,
+		"config":     groupPlumbing,
+		"completion": groupPlumbing,
+		"api":        groupPlumbing,
 	}
 	for name, wantGroup := range checks {
 		child := findCommand(cmd, name)

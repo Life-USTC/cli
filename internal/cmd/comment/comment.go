@@ -249,7 +249,7 @@ func newCmdList() *cobra.Command {
 
 func newCmdView() *cobra.Command {
 	return &cobra.Command{
-		Use:     "view <comment-id>",
+		Use:     "get <comment-id>",
 		Aliases: []string{"show"},
 		Short:   "View a comment thread",
 		Args:    cobra.ExactArgs(1),

@@ -28,70 +28,66 @@ make build
 
 ```bash
 # Set server (default: https://life-ustc.tiankaima.dev)
-life-ustc --server http://localhost:3000 auth login
+life-ustc --server http://localhost:3000 account login
 
 # Or set default server
 life-ustc config set-server http://localhost:3000
 
 # Authenticate
-life-ustc auth login
-life-ustc auth status
-life-ustc me
+life-ustc account login
+life-ustc account session
+life-ustc account profile
+life-ustc account locale zh-cn
 
 # Personal workflows
-life-ustc todo --pending
-life-ustc todo create --title "Write report" --priority high
-life-ustc todo done <TODO_ID>
-life-ustc todo done <TODO_ID_1> <TODO_ID_2>
-life-ustc homework --pending
-life-ustc homework create <SECTION_ID> --title "Problem Set 1"
-life-ustc homework create
-life-ustc homework done <HOMEWORK_ID>
-life-ustc homework done <HOMEWORK_ID_1> <HOMEWORK_ID_2>
-life-ustc upload file ./report.pdf
-life-ustc upload download <ID> -o report.pdf
-life-ustc calendar get
-life-ustc calendar set <SECTION_ID_1> <SECTION_ID_2>
-life-ustc calendar import-codes <CODE_1> <CODE_2>
+life-ustc workspace overview
+life-ustc workspace todo --pending
+life-ustc workspace todo create --title "Write report" --priority high
+life-ustc workspace todo complete <TODO_ID>
+life-ustc workspace homework --pending
+life-ustc workspace homework complete <HOMEWORK_ID>
+life-ustc workspace schedule
+life-ustc workspace exam
+life-ustc workspace subscription list
+life-ustc workspace subscription set <SECTION_ID_1> <SECTION_ID_2>
+life-ustc workspace subscription import <CODE_1> <CODE_2>
+life-ustc workspace calendar events
+life-ustc workspace calendar feed
+life-ustc workspace bus-preferences get
+life-ustc workspace upload create ./report.pdf
+life-ustc workspace upload download <ID> -o report.pdf
 
 # Browse (no auth required unless noted)
 # In a terminal, bare course/section/teacher list commands open an interactive TUI.
-life-ustc course
-life-ustc course list --search "数学分析"
-life-ustc course --no-interactive --limit 20
-life-ustc course view <JW_ID>
-life-ustc section list --semester-id <ID>
-life-ustc section
-life-ustc teacher list --search "张"
-life-ustc teacher
-life-ustc semester list
-life-ustc semester current
-life-ustc bus query --from east --to west
-life-ustc metadata
+life-ustc catalog course
+life-ustc catalog course list --search "数学分析"
+life-ustc catalog course --no-interactive --limit 20
+life-ustc catalog course get <JW_ID>
+life-ustc catalog section list --semester-id <ID>
+life-ustc catalog teacher list --search "张"
+life-ustc catalog semester current
+life-ustc catalog bus timetable --from east --to west
+life-ustc catalog metadata
 
 # Official USTC sources
-life-ustc school semesters
-life-ustc school semesters --graduate
-life-ustc school curriculum --semester-id <ID>
-life-ustc school curriculum --graduate
-life-ustc school exam
-life-ustc school score
-life-ustc school homework
-life-ustc school sync --dry-run
-life-ustc school sync --graduate --dry-run
-life-ustc school sync
+life-ustc workspace school semesters
+life-ustc workspace school semesters --graduate
+life-ustc workspace school curriculum --semester-id <ID>
+life-ustc workspace school exam
+life-ustc workspace school score
+life-ustc workspace school homework
+life-ustc workspace school sync --dry-run
 
 # Community features
-life-ustc comment list --target-type section --target-id <ID>
-life-ustc comment create --target-type section --target-id <ID> --body "Great class!"
-life-ustc comment delete <COMMENT_ID_1> <COMMENT_ID_2>
-life-ustc description get --target-type course --target-id <ID>
-life-ustc description set --target-type course --target-id <ID> --content "Good for freshmen."
+life-ustc community comment list --target-type section --target-id <ID>
+life-ustc community comment create --target-type section --target-id <ID> --body "Great class!"
+life-ustc community description get --target-type course --target-id <ID>
+life-ustc community section-homework create <SECTION_ID> --title "Problem Set 1"
 
 # Raw API access
-life-ustc api semesters/current
-life-ustc api todos -F title='Write report' -F priority=high
-life-ustc api sections --jq '.data[].code'
+life-ustc api catalog/semesters/current
+life-ustc api workspace/todos -F title='Write report' -F priority=high
+life-ustc api catalog/sections --jq '.data[].code'
 
 # Admin
 life-ustc admin user list
@@ -101,19 +97,20 @@ life-ustc admin suspension create --user-id <ID> --reason "spam"
 
 ## Command Model
 
-- `me` is identity and account status.
-- Personal resources live at the top level: `todo`, `homework`, `calendar`, `upload`.
-- Browseable campus resources also live at the top level: `course`, `section`, `teacher`, `semester`, `schedule`, `bus`.
-- `school` groups official USTC integrations: `semesters`, `curriculum`, `exam`, `score`, `homework`, and `sync`.
-- Generic cross-resource workflows are available via `comment`, `description`, and `api`.
+- `catalog` contains public campus facts such as courses, sections, teachers, schedules, and buses.
+- `workspace` contains the current user's todos, homework state, schedules, exams, subscriptions, files, and official-school imports.
+- `community` contains shared comments, descriptions, and section homework entities.
+- `account` contains profile, login, session, token, and locale operations.
+- `admin` contains platform governance commands.
+- `config`, `completion`, and `api` remain top-level CLI plumbing rather than product domains.
 - Commands that benefit from guided input open their own TUI by default in an interactive terminal when no list/filter flags are provided, such as `course`, `section`, and `teacher`; use `--no-interactive` to force plain table output.
 
 ## Official USTC Sources
 
-- `life-ustc school semesters` reads undergraduate semesters from `catalog.ustc.edu.cn`, or graduate semesters from the official `yjs1.ustc.edu.cn` graduate apps with `--graduate`.
-- `life-ustc school curriculum`, `exam`, and `score` sign in directly from Go without a browser backend. Undergraduate data comes from `jw.ustc.edu.cn`; graduate data comes from the official `yjs1.ustc.edu.cn` graduate apps with `--graduate`.
-- `life-ustc school homework` reads Blackboard calendar/homework data from `www.bb.ustc.edu.cn`, or graduate homework from the official `yjs1.ustc.edu.cn` graduate apps with `--graduate`.
-- `life-ustc school sync` reads lesson codes from the active school system, matches them to Life@USTC sections, and updates your Life@USTC calendar subscriptions. The sync is one-way to Life@USTC only; it does not write back to USTC systems. Use `--dry-run` to preview matches without updating subscriptions.
+- `life-ustc workspace school semesters` reads undergraduate semesters from `catalog.ustc.edu.cn`, or graduate semesters from the official `yjs1.ustc.edu.cn` graduate apps with `--graduate`.
+- `life-ustc workspace school curriculum`, `exam`, and `score` sign in directly from Go without a browser backend.
+- `life-ustc workspace school homework` reads Blackboard or graduate homework data.
+- `life-ustc workspace school sync` matches school-system lessons to Life@USTC sections and updates workspace subscriptions.
 
 Authenticated `school` commands accept `--username`, `--password`, `--totp`, `--undergraduate`, `--graduate`, and sync commands also accept `--all-programs`. If omitted, the CLI falls back to the configured school program list, then program-specific credentials, then undergraduate. Persist defaults with `life-ustc config set-school-programs undergraduate,graduate`.
 
@@ -128,8 +125,8 @@ All commands support `--format json` or `--json` for machine-readable output:
 
 ```bash
 life-ustc --json semester list
-life-ustc --json course view 12345
-life-ustc section list --jq '.data[].code'
+life-ustc --json catalog course get 12345
+life-ustc catalog section list --jq '.data[].code'
 ```
 
 ## Shell Integration
@@ -159,17 +156,17 @@ life-ustc completion -s fish
 Use `life-ustc api` for unsupported or newly added endpoints.
 
 ```bash
-# GET /api/metadata
-life-ustc api metadata
+# GET /api/catalog/metadata
+life-ustc api catalog/metadata
 
-# POST /api/todos with JSON body inferred from fields
-life-ustc api todos -F title='Write report' -F priority=high
+# POST /api/workspace/todos with JSON body inferred from fields
+life-ustc api workspace/todos -F title='Write report' -F priority=high
 
 # POST exact request body from a file
-life-ustc api -X POST todos --input ./todo.json
+life-ustc api -X POST workspace/todos --input ./todo.json
 
 # Include response headers
-life-ustc api -i metadata
+life-ustc api -i catalog/metadata
 ```
 
 ## Configuration

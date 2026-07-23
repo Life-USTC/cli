@@ -158,14 +158,6 @@ func AddListFlags(cmd *cobra.Command, page, limit *int) {
 	cmd.Flags().IntVarP(page, "page", "p", 0, "Page number for paginated results")
 }
 
-// DoneVerb returns the appropriate verb for completed/uncompleted toggles.
-func DoneVerb(undo bool) string {
-	if undo {
-		return "reopen"
-	}
-	return "complete"
-}
-
 // IsInteractive reports whether stdin and stdout are both terminals.
 func IsInteractive() bool {
 	return term.IsTerminal(int(os.Stdin.Fd())) && term.IsTerminal(int(os.Stdout.Fd()))

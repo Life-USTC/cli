@@ -11,31 +11,6 @@ import (
 	"github.com/Life-USTC/CLI/internal/output"
 )
 
-func NewCmdAuth() *cobra.Command {
-	cmd := &cobra.Command{
-		Use:   "auth [command]",
-		Short: "Authenticate with a Life@USTC server",
-		Long:  "Log in, log out, and inspect authentication status for a Life@USTC server.",
-		Example: `  # Check auth status
-  life-ustc auth
-
-  # Log in via browser
-  life-ustc auth login
-
-  # Print the current access token
-  life-ustc auth token`,
-		Args: cobra.NoArgs,
-		RunE: func(cmd *cobra.Command, args []string) error {
-			return runAuthStatus(cmd)
-		},
-	}
-	cmd.AddCommand(newCmdLogin())
-	cmd.AddCommand(newCmdLogout())
-	cmd.AddCommand(newCmdStatus())
-	cmd.AddCommand(newCmdToken())
-	return cmd
-}
-
 func runAuthStatus(cmd *cobra.Command) error {
 	server := cmdutil.ServerFromCmd(cmd)
 	cred, err := config.LoadCredentials(server)
@@ -68,7 +43,7 @@ func runAuthStatus(cmd *cobra.Command) error {
 	return nil
 }
 
-func newCmdLogin() *cobra.Command {
+func NewCmdLogin() *cobra.Command {
 	var useDeviceCode bool
 
 	cmd := &cobra.Command{
@@ -100,7 +75,7 @@ func newCmdLogin() *cobra.Command {
 	return cmd
 }
 
-func newCmdLogout() *cobra.Command {
+func NewCmdLogout() *cobra.Command {
 	return &cobra.Command{
 		Use:   "logout",
 		Short: "Log out and remove stored credentials",
@@ -120,9 +95,9 @@ func newCmdLogout() *cobra.Command {
 	}
 }
 
-func newCmdStatus() *cobra.Command {
+func NewCmdSession() *cobra.Command {
 	return &cobra.Command{
-		Use:   "status",
+		Use:   "session",
 		Short: "Show authentication status",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return runAuthStatus(cmd)
@@ -130,7 +105,7 @@ func newCmdStatus() *cobra.Command {
 	}
 }
 
-func newCmdToken() *cobra.Command {
+func NewCmdToken() *cobra.Command {
 	return &cobra.Command{
 		Use:   "token",
 		Short: "Print the current access token",
@@ -141,7 +116,7 @@ func newCmdToken() *cobra.Command {
 				return err
 			}
 			if cred == nil {
-				return fmt.Errorf("not logged in. Run `life-ustc auth login` first")
+				return fmt.Errorf("not logged in. Run `life-ustc account login` first")
 			}
 			if config.IsTokenExpired(cred) {
 				newCred, err := auth.RefreshToken(server, cred)

@@ -26,27 +26,38 @@ func NewCmdBus() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "bus [command]",
 		Short: "Shuttle bus schedules",
-		Long:  "Query shuttle bus schedules between campuses, and manage your bus preferences.",
+		Long:  "Query public shuttle bus schedules between campuses.",
 		Example: `  # Query upcoming buses
-  life-ustc bus
+  life-ustc catalog bus
 
   # Filter by route
-  life-ustc bus query --from 1 --to 2
+  life-ustc catalog bus timetable --from 1 --to 2
 
   # Show departed trips too
-  life-ustc bus --show-departed
-
-  # Show saved preferences
-  life-ustc bus preferences`,
+  life-ustc catalog bus --show-departed`,
 		Args: cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return runBusQuery(cmd, origin, destination, dayType, now, showDeparted, includeAll, limit)
 		},
 	}
 	addBusQueryFlags(cmd, &origin, &destination, &dayType, &now, &showDeparted, &includeAll, &limit)
-	cmd.AddCommand(newCmdQuery())
-	cmd.AddCommand(newCmdPreferences())
-	cmd.AddCommand(newCmdSetPreferences())
+	timetable := newCmdQuery()
+	timetable.Use = "timetable"
+	cmd.AddCommand(timetable)
+	return cmd
+}
+
+func NewCmdBusPreferences() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "bus-preferences [command]",
+		Short: "Manage your shuttle bus preferences",
+		Args:  cobra.NoArgs,
+	}
+	get := newCmdPreferences()
+	get.Use = "get"
+	set := newCmdSetPreferences()
+	set.Use = "set"
+	cmd.AddCommand(get, set)
 	return cmd
 }
 
@@ -112,13 +123,13 @@ func newCmdQuery() *cobra.Command {
 		Aliases: []string{"q"},
 		Short:   "Query shuttle bus schedules",
 		Example: `  # Show all upcoming buses
-  life-ustc bus query
+  life-ustc catalog bus timetable
 
   # Filter by origin and destination campus ID
-  life-ustc bus query --from 1 --to 2
+  life-ustc catalog bus timetable --from 1 --to 2
 
   # Show departed trips
-  life-ustc bus query --show-departed`,
+  life-ustc catalog bus timetable --show-departed`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return runBusQuery(cmd, origin, destination, dayType, now, showDeparted, includeAll, limit)
 		},
@@ -450,13 +461,13 @@ func newCmdSetPreferences() *cobra.Command {
 		Use:   "set-preferences",
 		Short: "Update bus preferences",
 		Example: `  # Set preferred origin and destination
-  life-ustc bus set-preferences --origin 1 --destination 2
+  life-ustc workspace bus-preferences set --origin 1 --destination 2
 
   # Enable showing departed trips
-  life-ustc bus set-preferences --show-departed
+  life-ustc workspace bus-preferences set --show-departed
 
   # Set from raw JSON
-  life-ustc bus set-preferences --raw-json '{"showDepartedTrips":true}'`,
+  life-ustc workspace bus-preferences set --raw-json '{"showDepartedTrips":true}'`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			c, err := api.NewTypedClient(cmdutil.ServerFromCmd(cmd), true)
 			if err != nil {

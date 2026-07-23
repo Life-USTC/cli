@@ -30,10 +30,10 @@ func NewCmdSemester() *cobra.Command {
 		Short: "Browse semesters",
 		Long:  "List and inspect academic semesters.",
 		Example: `  # List all semesters
-  life-ustc semester
+  life-ustc catalog semester
 
   # Show the current semester
-  life-ustc semester current`,
+  life-ustc catalog semester current`,
 		Args: cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return runSemesterList(cmd, opts)

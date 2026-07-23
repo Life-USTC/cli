@@ -10,9 +10,9 @@ import (
 
 func TestNormalizeAPIPath(t *testing.T) {
 	cases := map[string]string{
-		"metadata":                          "/api/metadata",
-		"api/metadata":                      "/api/metadata",
-		"/api/metadata":                     "/api/metadata",
+		"catalog/metadata":                  "/api/catalog/metadata",
+		"api/catalog/metadata":              "/api/catalog/metadata",
+		"/api/catalog/metadata":             "/api/catalog/metadata",
 		"/.well-known/openid-configuration": "/.well-known/openid-configuration",
 		// Empty string produces a trailing slash; callers should avoid passing "".
 		"": "/api/",
