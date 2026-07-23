@@ -23,14 +23,14 @@ func NewCmdSectionHomework() *cobra.Command {
 		Short: "Manage section homeworks",
 		Long:  "List, create, update, and delete homeworks for a course section.",
 		Example: `  # List homeworks for a section
-  life-ustc section homework list <section-id>
+  life-ustc community section-homework list <section-id>
 
   # Create a homework
-  life-ustc section homework create <section-id> --title "Problem Set 1"
+  life-ustc community section-homework create <section-id> --title "Problem Set 1"
 
   # Delete a homework (omit ID to pick interactively)
-  life-ustc section homework delete
-  life-ustc section homework delete <homework-id>`,
+  life-ustc community section-homework delete
+  life-ustc community section-homework delete <homework-id>`,
 	}
 	cmd.AddCommand(newCmdSectionList())
 	cmd.AddCommand(newCmdSectionCreate())
@@ -301,20 +301,17 @@ func NewCmdMyHomework() *cobra.Command {
 		Short: "View and manage your homeworks",
 		Long:  "List your assigned homeworks and mark them as complete.\nWhen no --section-id is given, aggregates homework from all your subscribed sections.",
 		Example: `  # List all your homeworks (from subscribed sections)
-  life-ustc homework
+  life-ustc workspace homework
 
   # Show only pending homeworks
-  life-ustc homework --pending
+  life-ustc workspace homework --pending
 
   # Filter to a specific section
-  life-ustc homework list --section-id <id>
-
-  # Add homework to a section
-  life-ustc homework create <section-id> --title "Problem Set 1"
+  life-ustc workspace homework list --section-id <id>
 
   # Mark a homework as done (omit ID to pick interactively)
-  life-ustc homework done
-  life-ustc homework done <homework-id>`,
+  life-ustc workspace homework complete
+  life-ustc workspace homework complete <homework-id>`,
 		Args: cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return runMyHomeworkList(cmd, opts)
@@ -322,8 +319,8 @@ func NewCmdMyHomework() *cobra.Command {
 	}
 	addMyHomeworkListFlags(cmd, &opts)
 	cmd.AddCommand(newCmdMyList())
-	cmd.AddCommand(newCmdSectionCreate())
-	cmd.AddCommand(newCmdComplete())
+	cmd.AddCommand(newCmdCompletion(true))
+	cmd.AddCommand(newCmdCompletion(false))
 	return cmd
 }
 
@@ -333,10 +330,10 @@ func newCmdMyList() *cobra.Command {
 		Use:     "list",
 		Aliases: []string{"ls"},
 		Short:   "List your homeworks",
-		Example: `  life-ustc homework list
-  life-ustc homework list --section-id <id>
-  life-ustc homework list --pending
-  life-ustc homework list --before 2025-06-01`,
+		Example: `  life-ustc workspace homework list
+  life-ustc workspace homework list --section-id <id>
+  life-ustc workspace homework list --pending
+  life-ustc workspace homework list --before 2025-06-01`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return runMyHomeworkList(cmd, opts)
 		},
@@ -366,7 +363,7 @@ func runMyHomeworkList(cmd *cobra.Command, opts myHomeworkListOpts) error {
 	var data any
 
 	if opts.sectionID != "" {
-		// Single section — use /api/homeworks with sectionId filter
+		// Single section — use /api/community/homeworks with sectionId filter
 		sectionID, err := cmdutil.Int64PtrIfSet(opts.sectionID)
 		if err != nil {
 			return err
@@ -742,14 +739,18 @@ func newCmdDelete() *cobra.Command {
 	return cmd
 }
 
-func newCmdComplete() *cobra.Command {
-	var undo bool
+func newCmdCompletion(completed bool) *cobra.Command {
+	action := "complete"
+	short := "Mark homework(s) as complete"
+	if !completed {
+		action = "reopen"
+		short = "Mark homework(s) as incomplete"
+	}
 	cmd := &cobra.Command{
-		Use:     "done [homework-id]...",
-		Aliases: []string{"complete", "finish"},
-		Short:   "Mark homework(s) as complete",
-		Long:    "Mark one or more homeworks as complete. When run interactively without IDs, shows matching homeworks and lets you pick one.",
-		Args:    cobra.ArbitraryArgs,
+		Use:   action + " [homework-id]...",
+		Short: short,
+		Long:  short + ". When run interactively without IDs, shows matching homeworks and lets you pick one.",
+		Args:  cobra.ArbitraryArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			var ids []string
 			var rows []map[string]any
@@ -763,12 +764,12 @@ func newCmdComplete() *cobra.Command {
 					return fmt.Errorf("homework id is required in non-interactive mode")
 				}
 				opts := myHomeworkListOpts{limit: 20}
-				if undo {
+				if !completed {
 					opts.done = true
 				} else {
 					opts.pending = true
 				}
-				picked, err := promptHomeworkPick(cmd, opts, "Pick a homework to "+cmdutil.DoneVerb(undo))
+				picked, err := promptHomeworkPick(cmd, opts, "Pick a homework to "+action)
 				if err != nil {
 					return err
 				}
@@ -779,10 +780,9 @@ func newCmdComplete() *cobra.Command {
 				ids = []string{id}
 				rows = []map[string]any{picked}
 			}
-			return setHomeworksCompleted(cmd, ids, rows, !undo)
+			return setHomeworksCompleted(cmd, ids, rows, completed)
 		},
 	}
-	cmd.Flags().BoolVar(&undo, "undo", false, "Mark as not completed")
 	return cmd
 }
 

@@ -23,21 +23,21 @@ func NewCmdTodo() *cobra.Command {
 		Short: "Manage personal todos",
 		Long:  "Create, list, update, and delete personal todo items.",
 		Example: `  # List all pending todos
-  life-ustc todo --pending
+  life-ustc workspace todo --pending
 
   # Create a new todo
-  life-ustc todo create --title "Review notes" --priority high --due 2025-06-01
+  life-ustc workspace todo create --title "Review notes" --priority high --due 2025-06-01
 
   # Mark a todo as done (omit ID to pick interactively)
-  life-ustc todo done
-  life-ustc todo done <id>
+  life-ustc workspace todo complete
+  life-ustc workspace todo complete <id>
 
   # Delete a todo (omit ID to pick interactively)
-  life-ustc todo delete
-  life-ustc todo delete <id>
+  life-ustc workspace todo delete
+  life-ustc workspace todo delete <id>
 
   # Get todo IDs for scripting
-  life-ustc todo --jq '.todos[].id'`,
+  life-ustc workspace todo --jq '.todos[].id'`,
 		Args: cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return runTodoList(cmd, opts)
@@ -46,7 +46,8 @@ func NewCmdTodo() *cobra.Command {
 	addTodoListFlags(cmd, &opts)
 	cmd.AddCommand(newCmdList())
 	cmd.AddCommand(newCmdCreate())
-	cmd.AddCommand(newCmdDone())
+	cmd.AddCommand(newCmdCompletion(true))
+	cmd.AddCommand(newCmdCompletion(false))
 	cmd.AddCommand(newCmdUpdate())
 	cmd.AddCommand(newCmdDelete())
 	return cmd
@@ -349,9 +350,9 @@ func newCmdList() *cobra.Command {
 		Use:     "list",
 		Aliases: []string{"ls"},
 		Short:   "List your todos",
-		Example: `  life-ustc todo list --pending --priority high
-  life-ustc todo list --done --sort due
-  life-ustc todo list --before 2025-06-01 --limit 10`,
+		Example: `  life-ustc workspace todo list --pending --priority high
+  life-ustc workspace todo list --done --sort due
+  life-ustc workspace todo list --before 2025-06-01 --limit 10`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return runTodoList(cmd, opts)
 		},
@@ -427,14 +428,18 @@ func newCmdCreate() *cobra.Command {
 	return cmd
 }
 
-func newCmdDone() *cobra.Command {
-	var undo bool
+func newCmdCompletion(completed bool) *cobra.Command {
+	action := "complete"
+	short := "Mark todo(s) as complete"
+	if !completed {
+		action = "reopen"
+		short = "Mark todo(s) as incomplete"
+	}
 	cmd := &cobra.Command{
-		Use:     "done [todo-id]...",
-		Aliases: []string{"complete", "finish"},
-		Short:   "Mark todo(s) as done",
-		Long:    "Mark one or more todos as done. When run interactively without IDs, shows matching todos and lets you pick one.",
-		Args:    cobra.ArbitraryArgs,
+		Use:   action + " [todo-id]...",
+		Short: short,
+		Long:  short + ". When run interactively without IDs, shows matching todos and lets you pick one.",
+		Args:  cobra.ArbitraryArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			var ids []string
 			var rows []map[string]any
@@ -448,12 +453,12 @@ func newCmdDone() *cobra.Command {
 					return fmt.Errorf("todo id is required in non-interactive mode")
 				}
 				opts := todoListOpts{sort: "due", limit: 20}
-				if undo {
+				if !completed {
 					opts.done = true
 				} else {
 					opts.pending = true
 				}
-				picked, err := promptTodoPick(cmd, opts, "Pick a todo to "+cmdutil.DoneVerb(undo))
+				picked, err := promptTodoPick(cmd, opts, "Pick a todo to "+action)
 				if err != nil {
 					return err
 				}
@@ -464,10 +469,9 @@ func newCmdDone() *cobra.Command {
 				ids = []string{id}
 				rows = []map[string]any{picked}
 			}
-			return setTodosCompleted(cmd, ids, rows, !undo)
+			return setTodosCompleted(cmd, ids, rows, completed)
 		},
 	}
-	cmd.Flags().BoolVar(&undo, "undo", false, "Mark as not completed")
 	return cmd
 }
 

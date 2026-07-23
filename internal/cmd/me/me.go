@@ -8,17 +8,17 @@ import (
 	"github.com/Life-USTC/CLI/internal/output"
 )
 
-func NewCmdMe() *cobra.Command {
+func NewCmdProfile() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "me",
+		Use:   "profile",
 		Short: "Show your profile",
 		Long:  "Show the account currently authenticated with the active Life@USTC server.",
 		Example: `  # Show your profile
-  life-ustc me
+  life-ustc account profile
 
   # Use the dedicated personal commands
-  life-ustc todo --pending
-  life-ustc homework --pending`,
+  life-ustc workspace todo --pending
+  life-ustc workspace homework --pending`,
 		Args: cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			c, err := api.NewTypedClient(cmdutil.ServerFromCmd(cmd), true)

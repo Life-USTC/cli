@@ -69,7 +69,7 @@ func TestAuthTransportRetriesWithFreshBody(t *testing.T) {
 		}),
 	}
 
-	req, err := http.NewRequest(http.MethodPost, "https://example.test/api/todos", strings.NewReader(`{"title":"first"}`))
+	req, err := http.NewRequest(http.MethodPost, "https://example.test/api/workspace/todos", strings.NewReader(`{"title":"first"}`))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -93,7 +93,7 @@ func TestReadResponseFormatsJSONErrors(t *testing.T) {
 		Body:       io.NopCloser(strings.NewReader(`{"message":"bad input","ignored":true}`)),
 		Request: &http.Request{
 			Method: http.MethodPost,
-			URL:    &url.URL{Path: "/api/todos"},
+			URL:    &url.URL{Path: "/api/workspace/todos"},
 		},
 	}
 
@@ -101,7 +101,7 @@ func TestReadResponseFormatsJSONErrors(t *testing.T) {
 	if err == nil {
 		t.Fatal("expected error")
 	}
-	if got, want := err.Error(), "POST /api/todos → 400: bad input"; got != want {
+	if got, want := err.Error(), "POST /api/workspace/todos → 400: bad input"; got != want {
 		t.Fatalf("error = %q, want %q", got, want)
 	}
 }

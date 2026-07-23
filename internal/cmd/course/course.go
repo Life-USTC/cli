@@ -7,8 +7,6 @@ import (
 
 	"github.com/Life-USTC/CLI/internal/api"
 	"github.com/Life-USTC/CLI/internal/cmd/cmdutil"
-	"github.com/Life-USTC/CLI/internal/cmd/comment"
-	"github.com/Life-USTC/CLI/internal/cmd/description"
 	openapi "github.com/Life-USTC/CLI/internal/openapi"
 	"github.com/Life-USTC/CLI/internal/output"
 	"github.com/Life-USTC/CLI/internal/tui"
@@ -21,16 +19,16 @@ func NewCmdCourse() *cobra.Command {
 		Short: "Browse courses",
 		Long:  "List and view courses offered at USTC.",
 		Example: `  # List all courses
-  life-ustc course
+  life-ustc catalog course
 
   # Search courses by keyword
-  life-ustc course -s "linear algebra"
+  life-ustc catalog course -s "linear algebra"
 
   # Open course search TUI in an interactive terminal
-  life-ustc course
+  life-ustc catalog course
 
   # View a specific course
-  life-ustc course view <jw-id>`,
+  life-ustc catalog course get <jw-id>`,
 		Args: cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return runCourseList(cmd, opts)
@@ -39,8 +37,6 @@ func NewCmdCourse() *cobra.Command {
 	addCourseListFlags(cmd, &opts)
 	cmd.AddCommand(newCmdList())
 	cmd.AddCommand(newCmdView())
-	cmd.AddCommand(comment.NewCmdCommentFor("course"))
-	cmd.AddCommand(description.NewCmdDescriptionFor("course"))
 	return cmd
 }
 
@@ -159,7 +155,7 @@ func newCmdList() *cobra.Command {
 
 func newCmdView() *cobra.Command {
 	return &cobra.Command{
-		Use:     "view <jw-id>",
+		Use:     "get <jw-id>",
 		Aliases: []string{"show"},
 		Short:   "View course details",
 		Args:    cobra.ExactArgs(1),

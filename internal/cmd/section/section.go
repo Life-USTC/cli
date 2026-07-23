@@ -9,9 +9,6 @@ import (
 
 	"github.com/Life-USTC/CLI/internal/api"
 	"github.com/Life-USTC/CLI/internal/cmd/cmdutil"
-	"github.com/Life-USTC/CLI/internal/cmd/comment"
-	"github.com/Life-USTC/CLI/internal/cmd/description"
-	"github.com/Life-USTC/CLI/internal/cmd/homework"
 	openapi "github.com/Life-USTC/CLI/internal/openapi"
 	"github.com/Life-USTC/CLI/internal/output"
 	"github.com/Life-USTC/CLI/internal/tui"
@@ -36,16 +33,16 @@ func NewCmdSection() *cobra.Command {
 		Short: "Browse class sections",
 		Long:  "List, view, and manage class sections including schedules and calendars.",
 		Example: `  # List all sections
-  life-ustc section
+  life-ustc catalog section
 
   # Search sections by keyword
-  life-ustc section -s "calculus"
+  life-ustc catalog section -s "calculus"
 
   # Open section search TUI in an interactive terminal
-  life-ustc section
+  life-ustc catalog section
 
   # View a specific section
-  life-ustc section view <jw-id>`,
+  life-ustc catalog section get <jw-id>`,
 		Args: cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return runSectionList(cmd, opts)
@@ -57,9 +54,6 @@ func NewCmdSection() *cobra.Command {
 	cmd.AddCommand(newCmdSchedules())
 	cmd.AddCommand(newCmdCalendar())
 	cmd.AddCommand(newCmdMatchCodes())
-	cmd.AddCommand(homework.NewCmdSectionHomework())
-	cmd.AddCommand(comment.NewCmdCommentFor("section"))
-	cmd.AddCommand(description.NewCmdDescriptionFor("section"))
 	return cmd
 }
 
@@ -192,7 +186,7 @@ func newCmdList() *cobra.Command {
 
 func newCmdView() *cobra.Command {
 	return &cobra.Command{
-		Use:     "view <jw-id>",
+		Use:     "get <jw-id>",
 		Aliases: []string{"show"},
 		Short:   "View section details",
 		Args:    cobra.ExactArgs(1),
@@ -332,7 +326,7 @@ func newCmdCalendar() *cobra.Command {
 func newCmdMatchCodes() *cobra.Command {
 	var semesterID string
 	cmd := &cobra.Command{
-		Use:   "match-codes <code>...",
+		Use:   "match <code>...",
 		Short: "Match section codes",
 		Args:  cobra.MinimumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {

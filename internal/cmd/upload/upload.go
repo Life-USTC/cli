@@ -78,10 +78,9 @@ func newCmdList() *cobra.Command {
 func newCmdFile() *cobra.Command {
 	var contentType string
 	cmd := &cobra.Command{
-		Use:     "file <filepath>",
-		Aliases: []string{"add"},
-		Short:   "Upload a file",
-		Args:    cobra.ExactArgs(1),
+		Use:   "create <filepath>",
+		Short: "Upload a file",
+		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			filePath := args[0]
 			f, err := os.Open(filePath)

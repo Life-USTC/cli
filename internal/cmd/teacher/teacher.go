@@ -8,8 +8,6 @@ import (
 
 	"github.com/Life-USTC/CLI/internal/api"
 	"github.com/Life-USTC/CLI/internal/cmd/cmdutil"
-	"github.com/Life-USTC/CLI/internal/cmd/comment"
-	"github.com/Life-USTC/CLI/internal/cmd/description"
 	openapi "github.com/Life-USTC/CLI/internal/openapi"
 	"github.com/Life-USTC/CLI/internal/output"
 	"github.com/Life-USTC/CLI/internal/tui"
@@ -22,16 +20,16 @@ func NewCmdTeacher() *cobra.Command {
 		Short: "Browse teachers",
 		Long:  "List and view teacher profiles and their associated sections.",
 		Example: `  # List all teachers
-  life-ustc teacher
+  life-ustc catalog teacher
 
   # Search teachers by name
-  life-ustc teacher -s "zhang"
+  life-ustc catalog teacher -s "zhang"
 
   # Open teacher search TUI in an interactive terminal
-  life-ustc teacher
+  life-ustc catalog teacher
 
   # View a specific teacher
-  life-ustc teacher view <teacher-id>`,
+  life-ustc catalog teacher get <teacher-id>`,
 		Args: cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return runTeacherList(cmd, opts)
@@ -40,8 +38,6 @@ func NewCmdTeacher() *cobra.Command {
 	addTeacherListFlags(cmd, &opts)
 	cmd.AddCommand(newCmdList())
 	cmd.AddCommand(newCmdView())
-	cmd.AddCommand(comment.NewCmdCommentFor("teacher"))
-	cmd.AddCommand(description.NewCmdDescriptionFor("teacher"))
 	return cmd
 }
 
@@ -150,7 +146,7 @@ func newCmdList() *cobra.Command {
 
 func newCmdView() *cobra.Command {
 	return &cobra.Command{
-		Use:     "view <teacher-id>",
+		Use:     "get <teacher-id>",
 		Aliases: []string{"show"},
 		Short:   "View teacher details",
 		Args:    cobra.ExactArgs(1),

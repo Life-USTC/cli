@@ -7,26 +7,14 @@ import (
 	"github.com/fatih/color"
 	"github.com/spf13/cobra"
 
+	"github.com/Life-USTC/CLI/internal/cmd/account"
 	"github.com/Life-USTC/CLI/internal/cmd/admin"
 	"github.com/Life-USTC/CLI/internal/cmd/apicmd"
-	"github.com/Life-USTC/CLI/internal/cmd/authcmd"
-	"github.com/Life-USTC/CLI/internal/cmd/bus"
-	"github.com/Life-USTC/CLI/internal/cmd/calendar"
+	"github.com/Life-USTC/CLI/internal/cmd/catalog"
 	"github.com/Life-USTC/CLI/internal/cmd/cmdutil"
-	"github.com/Life-USTC/CLI/internal/cmd/comment"
+	"github.com/Life-USTC/CLI/internal/cmd/community"
 	"github.com/Life-USTC/CLI/internal/cmd/configcmd"
-	"github.com/Life-USTC/CLI/internal/cmd/course"
-	"github.com/Life-USTC/CLI/internal/cmd/description"
-	"github.com/Life-USTC/CLI/internal/cmd/homework"
-	"github.com/Life-USTC/CLI/internal/cmd/me"
-	"github.com/Life-USTC/CLI/internal/cmd/metadata"
-	"github.com/Life-USTC/CLI/internal/cmd/schedule"
-	schoolcmd "github.com/Life-USTC/CLI/internal/cmd/school"
-	"github.com/Life-USTC/CLI/internal/cmd/section"
-	"github.com/Life-USTC/CLI/internal/cmd/semester"
-	"github.com/Life-USTC/CLI/internal/cmd/teacher"
-	"github.com/Life-USTC/CLI/internal/cmd/todo"
-	"github.com/Life-USTC/CLI/internal/cmd/upload"
+	"github.com/Life-USTC/CLI/internal/cmd/workspace"
 	"github.com/Life-USTC/CLI/internal/output"
 )
 
@@ -34,13 +22,8 @@ var version = "dev"
 
 // Command group IDs
 const (
-	groupStart     = "start"
-	groupPersonal  = "personal"
-	groupBrowse    = "browse"
-	groupCommunity = "community"
-	groupRef       = "reference"
-	groupAdmin     = "admin"
-	groupPlumbing  = "plumbing"
+	groupMain     = "main"
+	groupPlumbing = "plumbing"
 )
 
 func grouped(groupID string, cmd *cobra.Command) *cobra.Command {
@@ -65,23 +48,23 @@ func NewCmdRoot() *cobra.Command {
 		Short: "Life@USTC in your terminal",
 		Long: `Work seamlessly with the USTC campus platform from the command line.
 
-Browse courses, sections, and teachers. Manage your todos, homework,
-calendar, uploads, comments, and descriptions. Use --json or --jq for
-scripting, or drop down to 'life-ustc api' for raw endpoint access.`,
+Browse the catalog and manage your workspace, community content, and account.
+Use --json or --jq for scripting, or drop down to 'life-ustc api' for raw
+endpoint access.`,
 		Example: `  # Show your profile
-  life-ustc me
+  life-ustc account profile
 
   # Check your pending todos
-  life-ustc todo --pending
+  life-ustc workspace todo --pending
 
   # Browse sections and filter with jq
-  life-ustc section list --limit 5 --jq '.data[].code'
+  life-ustc catalog section list --limit 5 --jq '.data[].code'
 
   # View a course and its sections
-  life-ustc course view <course-id>
+  life-ustc catalog course get <course-id>
 
   # Call a raw API endpoint
-  life-ustc api semesters/current --jq '.currentSemester.id'
+  life-ustc api catalog/semesters/current --jq '.currentSemester.id'
 
   # Install shell completion into your current shell
   life-ustc completion install`,
@@ -118,37 +101,16 @@ scripting, or drop down to 'life-ustc api' for raw endpoint access.`,
 
 	// Command groups
 	cmd.AddGroup(
-		&cobra.Group{ID: groupStart, Title: "Start here:"},
-		&cobra.Group{ID: groupPersonal, Title: "Personal:"},
-		&cobra.Group{ID: groupBrowse, Title: "Browse:"},
-		&cobra.Group{ID: groupCommunity, Title: "Community:"},
-		&cobra.Group{ID: groupRef, Title: "Reference:"},
-		&cobra.Group{ID: groupAdmin, Title: "Administration:"},
+		&cobra.Group{ID: groupMain, Title: "Domains:"},
 		&cobra.Group{ID: groupPlumbing, Title: "Setup and automation:"},
 	)
 
 	cmd.AddCommand(
-		grouped(groupStart, authcmd.NewCmdAuth()),
-		grouped(groupStart, me.NewCmdMe()),
-
-		grouped(groupPersonal, todo.NewCmdTodo()),
-		grouped(groupPersonal, homework.NewCmdMyHomework()),
-		grouped(groupPersonal, calendar.NewCmdCalendar()),
-		grouped(groupPersonal, upload.NewCmdUpload()),
-
-		grouped(groupBrowse, course.NewCmdCourse()),
-		grouped(groupBrowse, section.NewCmdSection()),
-		grouped(groupBrowse, teacher.NewCmdTeacher()),
-		grouped(groupBrowse, semester.NewCmdSemester()),
-		grouped(groupBrowse, schedule.NewCmdSchedule()),
-		grouped(groupBrowse, bus.NewCmdBus()),
-		grouped(groupBrowse, schoolcmd.NewCmdSchool()),
-
-		grouped(groupCommunity, comment.NewCmdComment()),
-		grouped(groupCommunity, description.NewCmdDescription()),
-
-		grouped(groupRef, metadata.NewCmdMetadata()),
-		grouped(groupAdmin, admin.NewCmdAdmin()),
+		grouped(groupMain, catalog.NewCmdCatalog()),
+		grouped(groupMain, workspace.NewCmdWorkspace()),
+		grouped(groupMain, community.NewCmdCommunity()),
+		grouped(groupMain, account.NewCmdAccount()),
+		grouped(groupMain, admin.NewCmdAdmin()),
 
 		grouped(groupPlumbing, configcmd.NewCmdConfig()),
 		grouped(groupPlumbing, newCmdCompletion()),

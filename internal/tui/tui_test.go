@@ -332,7 +332,7 @@ func TestSearchTableErrorFitsCompactWindow(t *testing.T) {
 	m = updated.(tableModel)
 	m.mode = tableModeResults
 	m.query = SearchResult{Limit: 20}
-	m.err = `Get "http://127.0.0.1:1/api/courses?limit=20": dial tcp 127.0.0.1:1: socket: operation not permitted`
+	m.err = `Get "http://127.0.0.1:1/api/catalog/courses?limit=20": dial tcp 127.0.0.1:1: socket: operation not permitted`
 
 	rendered := m.View()
 	if renderedWidth := lipgloss.Width(rendered); renderedWidth > 40 {

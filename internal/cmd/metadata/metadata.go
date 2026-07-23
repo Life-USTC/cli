@@ -39,10 +39,10 @@ class types, gradations, course types, exam modes, teaching languages, and
 course classifies. These values are used as filters and identifiers in other
 commands.`,
 		Example: `  # Show all metadata tables
-  life-ustc metadata
+  life-ustc catalog metadata
 
   # Output as JSON for scripting
-  life-ustc metadata --json`,
+  life-ustc catalog metadata --json`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			c, err := api.NewTypedClient(cmdutil.ServerFromCmd(cmd), false)
 			if err != nil {

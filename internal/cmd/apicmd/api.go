@@ -39,16 +39,16 @@ This is the escape hatch for endpoints that do not have a first-class command
 yet. It follows the same design intent as 'gh api': keep the command model
 clean, but always leave a low-level path open for scripting and exploration.`,
 		Example: `  # Fetch the current semester
-  life-ustc api semesters/current
+  life-ustc api catalog/semesters/current
 
   # Create a todo with form-like fields
-  life-ustc api todos -F title='Write report' -F priority=high
+  life-ustc api workspace/todos -F title='Write report' -F priority=high
 
   # Send an exact JSON body from a file
   life-ustc api -X POST todos --input ./todo.json
 
   # Script a response with jq
-  life-ustc api sections --jq '.data[].code'`,
+  life-ustc api catalog/sections --jq '.data[].code'`,
 		Args:              cobra.ExactArgs(1),
 		ValidArgsFunction: completeAPIPaths,
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -178,7 +178,7 @@ func completeAPIPaths(cmd *cobra.Command, args []string, toComplete string) ([]s
 		}
 	}
 	if len(completions) == 0 {
-		completions = cobra.AppendActiveHelp(completions, "Use a raw path like '/api/courses' or a shorthand like 'courses'.")
+		completions = cobra.AppendActiveHelp(completions, "Use a raw path like '/api/catalog/courses' or a shorthand like 'courses'.")
 	}
 	return completions, cobra.ShellCompDirectiveNoFileComp
 }

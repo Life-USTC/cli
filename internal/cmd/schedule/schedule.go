@@ -26,10 +26,10 @@ func NewCmdSchedule() *cobra.Command {
 		Short: "Browse schedules",
 		Long:  "List class schedules with optional filters for section, teacher, date range, and weekday.",
 		Example: `  # List all schedules
-  life-ustc schedule
+  life-ustc catalog schedule
 
   # Filter by weekday
-  life-ustc schedule list --weekday 3`,
+  life-ustc catalog schedule list --weekday 3`,
 		Args: cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return runScheduleList(cmd, opts)
@@ -37,6 +37,48 @@ func NewCmdSchedule() *cobra.Command {
 	}
 	addScheduleListFlags(cmd, &opts)
 	cmd.AddCommand(newCmdList())
+	return cmd
+}
+
+func NewCmdWorkspaceSchedule() *cobra.Command {
+	var dateFrom, dateTo string
+	var weekday, limit int
+	cmd := &cobra.Command{
+		Use:   "schedule",
+		Short: "List schedules from your subscribed sections",
+		Args:  cobra.NoArgs,
+		RunE: func(cmd *cobra.Command, args []string) error {
+			c, err := api.NewTypedClient(cmdutil.ServerFromCmd(cmd), true)
+			if err != nil {
+				return err
+			}
+			params := &openapi.GetApiMeSubscriptionsSchedulesParams{
+				DateFrom: cmdutil.StringPtrIfSet(dateFrom),
+				DateTo:   cmdutil.StringPtrIfSet(dateTo),
+				Weekday:  cmdutil.Int64PtrIfPositive(weekday),
+				Limit:    cmdutil.Int64PtrIfPositive(limit),
+			}
+			data, err := api.ParseResponseRaw(c.GetApiMeSubscriptionsSchedules(api.Ctx(), params))
+			if err != nil {
+				return err
+			}
+			list := cmdutil.NewListResult(data, "schedules").FinalizeServerSide(limit)
+			for _, row := range list.Rows {
+				normalizeScheduleListRow(row)
+			}
+			return output.OutputList(list.Raw, list.Rows, []output.Column{
+				{Header: "Course", Key: "section.course.namePrimary"},
+				{Header: "Section", Key: "section.code"},
+				{Header: "Day", Key: "weekday"},
+				{Header: "Time", Key: "timeRange"},
+				{Header: "Place", Key: "customPlace"},
+			}, list.Total, list.Page)
+		},
+	}
+	cmd.Flags().StringVar(&dateFrom, "date-from", "", "Start date")
+	cmd.Flags().StringVar(&dateTo, "date-to", "", "End date")
+	cmd.Flags().IntVar(&weekday, "weekday", 0, "Weekday (1=Mon, 7=Sun)")
+	cmd.Flags().IntVar(&limit, "limit", 0, "Maximum schedules to return")
 	return cmd
 }
 

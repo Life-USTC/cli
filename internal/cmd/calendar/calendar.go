@@ -13,21 +13,43 @@ import (
 	"github.com/Life-USTC/CLI/internal/output"
 )
 
-func NewCmdCalendar() *cobra.Command {
+func NewCmdSubscription() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "calendar [command]",
-		Short: "Manage calendar subscriptions",
+		Use:   "subscription [command]",
+		Short: "Manage section subscriptions",
 		Args:  cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return runCalendarGet(cmd)
 		},
 	}
-	cmd.AddCommand(newCmdGet())
-	cmd.AddCommand(newCmdQuery())
+	list := newCmdGet()
+	list.Use = "list"
+	preview := newCmdQuery()
+	preview.Use = "preview <section-id-or-code>..."
+	importCmd := newCmdImportCodes()
+	importCmd.Use = "import <code>..."
+	cmd.AddCommand(list)
+	cmd.AddCommand(preview)
 	cmd.AddCommand(newCmdAdd())
 	cmd.AddCommand(newCmdRemove())
 	cmd.AddCommand(newCmdSet())
-	cmd.AddCommand(newCmdImportCodes())
+	cmd.AddCommand(importCmd)
+	return cmd
+}
+
+func NewCmdCalendar() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "calendar [command]",
+		Short: "View calendar exports",
+		Args:  cobra.NoArgs,
+	}
+	feed := newCmdGet()
+	feed.Use = "feed"
+	feed.Short = "Show your iCal feed"
+	export := newCmdGet()
+	export.Use = "export"
+	export.Short = "Export your iCal feed URL"
+	cmd.AddCommand(feed, export)
 	return cmd
 }
 
