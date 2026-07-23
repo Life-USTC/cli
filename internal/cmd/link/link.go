@@ -81,7 +81,7 @@ func newCmdSetPin(action string) *cobra.Command {
 			if err != nil {
 				return err
 			}
-			value := openapi.DashboardLinkPinRequestSchemaAction(action)
+			value := openapi.WorkspaceLinkPinRequestSchemaAction(action)
 			data, err := api.ParseResponseRaw(
 				client.WorkspaceLinkPinSetWithFormdataBody(
 					api.Ctx(),
