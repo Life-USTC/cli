@@ -54,19 +54,24 @@ func newCmdSectionList() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			inclDel := openapi.ListHomeworksParamsIncludeDeleted("false")
+			inclDel := openapi.CommunitySectionHomeworkListParamsIncludeDeleted(
+				"false",
+			)
 			if includeDeleted {
-				inclDel = openapi.ListHomeworksParamsIncludeDeletedTrue
+				inclDel =
+					openapi.CommunitySectionHomeworkListParamsIncludeDeletedTrue
 			}
 			sectionID, err := cmdutil.Int64PtrIfSet(args[0])
 			if err != nil {
 				return err
 			}
-			params := &openapi.ListHomeworksParams{
+			params := &openapi.CommunitySectionHomeworkListParams{
 				SectionId:      sectionID,
 				IncludeDeleted: &inclDel,
 			}
-			data, err := api.ParseResponseRaw(c.ListHomeworks(api.Ctx(), params))
+			data, err := api.ParseResponseRaw(
+				c.CommunitySectionHomeworkList(api.Ctx(), params),
+			)
 			if err != nil {
 				return err
 			}
@@ -162,9 +167,11 @@ func newCmdSectionCreate() *cobra.Command {
 			if requiresTeam {
 				schemaBody.RequiresTeam = &requiresTeam
 			}
-			body := openapi.CreateHomeworkJSONRequestBody{}
+			body := openapi.CommunitySectionHomeworkCreateJSONRequestBody{}
 			_ = body.FromHomeworkCreateRequestSchema0(schemaBody)
-			data, err := api.ParseResponseRaw(c.CreateHomework(api.Ctx(), body))
+			data, err := api.ParseResponseRaw(
+				c.CommunitySectionHomeworkCreate(api.Ctx(), body),
+			)
 			if err != nil {
 				return err
 			}
@@ -363,15 +370,17 @@ func runMyHomeworkList(cmd *cobra.Command, opts myHomeworkListOpts) error {
 	var data any
 
 	if opts.sectionID != "" {
-		// Single section — use /api/community/homeworks with sectionId filter
+		// Single section — use the shared section-homework catalog.
 		sectionID, err := cmdutil.Int64PtrIfSet(opts.sectionID)
 		if err != nil {
 			return err
 		}
-		params := &openapi.ListHomeworksParams{
+		params := &openapi.CommunitySectionHomeworkListParams{
 			SectionId: sectionID,
 		}
-		data, err = api.ParseResponseRaw(c.ListHomeworks(api.Ctx(), params))
+		data, err = api.ParseResponseRaw(
+			c.CommunitySectionHomeworkList(api.Ctx(), params),
+		)
 		if err != nil {
 			return err
 		}
@@ -625,7 +634,7 @@ func newCmdUpdate() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			body := openapi.UpdateHomeworkJSONRequestBody{}
+			body := openapi.CommunitySectionHomeworkUpdateJSONRequestBody{}
 			hasUpdate := false
 			if title != "" {
 				body.Title = &title
@@ -672,7 +681,9 @@ func newCmdUpdate() *cobra.Command {
 			if !hasUpdate {
 				return fmt.Errorf("nothing to update — specify at least one flag")
 			}
-			_, err = api.ParseResponseRaw(c.UpdateHomework(api.Ctx(), id, body))
+			_, err = api.ParseResponseRaw(
+				c.CommunitySectionHomeworkUpdate(api.Ctx(), id, body),
+			)
 			if err != nil {
 				return err
 			}
@@ -727,7 +738,9 @@ func newCmdDelete() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			_, err = api.ParseResponseRaw(c.DeleteHomework(api.Ctx(), id))
+			_, err = api.ParseResponseRaw(
+				c.CommunitySectionHomeworkDelete(api.Ctx(), id),
+			)
 			if err != nil {
 				return err
 			}

@@ -54,6 +54,8 @@ life-ustc workspace subscription import <CODE_1> <CODE_2>
 life-ustc workspace calendar events
 life-ustc workspace calendar feed
 life-ustc workspace bus-preferences get
+life-ustc workspace link-pin list
+life-ustc workspace link-pin pin jw
 life-ustc workspace upload create ./report.pdf
 life-ustc workspace upload download <ID> -o report.pdf
 
@@ -67,6 +69,7 @@ life-ustc catalog section list --semester-id <ID>
 life-ustc catalog teacher list --search "张"
 life-ustc catalog semester current
 life-ustc catalog bus timetable --from east --to west
+life-ustc catalog link
 life-ustc catalog metadata
 
 # Official USTC sources

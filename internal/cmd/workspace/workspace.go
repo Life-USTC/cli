@@ -10,6 +10,7 @@ import (
 	"github.com/Life-USTC/CLI/internal/cmd/calendar"
 	"github.com/Life-USTC/CLI/internal/cmd/cmdutil"
 	"github.com/Life-USTC/CLI/internal/cmd/homework"
+	"github.com/Life-USTC/CLI/internal/cmd/link"
 	"github.com/Life-USTC/CLI/internal/cmd/schedule"
 	schoolcmd "github.com/Life-USTC/CLI/internal/cmd/school"
 	"github.com/Life-USTC/CLI/internal/cmd/todo"
@@ -33,6 +34,7 @@ func NewCmdWorkspace() *cobra.Command {
 		homework.NewCmdMyHomework(),
 		calendar.NewCmdSubscription(),
 		bus.NewCmdBusPreferences(),
+		link.NewCmdWorkspaceLinkPin(),
 		upload.NewCmdUpload(),
 		schoolcmd.NewCmdSchool(),
 	)
@@ -139,5 +141,7 @@ func getOverview(cmd *cobra.Command) (any, error) {
 	if err != nil {
 		return nil, err
 	}
-	return api.ParseResponseRaw(c.GetApiMeOverview(api.Ctx(), &openapi.GetApiMeOverviewParams{}))
+	return api.ParseResponseRaw(
+		c.WorkspaceOverviewGet(api.Ctx(), &openapi.WorkspaceOverviewGetParams{}),
+	)
 }
