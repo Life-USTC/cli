@@ -223,16 +223,19 @@ func (e AdminUpdateUserRequestSchemaUsername1) Valid() bool {
 
 // Defines values for BusNextDeparturesResponseSchemaDayType.
 const (
-	BusNextDeparturesResponseSchemaDayTypeWeekday BusNextDeparturesResponseSchemaDayType = "weekday"
-	BusNextDeparturesResponseSchemaDayTypeWeekend BusNextDeparturesResponseSchemaDayType = "weekend"
+	BusNextDeparturesResponseSchemaDayTypeSaturday BusNextDeparturesResponseSchemaDayType = "saturday"
+	BusNextDeparturesResponseSchemaDayTypeSunday   BusNextDeparturesResponseSchemaDayType = "sunday"
+	BusNextDeparturesResponseSchemaDayTypeWeekday  BusNextDeparturesResponseSchemaDayType = "weekday"
 )
 
 // Valid indicates whether the value is a known member of the BusNextDeparturesResponseSchemaDayType enum.
 func (e BusNextDeparturesResponseSchemaDayType) Valid() bool {
 	switch e {
-	case BusNextDeparturesResponseSchemaDayTypeWeekday:
+	case BusNextDeparturesResponseSchemaDayTypeSaturday:
 		return true
-	case BusNextDeparturesResponseSchemaDayTypeWeekend:
+	case BusNextDeparturesResponseSchemaDayTypeSunday:
+		return true
+	case BusNextDeparturesResponseSchemaDayTypeWeekday:
 		return true
 	default:
 		return false
@@ -241,16 +244,19 @@ func (e BusNextDeparturesResponseSchemaDayType) Valid() bool {
 
 // Defines values for BusNextDeparturesResponseSchemaDeparturesDayType.
 const (
-	BusNextDeparturesResponseSchemaDeparturesDayTypeWeekday BusNextDeparturesResponseSchemaDeparturesDayType = "weekday"
-	BusNextDeparturesResponseSchemaDeparturesDayTypeWeekend BusNextDeparturesResponseSchemaDeparturesDayType = "weekend"
+	BusNextDeparturesResponseSchemaDeparturesDayTypeSaturday BusNextDeparturesResponseSchemaDeparturesDayType = "saturday"
+	BusNextDeparturesResponseSchemaDeparturesDayTypeSunday   BusNextDeparturesResponseSchemaDeparturesDayType = "sunday"
+	BusNextDeparturesResponseSchemaDeparturesDayTypeWeekday  BusNextDeparturesResponseSchemaDeparturesDayType = "weekday"
 )
 
 // Valid indicates whether the value is a known member of the BusNextDeparturesResponseSchemaDeparturesDayType enum.
 func (e BusNextDeparturesResponseSchemaDeparturesDayType) Valid() bool {
 	switch e {
-	case BusNextDeparturesResponseSchemaDeparturesDayTypeWeekday:
+	case BusNextDeparturesResponseSchemaDeparturesDayTypeSaturday:
 		return true
-	case BusNextDeparturesResponseSchemaDeparturesDayTypeWeekend:
+	case BusNextDeparturesResponseSchemaDeparturesDayTypeSunday:
+		return true
+	case BusNextDeparturesResponseSchemaDeparturesDayTypeWeekday:
 		return true
 	default:
 		return false
@@ -277,16 +283,19 @@ func (e BusNextDeparturesResponseSchemaDeparturesStatus) Valid() bool {
 
 // Defines values for BusNextDeparturesResponseSchemaNextAvailableDepartureDayType.
 const (
-	BusNextDeparturesResponseSchemaNextAvailableDepartureDayTypeWeekday BusNextDeparturesResponseSchemaNextAvailableDepartureDayType = "weekday"
-	BusNextDeparturesResponseSchemaNextAvailableDepartureDayTypeWeekend BusNextDeparturesResponseSchemaNextAvailableDepartureDayType = "weekend"
+	BusNextDeparturesResponseSchemaNextAvailableDepartureDayTypeSaturday BusNextDeparturesResponseSchemaNextAvailableDepartureDayType = "saturday"
+	BusNextDeparturesResponseSchemaNextAvailableDepartureDayTypeSunday   BusNextDeparturesResponseSchemaNextAvailableDepartureDayType = "sunday"
+	BusNextDeparturesResponseSchemaNextAvailableDepartureDayTypeWeekday  BusNextDeparturesResponseSchemaNextAvailableDepartureDayType = "weekday"
 )
 
 // Valid indicates whether the value is a known member of the BusNextDeparturesResponseSchemaNextAvailableDepartureDayType enum.
 func (e BusNextDeparturesResponseSchemaNextAvailableDepartureDayType) Valid() bool {
 	switch e {
-	case BusNextDeparturesResponseSchemaNextAvailableDepartureDayTypeWeekday:
+	case BusNextDeparturesResponseSchemaNextAvailableDepartureDayTypeSaturday:
 		return true
-	case BusNextDeparturesResponseSchemaNextAvailableDepartureDayTypeWeekend:
+	case BusNextDeparturesResponseSchemaNextAvailableDepartureDayTypeSunday:
+		return true
+	case BusNextDeparturesResponseSchemaNextAvailableDepartureDayTypeWeekday:
 		return true
 	default:
 		return false
@@ -331,16 +340,40 @@ func (e BusQueryResponseSchemaLocale) Valid() bool {
 
 // Defines values for BusQueryResponseSchemaTripsDayType.
 const (
-	BusQueryResponseSchemaTripsDayTypeWeekday BusQueryResponseSchemaTripsDayType = "weekday"
-	BusQueryResponseSchemaTripsDayTypeWeekend BusQueryResponseSchemaTripsDayType = "weekend"
+	BusQueryResponseSchemaTripsDayTypeSaturday BusQueryResponseSchemaTripsDayType = "saturday"
+	BusQueryResponseSchemaTripsDayTypeSunday   BusQueryResponseSchemaTripsDayType = "sunday"
+	BusQueryResponseSchemaTripsDayTypeWeekday  BusQueryResponseSchemaTripsDayType = "weekday"
 )
 
 // Valid indicates whether the value is a known member of the BusQueryResponseSchemaTripsDayType enum.
 func (e BusQueryResponseSchemaTripsDayType) Valid() bool {
 	switch e {
+	case BusQueryResponseSchemaTripsDayTypeSaturday:
+		return true
+	case BusQueryResponseSchemaTripsDayTypeSunday:
+		return true
 	case BusQueryResponseSchemaTripsDayTypeWeekday:
 		return true
-	case BusQueryResponseSchemaTripsDayTypeWeekend:
+	default:
+		return false
+	}
+}
+
+// Defines values for CalendarSubscriptionAppendResponseSchemaSubscriptionSectionsKind.
+const (
+	CalendarSubscriptionAppendResponseSchemaSubscriptionSectionsKindAuditor           CalendarSubscriptionAppendResponseSchemaSubscriptionSectionsKind = "auditor"
+	CalendarSubscriptionAppendResponseSchemaSubscriptionSectionsKindRegular           CalendarSubscriptionAppendResponseSchemaSubscriptionSectionsKind = "regular"
+	CalendarSubscriptionAppendResponseSchemaSubscriptionSectionsKindTeachingAssistant CalendarSubscriptionAppendResponseSchemaSubscriptionSectionsKind = "teaching_assistant"
+)
+
+// Valid indicates whether the value is a known member of the CalendarSubscriptionAppendResponseSchemaSubscriptionSectionsKind enum.
+func (e CalendarSubscriptionAppendResponseSchemaSubscriptionSectionsKind) Valid() bool {
+	switch e {
+	case CalendarSubscriptionAppendResponseSchemaSubscriptionSectionsKindAuditor:
+		return true
+	case CalendarSubscriptionAppendResponseSchemaSubscriptionSectionsKindRegular:
+		return true
+	case CalendarSubscriptionAppendResponseSchemaSubscriptionSectionsKindTeachingAssistant:
 		return true
 	default:
 		return false
@@ -351,7 +384,6 @@ func (e BusQueryResponseSchemaTripsDayType) Valid() bool {
 const (
 	CalendarSubscriptionBatchRequestSchemaActionAdd    CalendarSubscriptionBatchRequestSchemaAction = "add"
 	CalendarSubscriptionBatchRequestSchemaActionRemove CalendarSubscriptionBatchRequestSchemaAction = "remove"
-	CalendarSubscriptionBatchRequestSchemaActionSet    CalendarSubscriptionBatchRequestSchemaAction = "set"
 )
 
 // Valid indicates whether the value is a known member of the CalendarSubscriptionBatchRequestSchemaAction enum.
@@ -360,8 +392,6 @@ func (e CalendarSubscriptionBatchRequestSchemaAction) Valid() bool {
 	case CalendarSubscriptionBatchRequestSchemaActionAdd:
 		return true
 	case CalendarSubscriptionBatchRequestSchemaActionRemove:
-		return true
-	case CalendarSubscriptionBatchRequestSchemaActionSet:
 		return true
 	default:
 		return false
@@ -372,7 +402,6 @@ func (e CalendarSubscriptionBatchRequestSchemaAction) Valid() bool {
 const (
 	CalendarSubscriptionBatchResponseSchemaActionAdd    CalendarSubscriptionBatchResponseSchemaAction = "add"
 	CalendarSubscriptionBatchResponseSchemaActionRemove CalendarSubscriptionBatchResponseSchemaAction = "remove"
-	CalendarSubscriptionBatchResponseSchemaActionSet    CalendarSubscriptionBatchResponseSchemaAction = "set"
 )
 
 // Valid indicates whether the value is a known member of the CalendarSubscriptionBatchResponseSchemaAction enum.
@@ -382,7 +411,68 @@ func (e CalendarSubscriptionBatchResponseSchemaAction) Valid() bool {
 		return true
 	case CalendarSubscriptionBatchResponseSchemaActionRemove:
 		return true
-	case CalendarSubscriptionBatchResponseSchemaActionSet:
+	default:
+		return false
+	}
+}
+
+// Defines values for CalendarSubscriptionBatchResponseSchemaSubscriptionSectionsKind.
+const (
+	CalendarSubscriptionBatchResponseSchemaSubscriptionSectionsKindAuditor           CalendarSubscriptionBatchResponseSchemaSubscriptionSectionsKind = "auditor"
+	CalendarSubscriptionBatchResponseSchemaSubscriptionSectionsKindRegular           CalendarSubscriptionBatchResponseSchemaSubscriptionSectionsKind = "regular"
+	CalendarSubscriptionBatchResponseSchemaSubscriptionSectionsKindTeachingAssistant CalendarSubscriptionBatchResponseSchemaSubscriptionSectionsKind = "teaching_assistant"
+)
+
+// Valid indicates whether the value is a known member of the CalendarSubscriptionBatchResponseSchemaSubscriptionSectionsKind enum.
+func (e CalendarSubscriptionBatchResponseSchemaSubscriptionSectionsKind) Valid() bool {
+	switch e {
+	case CalendarSubscriptionBatchResponseSchemaSubscriptionSectionsKindAuditor:
+		return true
+	case CalendarSubscriptionBatchResponseSchemaSubscriptionSectionsKindRegular:
+		return true
+	case CalendarSubscriptionBatchResponseSchemaSubscriptionSectionsKindTeachingAssistant:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for CalendarSubscriptionImportResponseSchemaSubscriptionSectionsKind.
+const (
+	CalendarSubscriptionImportResponseSchemaSubscriptionSectionsKindAuditor           CalendarSubscriptionImportResponseSchemaSubscriptionSectionsKind = "auditor"
+	CalendarSubscriptionImportResponseSchemaSubscriptionSectionsKindRegular           CalendarSubscriptionImportResponseSchemaSubscriptionSectionsKind = "regular"
+	CalendarSubscriptionImportResponseSchemaSubscriptionSectionsKindTeachingAssistant CalendarSubscriptionImportResponseSchemaSubscriptionSectionsKind = "teaching_assistant"
+)
+
+// Valid indicates whether the value is a known member of the CalendarSubscriptionImportResponseSchemaSubscriptionSectionsKind enum.
+func (e CalendarSubscriptionImportResponseSchemaSubscriptionSectionsKind) Valid() bool {
+	switch e {
+	case CalendarSubscriptionImportResponseSchemaSubscriptionSectionsKindAuditor:
+		return true
+	case CalendarSubscriptionImportResponseSchemaSubscriptionSectionsKindRegular:
+		return true
+	case CalendarSubscriptionImportResponseSchemaSubscriptionSectionsKindTeachingAssistant:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for CalendarSubscriptionRemoveResponseSchemaSubscriptionSectionsKind.
+const (
+	CalendarSubscriptionRemoveResponseSchemaSubscriptionSectionsKindAuditor           CalendarSubscriptionRemoveResponseSchemaSubscriptionSectionsKind = "auditor"
+	CalendarSubscriptionRemoveResponseSchemaSubscriptionSectionsKindRegular           CalendarSubscriptionRemoveResponseSchemaSubscriptionSectionsKind = "regular"
+	CalendarSubscriptionRemoveResponseSchemaSubscriptionSectionsKindTeachingAssistant CalendarSubscriptionRemoveResponseSchemaSubscriptionSectionsKind = "teaching_assistant"
+)
+
+// Valid indicates whether the value is a known member of the CalendarSubscriptionRemoveResponseSchemaSubscriptionSectionsKind enum.
+func (e CalendarSubscriptionRemoveResponseSchemaSubscriptionSectionsKind) Valid() bool {
+	switch e {
+	case CalendarSubscriptionRemoveResponseSchemaSubscriptionSectionsKindAuditor:
+		return true
+	case CalendarSubscriptionRemoveResponseSchemaSubscriptionSectionsKindRegular:
+		return true
+	case CalendarSubscriptionRemoveResponseSchemaSubscriptionSectionsKindTeachingAssistant:
 		return true
 	default:
 		return false
@@ -710,6 +800,27 @@ func (e CompactOverviewResponseSchemaTodosItemsPriority) Valid() bool {
 	case CompactOverviewResponseSchemaTodosItemsPriorityLow:
 		return true
 	case CompactOverviewResponseSchemaTodosItemsPriorityMedium:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for CurrentCalendarSubscriptionResponseSchemaSubscriptionSectionsKind.
+const (
+	CurrentCalendarSubscriptionResponseSchemaSubscriptionSectionsKindAuditor           CurrentCalendarSubscriptionResponseSchemaSubscriptionSectionsKind = "auditor"
+	CurrentCalendarSubscriptionResponseSchemaSubscriptionSectionsKindRegular           CurrentCalendarSubscriptionResponseSchemaSubscriptionSectionsKind = "regular"
+	CurrentCalendarSubscriptionResponseSchemaSubscriptionSectionsKindTeachingAssistant CurrentCalendarSubscriptionResponseSchemaSubscriptionSectionsKind = "teaching_assistant"
+)
+
+// Valid indicates whether the value is a known member of the CurrentCalendarSubscriptionResponseSchemaSubscriptionSectionsKind enum.
+func (e CurrentCalendarSubscriptionResponseSchemaSubscriptionSectionsKind) Valid() bool {
+	switch e {
+	case CurrentCalendarSubscriptionResponseSchemaSubscriptionSectionsKindAuditor:
+		return true
+	case CurrentCalendarSubscriptionResponseSchemaSubscriptionSectionsKindRegular:
+		return true
+	case CurrentCalendarSubscriptionResponseSchemaSubscriptionSectionsKindTeachingAssistant:
 		return true
 	default:
 		return false
@@ -1058,6 +1169,426 @@ func (e OauthTokenResponseSchemaTokenType) Valid() bool {
 	}
 }
 
+// Defines values for PublicPublicationDetailSchemaPublicationType.
+const (
+	PublicPublicationDetailSchemaPublicationTypeNews   PublicPublicationDetailSchemaPublicationType = "news"
+	PublicPublicationDetailSchemaPublicationTypeNotice PublicPublicationDetailSchemaPublicationType = "notice"
+)
+
+// Valid indicates whether the value is a known member of the PublicPublicationDetailSchemaPublicationType enum.
+func (e PublicPublicationDetailSchemaPublicationType) Valid() bool {
+	switch e {
+	case PublicPublicationDetailSchemaPublicationTypeNews:
+		return true
+	case PublicPublicationDetailSchemaPublicationTypeNotice:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for PublicPublicationDetailSchemaRevisionObjectsKind.
+const (
+	PublicPublicationDetailSchemaRevisionObjectsKindAsset        PublicPublicationDetailSchemaRevisionObjectsKind = "asset"
+	PublicPublicationDetailSchemaRevisionObjectsKindBodyHtml     PublicPublicationDetailSchemaRevisionObjectsKind = "body_html"
+	PublicPublicationDetailSchemaRevisionObjectsKindBodyMarkdown PublicPublicationDetailSchemaRevisionObjectsKind = "body_markdown"
+	PublicPublicationDetailSchemaRevisionObjectsKindMedia        PublicPublicationDetailSchemaRevisionObjectsKind = "media"
+	PublicPublicationDetailSchemaRevisionObjectsKindRawPage      PublicPublicationDetailSchemaRevisionObjectsKind = "raw_page"
+)
+
+// Valid indicates whether the value is a known member of the PublicPublicationDetailSchemaRevisionObjectsKind enum.
+func (e PublicPublicationDetailSchemaRevisionObjectsKind) Valid() bool {
+	switch e {
+	case PublicPublicationDetailSchemaRevisionObjectsKindAsset:
+		return true
+	case PublicPublicationDetailSchemaRevisionObjectsKindBodyHtml:
+		return true
+	case PublicPublicationDetailSchemaRevisionObjectsKindBodyMarkdown:
+		return true
+	case PublicPublicationDetailSchemaRevisionObjectsKindMedia:
+		return true
+	case PublicPublicationDetailSchemaRevisionObjectsKindRawPage:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for PublicPublicationDetailSchemaRevisionObjectsStatus.
+const (
+	PublicPublicationDetailSchemaRevisionObjectsStatusLinked   PublicPublicationDetailSchemaRevisionObjectsStatus = "linked"
+	PublicPublicationDetailSchemaRevisionObjectsStatusVerified PublicPublicationDetailSchemaRevisionObjectsStatus = "verified"
+)
+
+// Valid indicates whether the value is a known member of the PublicPublicationDetailSchemaRevisionObjectsStatus enum.
+func (e PublicPublicationDetailSchemaRevisionObjectsStatus) Valid() bool {
+	switch e {
+	case PublicPublicationDetailSchemaRevisionObjectsStatusLinked:
+		return true
+	case PublicPublicationDetailSchemaRevisionObjectsStatusVerified:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for PublicPublicationsResponseSchemaDataObjectsKind.
+const (
+	PublicPublicationsResponseSchemaDataObjectsKindAsset        PublicPublicationsResponseSchemaDataObjectsKind = "asset"
+	PublicPublicationsResponseSchemaDataObjectsKindBodyHtml     PublicPublicationsResponseSchemaDataObjectsKind = "body_html"
+	PublicPublicationsResponseSchemaDataObjectsKindBodyMarkdown PublicPublicationsResponseSchemaDataObjectsKind = "body_markdown"
+	PublicPublicationsResponseSchemaDataObjectsKindMedia        PublicPublicationsResponseSchemaDataObjectsKind = "media"
+	PublicPublicationsResponseSchemaDataObjectsKindRawPage      PublicPublicationsResponseSchemaDataObjectsKind = "raw_page"
+)
+
+// Valid indicates whether the value is a known member of the PublicPublicationsResponseSchemaDataObjectsKind enum.
+func (e PublicPublicationsResponseSchemaDataObjectsKind) Valid() bool {
+	switch e {
+	case PublicPublicationsResponseSchemaDataObjectsKindAsset:
+		return true
+	case PublicPublicationsResponseSchemaDataObjectsKindBodyHtml:
+		return true
+	case PublicPublicationsResponseSchemaDataObjectsKindBodyMarkdown:
+		return true
+	case PublicPublicationsResponseSchemaDataObjectsKindMedia:
+		return true
+	case PublicPublicationsResponseSchemaDataObjectsKindRawPage:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for PublicPublicationsResponseSchemaDataObjectsStatus.
+const (
+	PublicPublicationsResponseSchemaDataObjectsStatusLinked   PublicPublicationsResponseSchemaDataObjectsStatus = "linked"
+	PublicPublicationsResponseSchemaDataObjectsStatusVerified PublicPublicationsResponseSchemaDataObjectsStatus = "verified"
+)
+
+// Valid indicates whether the value is a known member of the PublicPublicationsResponseSchemaDataObjectsStatus enum.
+func (e PublicPublicationsResponseSchemaDataObjectsStatus) Valid() bool {
+	switch e {
+	case PublicPublicationsResponseSchemaDataObjectsStatusLinked:
+		return true
+	case PublicPublicationsResponseSchemaDataObjectsStatusVerified:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for PublicPublicationsResponseSchemaDataPublicationType.
+const (
+	PublicPublicationsResponseSchemaDataPublicationTypeNews   PublicPublicationsResponseSchemaDataPublicationType = "news"
+	PublicPublicationsResponseSchemaDataPublicationTypeNotice PublicPublicationsResponseSchemaDataPublicationType = "notice"
+)
+
+// Valid indicates whether the value is a known member of the PublicPublicationsResponseSchemaDataPublicationType enum.
+func (e PublicPublicationsResponseSchemaDataPublicationType) Valid() bool {
+	switch e {
+	case PublicPublicationsResponseSchemaDataPublicationTypeNews:
+		return true
+	case PublicPublicationsResponseSchemaDataPublicationTypeNotice:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for PublicationIngestionBatchRequestSchemaItems0ObjectsKind.
+const (
+	PublicationIngestionBatchRequestSchemaItems0ObjectsKindAsset        PublicationIngestionBatchRequestSchemaItems0ObjectsKind = "asset"
+	PublicationIngestionBatchRequestSchemaItems0ObjectsKindBodyHtml     PublicationIngestionBatchRequestSchemaItems0ObjectsKind = "body_html"
+	PublicationIngestionBatchRequestSchemaItems0ObjectsKindBodyMarkdown PublicationIngestionBatchRequestSchemaItems0ObjectsKind = "body_markdown"
+	PublicationIngestionBatchRequestSchemaItems0ObjectsKindMedia        PublicationIngestionBatchRequestSchemaItems0ObjectsKind = "media"
+	PublicationIngestionBatchRequestSchemaItems0ObjectsKindRawPage      PublicationIngestionBatchRequestSchemaItems0ObjectsKind = "raw_page"
+)
+
+// Valid indicates whether the value is a known member of the PublicationIngestionBatchRequestSchemaItems0ObjectsKind enum.
+func (e PublicationIngestionBatchRequestSchemaItems0ObjectsKind) Valid() bool {
+	switch e {
+	case PublicationIngestionBatchRequestSchemaItems0ObjectsKindAsset:
+		return true
+	case PublicationIngestionBatchRequestSchemaItems0ObjectsKindBodyHtml:
+		return true
+	case PublicationIngestionBatchRequestSchemaItems0ObjectsKindBodyMarkdown:
+		return true
+	case PublicationIngestionBatchRequestSchemaItems0ObjectsKindMedia:
+		return true
+	case PublicationIngestionBatchRequestSchemaItems0ObjectsKindRawPage:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for PublicationIngestionBatchRequestSchemaItems0PublicationType.
+const (
+	News   PublicationIngestionBatchRequestSchemaItems0PublicationType = "news"
+	Notice PublicationIngestionBatchRequestSchemaItems0PublicationType = "notice"
+	Other  PublicationIngestionBatchRequestSchemaItems0PublicationType = "other"
+)
+
+// Valid indicates whether the value is a known member of the PublicationIngestionBatchRequestSchemaItems0PublicationType enum.
+func (e PublicationIngestionBatchRequestSchemaItems0PublicationType) Valid() bool {
+	switch e {
+	case News:
+		return true
+	case Notice:
+		return true
+	case Other:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for PublicationIngestionBatchRequestSchemaItems0Tombstone.
+const (
+	PublicationIngestionBatchRequestSchemaItems0TombstoneFalse PublicationIngestionBatchRequestSchemaItems0Tombstone = false
+)
+
+// Valid indicates whether the value is a known member of the PublicationIngestionBatchRequestSchemaItems0Tombstone enum.
+func (e PublicationIngestionBatchRequestSchemaItems0Tombstone) Valid() bool {
+	switch e {
+	case PublicationIngestionBatchRequestSchemaItems0TombstoneFalse:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for PublicationIngestionBatchRequestSchemaItems1Tombstone.
+const (
+	PublicationIngestionBatchRequestSchemaItems1TombstoneTrue PublicationIngestionBatchRequestSchemaItems1Tombstone = true
+)
+
+// Valid indicates whether the value is a known member of the PublicationIngestionBatchRequestSchemaItems1Tombstone enum.
+func (e PublicationIngestionBatchRequestSchemaItems1Tombstone) Valid() bool {
+	switch e {
+	case PublicationIngestionBatchRequestSchemaItems1TombstoneTrue:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for PublicationIngestionBatchRequestSchemaProtocolVersion.
+const (
+	N1 PublicationIngestionBatchRequestSchemaProtocolVersion = "1"
+)
+
+// Valid indicates whether the value is a known member of the PublicationIngestionBatchRequestSchemaProtocolVersion enum.
+func (e PublicationIngestionBatchRequestSchemaProtocolVersion) Valid() bool {
+	switch e {
+	case N1:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for PublicationIngestionBatchResponseSchemaResultsStatus.
+const (
+	PublicationIngestionBatchResponseSchemaResultsStatusCreated   PublicationIngestionBatchResponseSchemaResultsStatus = "created"
+	PublicationIngestionBatchResponseSchemaResultsStatusRejected  PublicationIngestionBatchResponseSchemaResultsStatus = "rejected"
+	PublicationIngestionBatchResponseSchemaResultsStatusUnchanged PublicationIngestionBatchResponseSchemaResultsStatus = "unchanged"
+	PublicationIngestionBatchResponseSchemaResultsStatusUpdated   PublicationIngestionBatchResponseSchemaResultsStatus = "updated"
+)
+
+// Valid indicates whether the value is a known member of the PublicationIngestionBatchResponseSchemaResultsStatus enum.
+func (e PublicationIngestionBatchResponseSchemaResultsStatus) Valid() bool {
+	switch e {
+	case PublicationIngestionBatchResponseSchemaResultsStatusCreated:
+		return true
+	case PublicationIngestionBatchResponseSchemaResultsStatusRejected:
+		return true
+	case PublicationIngestionBatchResponseSchemaResultsStatusUnchanged:
+		return true
+	case PublicationIngestionBatchResponseSchemaResultsStatusUpdated:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for PublicationObjectPlanRequestSchemaObjectsKind.
+const (
+	PublicationObjectPlanRequestSchemaObjectsKindAsset        PublicationObjectPlanRequestSchemaObjectsKind = "asset"
+	PublicationObjectPlanRequestSchemaObjectsKindBodyHtml     PublicationObjectPlanRequestSchemaObjectsKind = "body_html"
+	PublicationObjectPlanRequestSchemaObjectsKindBodyMarkdown PublicationObjectPlanRequestSchemaObjectsKind = "body_markdown"
+	PublicationObjectPlanRequestSchemaObjectsKindMedia        PublicationObjectPlanRequestSchemaObjectsKind = "media"
+	PublicationObjectPlanRequestSchemaObjectsKindRawPage      PublicationObjectPlanRequestSchemaObjectsKind = "raw_page"
+)
+
+// Valid indicates whether the value is a known member of the PublicationObjectPlanRequestSchemaObjectsKind enum.
+func (e PublicationObjectPlanRequestSchemaObjectsKind) Valid() bool {
+	switch e {
+	case PublicationObjectPlanRequestSchemaObjectsKindAsset:
+		return true
+	case PublicationObjectPlanRequestSchemaObjectsKindBodyHtml:
+		return true
+	case PublicationObjectPlanRequestSchemaObjectsKindBodyMarkdown:
+		return true
+	case PublicationObjectPlanRequestSchemaObjectsKindMedia:
+		return true
+	case PublicationObjectPlanRequestSchemaObjectsKindRawPage:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for PublicationObjectPlanResponseSchemaObjectsKind.
+const (
+	PublicationObjectPlanResponseSchemaObjectsKindAsset        PublicationObjectPlanResponseSchemaObjectsKind = "asset"
+	PublicationObjectPlanResponseSchemaObjectsKindBodyHtml     PublicationObjectPlanResponseSchemaObjectsKind = "body_html"
+	PublicationObjectPlanResponseSchemaObjectsKindBodyMarkdown PublicationObjectPlanResponseSchemaObjectsKind = "body_markdown"
+	PublicationObjectPlanResponseSchemaObjectsKindMedia        PublicationObjectPlanResponseSchemaObjectsKind = "media"
+	PublicationObjectPlanResponseSchemaObjectsKindRawPage      PublicationObjectPlanResponseSchemaObjectsKind = "raw_page"
+)
+
+// Valid indicates whether the value is a known member of the PublicationObjectPlanResponseSchemaObjectsKind enum.
+func (e PublicationObjectPlanResponseSchemaObjectsKind) Valid() bool {
+	switch e {
+	case PublicationObjectPlanResponseSchemaObjectsKindAsset:
+		return true
+	case PublicationObjectPlanResponseSchemaObjectsKindBodyHtml:
+		return true
+	case PublicationObjectPlanResponseSchemaObjectsKindBodyMarkdown:
+		return true
+	case PublicationObjectPlanResponseSchemaObjectsKindMedia:
+		return true
+	case PublicationObjectPlanResponseSchemaObjectsKindRawPage:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for PublicationObjectPlanResponseSchemaObjectsStatus.
+const (
+	AlreadyPresent PublicationObjectPlanResponseSchemaObjectsStatus = "already_present"
+	UploadRequired PublicationObjectPlanResponseSchemaObjectsStatus = "upload_required"
+)
+
+// Valid indicates whether the value is a known member of the PublicationObjectPlanResponseSchemaObjectsStatus enum.
+func (e PublicationObjectPlanResponseSchemaObjectsStatus) Valid() bool {
+	switch e {
+	case AlreadyPresent:
+		return true
+	case UploadRequired:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for PublicationObjectUploadResponseSchemaKind.
+const (
+	PublicationObjectUploadResponseSchemaKindAsset        PublicationObjectUploadResponseSchemaKind = "asset"
+	PublicationObjectUploadResponseSchemaKindBodyHtml     PublicationObjectUploadResponseSchemaKind = "body_html"
+	PublicationObjectUploadResponseSchemaKindBodyMarkdown PublicationObjectUploadResponseSchemaKind = "body_markdown"
+	PublicationObjectUploadResponseSchemaKindMedia        PublicationObjectUploadResponseSchemaKind = "media"
+	PublicationObjectUploadResponseSchemaKindRawPage      PublicationObjectUploadResponseSchemaKind = "raw_page"
+)
+
+// Valid indicates whether the value is a known member of the PublicationObjectUploadResponseSchemaKind enum.
+func (e PublicationObjectUploadResponseSchemaKind) Valid() bool {
+	switch e {
+	case PublicationObjectUploadResponseSchemaKindAsset:
+		return true
+	case PublicationObjectUploadResponseSchemaKindBodyHtml:
+		return true
+	case PublicationObjectUploadResponseSchemaKindBodyMarkdown:
+		return true
+	case PublicationObjectUploadResponseSchemaKindMedia:
+		return true
+	case PublicationObjectUploadResponseSchemaKindRawPage:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for PublicationObjectUploadResponseSchemaStatus.
+const (
+	Linked PublicationObjectUploadResponseSchemaStatus = "linked"
+)
+
+// Valid indicates whether the value is a known member of the PublicationObjectUploadResponseSchemaStatus enum.
+func (e PublicationObjectUploadResponseSchemaStatus) Valid() bool {
+	switch e {
+	case Linked:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for RoomMapResponseSchemaStatus.
+const (
+	Highlighted RoomMapResponseSchemaStatus = "highlighted"
+	Overview    RoomMapResponseSchemaStatus = "overview"
+	Unavailable RoomMapResponseSchemaStatus = "unavailable"
+)
+
+// Valid indicates whether the value is a known member of the RoomMapResponseSchemaStatus enum.
+func (e RoomMapResponseSchemaStatus) Valid() bool {
+	switch e {
+	case Highlighted:
+		return true
+	case Overview:
+		return true
+	case Unavailable:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for SubscriptionKindUpdateRequestSchemaKind.
+const (
+	SubscriptionKindUpdateRequestSchemaKindAuditor           SubscriptionKindUpdateRequestSchemaKind = "auditor"
+	SubscriptionKindUpdateRequestSchemaKindRegular           SubscriptionKindUpdateRequestSchemaKind = "regular"
+	SubscriptionKindUpdateRequestSchemaKindTeachingAssistant SubscriptionKindUpdateRequestSchemaKind = "teaching_assistant"
+)
+
+// Valid indicates whether the value is a known member of the SubscriptionKindUpdateRequestSchemaKind enum.
+func (e SubscriptionKindUpdateRequestSchemaKind) Valid() bool {
+	switch e {
+	case SubscriptionKindUpdateRequestSchemaKindAuditor:
+		return true
+	case SubscriptionKindUpdateRequestSchemaKindRegular:
+		return true
+	case SubscriptionKindUpdateRequestSchemaKindTeachingAssistant:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for SubscriptionKindUpdateResponseSchemaKind.
+const (
+	Auditor           SubscriptionKindUpdateResponseSchemaKind = "auditor"
+	Regular           SubscriptionKindUpdateResponseSchemaKind = "regular"
+	TeachingAssistant SubscriptionKindUpdateResponseSchemaKind = "teaching_assistant"
+)
+
+// Valid indicates whether the value is a known member of the SubscriptionKindUpdateResponseSchemaKind enum.
+func (e SubscriptionKindUpdateResponseSchemaKind) Valid() bool {
+	switch e {
+	case Auditor:
+		return true
+	case Regular:
+		return true
+	case TeachingAssistant:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for TodoBatchDeleteResponseSchemaResults0Success.
 const (
 	TodoBatchDeleteResponseSchemaResults0SuccessTrue TodoBatchDeleteResponseSchemaResults0Success = true
@@ -1289,6 +1820,42 @@ func (e TodosListResponseSchemaTodosPriority) Valid() bool {
 	}
 }
 
+// Defines values for WeatherSnapshotResponseSchemaLocationKey.
+const (
+	WeatherSnapshotResponseSchemaLocationKeyUstcGaoxin WeatherSnapshotResponseSchemaLocationKey = "ustc-gaoxin"
+	WeatherSnapshotResponseSchemaLocationKeyUstcMain   WeatherSnapshotResponseSchemaLocationKey = "ustc-main"
+)
+
+// Valid indicates whether the value is a known member of the WeatherSnapshotResponseSchemaLocationKey enum.
+func (e WeatherSnapshotResponseSchemaLocationKey) Valid() bool {
+	switch e {
+	case WeatherSnapshotResponseSchemaLocationKeyUstcGaoxin:
+		return true
+	case WeatherSnapshotResponseSchemaLocationKeyUstcMain:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for WeatherSnapshotResponseSchemaProviders.
+const (
+	Amap      WeatherSnapshotResponseSchemaProviders = "amap"
+	OpenMeteo WeatherSnapshotResponseSchemaProviders = "open-meteo"
+)
+
+// Valid indicates whether the value is a known member of the WeatherSnapshotResponseSchemaProviders enum.
+func (e WeatherSnapshotResponseSchemaProviders) Valid() bool {
+	switch e {
+	case Amap:
+		return true
+	case OpenMeteo:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for WorkspaceLinkPinBatchRequestSchemaItemsAction.
 const (
 	WorkspaceLinkPinBatchRequestSchemaItemsActionPin   WorkspaceLinkPinBatchRequestSchemaItemsAction = "pin"
@@ -1402,19 +1969,19 @@ func (e ListAdminDescriptionsParamsHasContent) Valid() bool {
 
 // Defines values for ListAdminHomeworksParamsStatus.
 const (
-	ListAdminHomeworksParamsStatusActive  ListAdminHomeworksParamsStatus = "active"
-	ListAdminHomeworksParamsStatusAll     ListAdminHomeworksParamsStatus = "all"
-	ListAdminHomeworksParamsStatusDeleted ListAdminHomeworksParamsStatus = "deleted"
+	Active  ListAdminHomeworksParamsStatus = "active"
+	All     ListAdminHomeworksParamsStatus = "all"
+	Deleted ListAdminHomeworksParamsStatus = "deleted"
 )
 
 // Valid indicates whether the value is a known member of the ListAdminHomeworksParamsStatus enum.
 func (e ListAdminHomeworksParamsStatus) Valid() bool {
 	switch e {
-	case ListAdminHomeworksParamsStatusActive:
+	case Active:
 		return true
-	case ListAdminHomeworksParamsStatusAll:
+	case All:
 		return true
-	case ListAdminHomeworksParamsStatusDeleted:
+	case Deleted:
 		return true
 	default:
 		return false
@@ -1423,9 +1990,10 @@ func (e ListAdminHomeworksParamsStatus) Valid() bool {
 
 // Defines values for CatalogBusDepartureNextParamsDayType.
 const (
-	Auto    CatalogBusDepartureNextParamsDayType = "auto"
-	Weekday CatalogBusDepartureNextParamsDayType = "weekday"
-	Weekend CatalogBusDepartureNextParamsDayType = "weekend"
+	Auto     CatalogBusDepartureNextParamsDayType = "auto"
+	Saturday CatalogBusDepartureNextParamsDayType = "saturday"
+	Sunday   CatalogBusDepartureNextParamsDayType = "sunday"
+	Weekday  CatalogBusDepartureNextParamsDayType = "weekday"
 )
 
 // Valid indicates whether the value is a known member of the CatalogBusDepartureNextParamsDayType enum.
@@ -1433,9 +2001,11 @@ func (e CatalogBusDepartureNextParamsDayType) Valid() bool {
 	switch e {
 	case Auto:
 		return true
-	case Weekday:
+	case Saturday:
 		return true
-	case Weekend:
+	case Sunday:
+		return true
+	case Weekday:
 		return true
 	default:
 		return false
@@ -1712,6 +2282,42 @@ func (e GetTeacherParamsLocale) Valid() bool {
 	}
 }
 
+// Defines values for CatalogWeatherGetParamsLocationKey.
+const (
+	CatalogWeatherGetParamsLocationKeyUstcGaoxin CatalogWeatherGetParamsLocationKey = "ustc-gaoxin"
+	CatalogWeatherGetParamsLocationKeyUstcMain   CatalogWeatherGetParamsLocationKey = "ustc-main"
+)
+
+// Valid indicates whether the value is a known member of the CatalogWeatherGetParamsLocationKey enum.
+func (e CatalogWeatherGetParamsLocationKey) Valid() bool {
+	switch e {
+	case CatalogWeatherGetParamsLocationKeyUstcGaoxin:
+		return true
+	case CatalogWeatherGetParamsLocationKeyUstcMain:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for GetApiCatalogYoungEventsParamsActive.
+const (
+	GetApiCatalogYoungEventsParamsActiveFalse GetApiCatalogYoungEventsParamsActive = "false"
+	GetApiCatalogYoungEventsParamsActiveTrue  GetApiCatalogYoungEventsParamsActive = "true"
+)
+
+// Valid indicates whether the value is a known member of the GetApiCatalogYoungEventsParamsActive enum.
+func (e GetApiCatalogYoungEventsParamsActive) Valid() bool {
+	switch e {
+	case GetApiCatalogYoungEventsParamsActiveFalse:
+		return true
+	case GetApiCatalogYoungEventsParamsActiveTrue:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for ListCommentsParamsTargetType.
 const (
 	ListCommentsParamsTargetTypeCourse         ListCommentsParamsTargetType = "course"
@@ -1855,16 +2461,16 @@ func (e WorkspaceScheduleListParamsLocale) Valid() bool {
 
 // Defines values for ListTodosParamsCompleted.
 const (
-	ListTodosParamsCompletedFalse ListTodosParamsCompleted = "false"
-	ListTodosParamsCompletedTrue  ListTodosParamsCompleted = "true"
+	False ListTodosParamsCompleted = "false"
+	True  ListTodosParamsCompleted = "true"
 )
 
 // Valid indicates whether the value is a known member of the ListTodosParamsCompleted enum.
 func (e ListTodosParamsCompleted) Valid() bool {
 	switch e {
-	case ListTodosParamsCompletedFalse:
+	case False:
 		return true
-	case ListTodosParamsCompletedTrue:
+	case True:
 		return true
 	default:
 		return false
@@ -2665,8 +3271,9 @@ type BusRouteSearchResponseSchema struct {
 			NamePrimary   string  `json:"namePrimary"`
 			NameSecondary *string `json:"nameSecondary"`
 		} `json:"originCampus"`
-		StopCount int `json:"stopCount"`
-		Stops     []struct {
+		SaturdayTrips int `json:"saturdayTrips"`
+		StopCount     int `json:"stopCount"`
+		Stops         []struct {
 			Campus struct {
 				Id            int     `json:"id"`
 				Latitude      float32 `json:"latitude"`
@@ -2678,8 +3285,8 @@ type BusRouteSearchResponseSchema struct {
 			} `json:"campus"`
 			StopOrder int `json:"stopOrder"`
 		} `json:"stops"`
+		SundayTrips  int `json:"sundayTrips"`
 		WeekdayTrips int `json:"weekdayTrips"`
-		WeekendTrips int `json:"weekendTrips"`
 	} `json:"routes"`
 	Total int `json:"total"`
 }
@@ -2766,18 +3373,19 @@ type CalendarSubscriptionAppendResponseSchema struct {
 				} `json:"type"`
 				TypeId *int `json:"typeId"`
 			} `json:"course"`
-			CourseId                int         `json:"courseId"`
-			Credits                 *float32    `json:"credits"`
-			DateTimePlacePersonText interface{} `json:"dateTimePlacePersonText"`
-			DateTimePlaceText       *string     `json:"dateTimePlaceText"`
-			DesignPeriods           *float32    `json:"designPeriods"`
-			ExamModeId              *int        `json:"examModeId"`
-			ExperimentPeriods       *float32    `json:"experimentPeriods"`
-			GraduateAndPostgraduate *bool       `json:"graduateAndPostgraduate"`
-			Id                      int         `json:"id"`
-			JwId                    int         `json:"jwId"`
-			LimitCount              *int        `json:"limitCount"`
-			MachinePeriods          *float32    `json:"machinePeriods"`
+			CourseId                int                                                              `json:"courseId"`
+			Credits                 *float32                                                         `json:"credits"`
+			DateTimePlacePersonText interface{}                                                      `json:"dateTimePlacePersonText"`
+			DateTimePlaceText       *string                                                          `json:"dateTimePlaceText"`
+			DesignPeriods           *float32                                                         `json:"designPeriods"`
+			ExamModeId              *int                                                             `json:"examModeId"`
+			ExperimentPeriods       *float32                                                         `json:"experimentPeriods"`
+			GraduateAndPostgraduate *bool                                                            `json:"graduateAndPostgraduate"`
+			Id                      int                                                              `json:"id"`
+			JwId                    int                                                              `json:"jwId"`
+			Kind                    CalendarSubscriptionAppendResponseSchemaSubscriptionSectionsKind `json:"kind"`
+			LimitCount              *int                                                             `json:"limitCount"`
+			MachinePeriods          *float32                                                         `json:"machinePeriods"`
 			OpenDepartment          *struct {
 				Code          string  `json:"code"`
 				Id            int     `json:"id"`
@@ -2822,6 +3430,9 @@ type CalendarSubscriptionAppendResponseSchema struct {
 		UserId string `json:"userId"`
 	} `json:"subscription"`
 }
+
+// CalendarSubscriptionAppendResponseSchemaSubscriptionSectionsKind defines model for CalendarSubscriptionAppendResponseSchema.Subscription.Sections.Kind.
+type CalendarSubscriptionAppendResponseSchemaSubscriptionSectionsKind string
 
 // CalendarSubscriptionBatchRequestSchema defines model for calendarSubscriptionBatchRequestSchema.
 type CalendarSubscriptionBatchRequestSchema struct {
@@ -3054,18 +3665,19 @@ type CalendarSubscriptionBatchResponseSchema struct {
 				} `json:"type"`
 				TypeId *int `json:"typeId"`
 			} `json:"course"`
-			CourseId                int         `json:"courseId"`
-			Credits                 *float32    `json:"credits"`
-			DateTimePlacePersonText interface{} `json:"dateTimePlacePersonText"`
-			DateTimePlaceText       *string     `json:"dateTimePlaceText"`
-			DesignPeriods           *float32    `json:"designPeriods"`
-			ExamModeId              *int        `json:"examModeId"`
-			ExperimentPeriods       *float32    `json:"experimentPeriods"`
-			GraduateAndPostgraduate *bool       `json:"graduateAndPostgraduate"`
-			Id                      int         `json:"id"`
-			JwId                    int         `json:"jwId"`
-			LimitCount              *int        `json:"limitCount"`
-			MachinePeriods          *float32    `json:"machinePeriods"`
+			CourseId                int                                                             `json:"courseId"`
+			Credits                 *float32                                                        `json:"credits"`
+			DateTimePlacePersonText interface{}                                                     `json:"dateTimePlacePersonText"`
+			DateTimePlaceText       *string                                                         `json:"dateTimePlaceText"`
+			DesignPeriods           *float32                                                        `json:"designPeriods"`
+			ExamModeId              *int                                                            `json:"examModeId"`
+			ExperimentPeriods       *float32                                                        `json:"experimentPeriods"`
+			GraduateAndPostgraduate *bool                                                           `json:"graduateAndPostgraduate"`
+			Id                      int                                                             `json:"id"`
+			JwId                    int                                                             `json:"jwId"`
+			Kind                    CalendarSubscriptionBatchResponseSchemaSubscriptionSectionsKind `json:"kind"`
+			LimitCount              *int                                                            `json:"limitCount"`
+			MachinePeriods          *float32                                                        `json:"machinePeriods"`
 			OpenDepartment          *struct {
 				Code          string  `json:"code"`
 				Id            int     `json:"id"`
@@ -3119,142 +3731,8 @@ type CalendarSubscriptionBatchResponseSchema struct {
 // CalendarSubscriptionBatchResponseSchemaAction defines model for CalendarSubscriptionBatchResponseSchema.Action.
 type CalendarSubscriptionBatchResponseSchemaAction string
 
-// CalendarSubscriptionCreateRequestSchema defines model for calendarSubscriptionCreateRequestSchema.
-type CalendarSubscriptionCreateRequestSchema struct {
-	SectionIds *[]int `json:"sectionIds,omitempty"`
-}
-
-// CalendarSubscriptionCreateResponseSchema defines model for calendarSubscriptionCreateResponseSchema.
-type CalendarSubscriptionCreateResponseSchema struct {
-	Subscription *struct {
-		Note     string `json:"note"`
-		Sections []struct {
-			ActualPeriods *float32 `json:"actualPeriods"`
-			BizTypeId     *int     `json:"bizTypeId"`
-			Campus        *struct {
-				Code          *string `json:"code"`
-				Id            int     `json:"id"`
-				JwId          int     `json:"jwId"`
-				NameCn        string  `json:"nameCn"`
-				NameEn        *string `json:"nameEn"`
-				NamePrimary   string  `json:"namePrimary"`
-				NameSecondary *string `json:"nameSecondary"`
-			} `json:"campus"`
-			CampusId *int   `json:"campusId"`
-			Code     string `json:"code"`
-			Course   struct {
-				Category *struct {
-					Id            int     `json:"id"`
-					NameCn        string  `json:"nameCn"`
-					NameEn        *string `json:"nameEn"`
-					NamePrimary   string  `json:"namePrimary"`
-					NameSecondary *string `json:"nameSecondary"`
-				} `json:"category"`
-				CategoryId *int `json:"categoryId"`
-				ClassType  *struct {
-					Id            int     `json:"id"`
-					NameCn        string  `json:"nameCn"`
-					NameEn        *string `json:"nameEn"`
-					NamePrimary   string  `json:"namePrimary"`
-					NameSecondary *string `json:"nameSecondary"`
-				} `json:"classType"`
-				ClassTypeId *int `json:"classTypeId"`
-				Classify    *struct {
-					Id            int     `json:"id"`
-					NameCn        string  `json:"nameCn"`
-					NameEn        *string `json:"nameEn"`
-					NamePrimary   string  `json:"namePrimary"`
-					NameSecondary *string `json:"nameSecondary"`
-				} `json:"classify"`
-				ClassifyId     *int   `json:"classifyId"`
-				Code           string `json:"code"`
-				EducationLevel *struct {
-					Id            int     `json:"id"`
-					NameCn        string  `json:"nameCn"`
-					NameEn        *string `json:"nameEn"`
-					NamePrimary   string  `json:"namePrimary"`
-					NameSecondary *string `json:"nameSecondary"`
-				} `json:"educationLevel"`
-				EducationLevelId *int `json:"educationLevelId"`
-				Gradation        *struct {
-					Id            int     `json:"id"`
-					NameCn        string  `json:"nameCn"`
-					NameEn        *string `json:"nameEn"`
-					NamePrimary   string  `json:"namePrimary"`
-					NameSecondary *string `json:"nameSecondary"`
-				} `json:"gradation"`
-				GradationId   *int    `json:"gradationId"`
-				Id            int     `json:"id"`
-				JwId          int     `json:"jwId"`
-				NameCn        string  `json:"nameCn"`
-				NameEn        *string `json:"nameEn"`
-				NamePrimary   string  `json:"namePrimary"`
-				NameSecondary *string `json:"nameSecondary"`
-				Type          *struct {
-					Id            int     `json:"id"`
-					NameCn        string  `json:"nameCn"`
-					NameEn        *string `json:"nameEn"`
-					NamePrimary   string  `json:"namePrimary"`
-					NameSecondary *string `json:"nameSecondary"`
-				} `json:"type"`
-				TypeId *int `json:"typeId"`
-			} `json:"course"`
-			CourseId                int         `json:"courseId"`
-			Credits                 *float32    `json:"credits"`
-			DateTimePlacePersonText interface{} `json:"dateTimePlacePersonText"`
-			DateTimePlaceText       *string     `json:"dateTimePlaceText"`
-			DesignPeriods           *float32    `json:"designPeriods"`
-			ExamModeId              *int        `json:"examModeId"`
-			ExperimentPeriods       *float32    `json:"experimentPeriods"`
-			GraduateAndPostgraduate *bool       `json:"graduateAndPostgraduate"`
-			Id                      int         `json:"id"`
-			JwId                    int         `json:"jwId"`
-			LimitCount              *int        `json:"limitCount"`
-			MachinePeriods          *float32    `json:"machinePeriods"`
-			OpenDepartment          *struct {
-				Code          string  `json:"code"`
-				Id            int     `json:"id"`
-				IsCollege     *bool   `json:"isCollege"`
-				JwId          *int    `json:"jwId"`
-				NameCn        string  `json:"nameCn"`
-				NameEn        *string `json:"nameEn"`
-				NamePrimary   string  `json:"namePrimary"`
-				NameSecondary *string `json:"nameSecondary"`
-			} `json:"openDepartment"`
-			OpenDepartmentId        *int            `json:"openDepartmentId"`
-			Period                  *int            `json:"period"`
-			PeriodsPerWeek          *float32        `json:"periodsPerWeek"`
-			PracticePeriods         *float32        `json:"practicePeriods"`
-			Remark                  *string         `json:"remark"`
-			RetiredAt               *time.Time      `json:"retiredAt"`
-			RoomTypeId              *int            `json:"roomTypeId"`
-			ScheduleJsonParams      interface{}     `json:"scheduleJsonParams"`
-			ScheduleRemark          *string         `json:"scheduleRemark"`
-			ScheduleState           *string         `json:"scheduleState"`
-			SelectedStdCount        *int            `json:"selectedStdCount"`
-			Semester                *SemesterSchema `json:"semester"`
-			SemesterId              *int            `json:"semesterId"`
-			StdCount                *int            `json:"stdCount"`
-			SuggestScheduleWeekInfo *string         `json:"suggestScheduleWeekInfo"`
-			SuggestScheduleWeeks    interface{}     `json:"suggestScheduleWeeks"`
-			TeachLanguageId         *int            `json:"teachLanguageId"`
-			Teachers                []struct {
-				Code          *string `json:"code"`
-				Id            int     `json:"id"`
-				JwId          int     `json:"jwId"`
-				NameCn        string  `json:"nameCn"`
-				NameEn        *string `json:"nameEn"`
-				NamePrimary   string  `json:"namePrimary"`
-				NameSecondary *string `json:"nameSecondary"`
-				PersonId      *int    `json:"personId"`
-			} `json:"teachers"`
-			TestPeriods   *float32 `json:"testPeriods"`
-			TheoryPeriods *float32 `json:"theoryPeriods"`
-			TimesPerWeek  *int     `json:"timesPerWeek"`
-		} `json:"sections"`
-		UserId string `json:"userId"`
-	} `json:"subscription"`
-}
+// CalendarSubscriptionBatchResponseSchemaSubscriptionSectionsKind defines model for CalendarSubscriptionBatchResponseSchema.Subscription.Sections.Kind.
+type CalendarSubscriptionBatchResponseSchemaSubscriptionSectionsKind string
 
 // CalendarSubscriptionImportResponseSchema defines model for calendarSubscriptionImportResponseSchema.
 type CalendarSubscriptionImportResponseSchema struct {
@@ -3712,18 +4190,19 @@ type CalendarSubscriptionImportResponseSchema struct {
 				} `json:"type"`
 				TypeId *int `json:"typeId"`
 			} `json:"course"`
-			CourseId                int         `json:"courseId"`
-			Credits                 *float32    `json:"credits"`
-			DateTimePlacePersonText interface{} `json:"dateTimePlacePersonText"`
-			DateTimePlaceText       *string     `json:"dateTimePlaceText"`
-			DesignPeriods           *float32    `json:"designPeriods"`
-			ExamModeId              *int        `json:"examModeId"`
-			ExperimentPeriods       *float32    `json:"experimentPeriods"`
-			GraduateAndPostgraduate *bool       `json:"graduateAndPostgraduate"`
-			Id                      int         `json:"id"`
-			JwId                    int         `json:"jwId"`
-			LimitCount              *int        `json:"limitCount"`
-			MachinePeriods          *float32    `json:"machinePeriods"`
+			CourseId                int                                                              `json:"courseId"`
+			Credits                 *float32                                                         `json:"credits"`
+			DateTimePlacePersonText interface{}                                                      `json:"dateTimePlacePersonText"`
+			DateTimePlaceText       *string                                                          `json:"dateTimePlaceText"`
+			DesignPeriods           *float32                                                         `json:"designPeriods"`
+			ExamModeId              *int                                                             `json:"examModeId"`
+			ExperimentPeriods       *float32                                                         `json:"experimentPeriods"`
+			GraduateAndPostgraduate *bool                                                            `json:"graduateAndPostgraduate"`
+			Id                      int                                                              `json:"id"`
+			JwId                    int                                                              `json:"jwId"`
+			Kind                    CalendarSubscriptionImportResponseSchemaSubscriptionSectionsKind `json:"kind"`
+			LimitCount              *int                                                             `json:"limitCount"`
+			MachinePeriods          *float32                                                         `json:"machinePeriods"`
 			OpenDepartment          *struct {
 				Code          string  `json:"code"`
 				Id            int     `json:"id"`
@@ -3770,6 +4249,9 @@ type CalendarSubscriptionImportResponseSchema struct {
 	Success        bool     `json:"success"`
 	UnmatchedCodes []string `json:"unmatchedCodes"`
 }
+
+// CalendarSubscriptionImportResponseSchemaSubscriptionSectionsKind defines model for CalendarSubscriptionImportResponseSchema.Subscription.Sections.Kind.
+type CalendarSubscriptionImportResponseSchemaSubscriptionSectionsKind string
 
 // CalendarSubscriptionQueryRequestSchema defines model for calendarSubscriptionQueryRequestSchema.
 type CalendarSubscriptionQueryRequestSchema struct {
@@ -4008,18 +4490,19 @@ type CalendarSubscriptionRemoveResponseSchema struct {
 				} `json:"type"`
 				TypeId *int `json:"typeId"`
 			} `json:"course"`
-			CourseId                int         `json:"courseId"`
-			Credits                 *float32    `json:"credits"`
-			DateTimePlacePersonText interface{} `json:"dateTimePlacePersonText"`
-			DateTimePlaceText       *string     `json:"dateTimePlaceText"`
-			DesignPeriods           *float32    `json:"designPeriods"`
-			ExamModeId              *int        `json:"examModeId"`
-			ExperimentPeriods       *float32    `json:"experimentPeriods"`
-			GraduateAndPostgraduate *bool       `json:"graduateAndPostgraduate"`
-			Id                      int         `json:"id"`
-			JwId                    int         `json:"jwId"`
-			LimitCount              *int        `json:"limitCount"`
-			MachinePeriods          *float32    `json:"machinePeriods"`
+			CourseId                int                                                              `json:"courseId"`
+			Credits                 *float32                                                         `json:"credits"`
+			DateTimePlacePersonText interface{}                                                      `json:"dateTimePlacePersonText"`
+			DateTimePlaceText       *string                                                          `json:"dateTimePlaceText"`
+			DesignPeriods           *float32                                                         `json:"designPeriods"`
+			ExamModeId              *int                                                             `json:"examModeId"`
+			ExperimentPeriods       *float32                                                         `json:"experimentPeriods"`
+			GraduateAndPostgraduate *bool                                                            `json:"graduateAndPostgraduate"`
+			Id                      int                                                              `json:"id"`
+			JwId                    int                                                              `json:"jwId"`
+			Kind                    CalendarSubscriptionRemoveResponseSchemaSubscriptionSectionsKind `json:"kind"`
+			LimitCount              *int                                                             `json:"limitCount"`
+			MachinePeriods          *float32                                                         `json:"machinePeriods"`
 			OpenDepartment          *struct {
 				Code          string  `json:"code"`
 				Id            int     `json:"id"`
@@ -4064,6 +4547,9 @@ type CalendarSubscriptionRemoveResponseSchema struct {
 		UserId string `json:"userId"`
 	} `json:"subscription"`
 }
+
+// CalendarSubscriptionRemoveResponseSchemaSubscriptionSectionsKind defines model for CalendarSubscriptionRemoveResponseSchema.Subscription.Sections.Kind.
+type CalendarSubscriptionRemoveResponseSchemaSubscriptionSectionsKind string
 
 // CatalogLinkListResponseSchema defines model for catalogLinkListResponseSchema.
 type CatalogLinkListResponseSchema struct {
@@ -4484,8 +4970,9 @@ type CompactOverviewResponseSchema struct {
 			Completion   *struct {
 				CompletedAt time.Time `json:"completedAt"`
 			} `json:"completion"`
-			CreatedAt time.Time `json:"createdAt"`
-			CreatedBy *struct {
+			CompletionRequired bool      `json:"completionRequired"`
+			CreatedAt          time.Time `json:"createdAt"`
+			CreatedBy          *struct {
 				Id       string  `json:"id"`
 				Image    *string `json:"image"`
 				Name     *string `json:"name"`
@@ -4961,18 +5448,19 @@ type CurrentCalendarSubscriptionResponseSchema struct {
 				} `json:"type"`
 				TypeId *int `json:"typeId"`
 			} `json:"course"`
-			CourseId                int         `json:"courseId"`
-			Credits                 *float32    `json:"credits"`
-			DateTimePlacePersonText interface{} `json:"dateTimePlacePersonText"`
-			DateTimePlaceText       *string     `json:"dateTimePlaceText"`
-			DesignPeriods           *float32    `json:"designPeriods"`
-			ExamModeId              *int        `json:"examModeId"`
-			ExperimentPeriods       *float32    `json:"experimentPeriods"`
-			GraduateAndPostgraduate *bool       `json:"graduateAndPostgraduate"`
-			Id                      int         `json:"id"`
-			JwId                    int         `json:"jwId"`
-			LimitCount              *int        `json:"limitCount"`
-			MachinePeriods          *float32    `json:"machinePeriods"`
+			CourseId                int                                                               `json:"courseId"`
+			Credits                 *float32                                                          `json:"credits"`
+			DateTimePlacePersonText interface{}                                                       `json:"dateTimePlacePersonText"`
+			DateTimePlaceText       *string                                                           `json:"dateTimePlaceText"`
+			DesignPeriods           *float32                                                          `json:"designPeriods"`
+			ExamModeId              *int                                                              `json:"examModeId"`
+			ExperimentPeriods       *float32                                                          `json:"experimentPeriods"`
+			GraduateAndPostgraduate *bool                                                             `json:"graduateAndPostgraduate"`
+			Id                      int                                                               `json:"id"`
+			JwId                    int                                                               `json:"jwId"`
+			Kind                    CurrentCalendarSubscriptionResponseSchemaSubscriptionSectionsKind `json:"kind"`
+			LimitCount              *int                                                              `json:"limitCount"`
+			MachinePeriods          *float32                                                          `json:"machinePeriods"`
 			OpenDepartment          *struct {
 				Code          string  `json:"code"`
 				Id            int     `json:"id"`
@@ -5017,6 +5505,9 @@ type CurrentCalendarSubscriptionResponseSchema struct {
 		UserId string `json:"userId"`
 	} `json:"subscription"`
 }
+
+// CurrentCalendarSubscriptionResponseSchemaSubscriptionSectionsKind defines model for CurrentCalendarSubscriptionResponseSchema.Subscription.Sections.Kind.
+type CurrentCalendarSubscriptionResponseSchemaSubscriptionSectionsKind string
 
 // DescriptionUpsertRequestSchema defines model for descriptionUpsertRequestSchema.
 type DescriptionUpsertRequestSchema struct {
@@ -5384,8 +5875,9 @@ type HomeworkCreateResponseSchema struct {
 		Completion   *struct {
 			CompletedAt time.Time `json:"completedAt"`
 		} `json:"completion"`
-		CreatedAt time.Time `json:"createdAt"`
-		CreatedBy *struct {
+		CompletionRequired bool      `json:"completionRequired"`
+		CreatedAt          time.Time `json:"createdAt"`
+		CreatedBy          *struct {
 			Id       string  `json:"id"`
 			Image    *string `json:"image"`
 			Name     *string `json:"name"`
@@ -5507,8 +5999,9 @@ type HomeworkDetailResponseSchema struct {
 		Completion   *struct {
 			CompletedAt time.Time `json:"completedAt"`
 		} `json:"completion"`
-		CreatedAt time.Time `json:"createdAt"`
-		CreatedBy *struct {
+		CompletionRequired bool      `json:"completionRequired"`
+		CreatedAt          time.Time `json:"createdAt"`
+		CreatedBy          *struct {
 			Id       string  `json:"id"`
 			Image    *string `json:"image"`
 			Name     *string `json:"name"`
@@ -5661,8 +6154,9 @@ type HomeworkUpdateResponseSchema struct {
 		Completion   *struct {
 			CompletedAt time.Time `json:"completedAt"`
 		} `json:"completion"`
-		CreatedAt time.Time `json:"createdAt"`
-		CreatedBy *struct {
+		CompletionRequired bool      `json:"completionRequired"`
+		CreatedAt          time.Time `json:"createdAt"`
+		CreatedBy          *struct {
 			Id       string  `json:"id"`
 			Image    *string `json:"image"`
 			Name     *string `json:"name"`
@@ -5769,20 +6263,21 @@ type HomeworksListResponseSchema struct {
 		Completion   *struct {
 			CompletedAt time.Time `json:"completedAt"`
 		} `json:"completion"`
-		CreatedAt         time.Time  `json:"createdAt"`
-		CreatedById       *string    `json:"createdById"`
-		DeletedAt         *time.Time `json:"deletedAt"`
-		DeletedById       *string    `json:"deletedById"`
-		Id                string     `json:"id"`
-		IsMajor           bool       `json:"isMajor"`
-		PublishedAt       *time.Time `json:"publishedAt"`
-		RequiresTeam      bool       `json:"requiresTeam"`
-		SectionId         int        `json:"sectionId"`
-		SubmissionDueAt   *time.Time `json:"submissionDueAt"`
-		SubmissionStartAt *time.Time `json:"submissionStartAt"`
-		Title             string     `json:"title"`
-		UpdatedAt         time.Time  `json:"updatedAt"`
-		UpdatedById       *string    `json:"updatedById"`
+		CompletionRequired bool       `json:"completionRequired"`
+		CreatedAt          time.Time  `json:"createdAt"`
+		CreatedById        *string    `json:"createdById"`
+		DeletedAt          *time.Time `json:"deletedAt"`
+		DeletedById        *string    `json:"deletedById"`
+		Id                 string     `json:"id"`
+		IsMajor            bool       `json:"isMajor"`
+		PublishedAt        *time.Time `json:"publishedAt"`
+		RequiresTeam       bool       `json:"requiresTeam"`
+		SectionId          int        `json:"sectionId"`
+		SubmissionDueAt    *time.Time `json:"submissionDueAt"`
+		SubmissionStartAt  *time.Time `json:"submissionStartAt"`
+		Title              string     `json:"title"`
+		UpdatedAt          time.Time  `json:"updatedAt"`
+		UpdatedById        *string    `json:"updatedById"`
 	} `json:"data"`
 	Pagination struct {
 		Page       int `json:"page"`
@@ -6489,6 +6984,132 @@ type PaginatedTeacherResponseSchema struct {
 	} `json:"pagination"`
 }
 
+// PaginatedYoungEventResponseSchema defines model for paginatedYoungEventResponseSchema.
+type PaginatedYoungEventResponseSchema struct {
+	Data []struct {
+		AppliedCount       *int       `json:"appliedCount"`
+		ApplyEndAt         *time.Time `json:"applyEndAt"`
+		ApplyStartAt       *time.Time `json:"applyStartAt"`
+		Capacity           *int       `json:"capacity"`
+		Category           *string    `json:"category"`
+		Department         *string    `json:"department"`
+		EndAt              *time.Time `json:"endAt"`
+		Hours              *float32   `json:"hours"`
+		ImageUrl           *string    `json:"imageUrl"`
+		IsActive           bool       `json:"isActive"`
+		Location           *string    `json:"location"`
+		Name               string     `json:"name"`
+		Organizer          *string    `json:"organizer"`
+		RegistrationStatus *string    `json:"registrationStatus"`
+		StartAt            *time.Time `json:"startAt"`
+		Status             *string    `json:"status"`
+		YoungId            string     `json:"youngId"`
+	} `json:"data"`
+	Pagination struct {
+		Page       int `json:"page"`
+		PageSize   int `json:"pageSize"`
+		Total      int `json:"total"`
+		TotalPages int `json:"totalPages"`
+	} `json:"pagination"`
+}
+
+// PublicPublicationDetailSchema defines model for publicPublicationDetailSchema.
+type PublicPublicationDetailSchema struct {
+	CanonicalUrl    string                                       `json:"canonicalUrl"`
+	Id              string                                       `json:"id"`
+	PublicationType PublicPublicationDetailSchemaPublicationType `json:"publicationType"`
+	Revision        struct {
+		Author            *string `json:"author"`
+		BodyText          *string `json:"bodyText"`
+		Category          *string `json:"category"`
+		ClassifierVersion *string `json:"classifierVersion"`
+		ExtractionMethod  *string `json:"extractionMethod"`
+		Id                string  `json:"id"`
+		Objects           []struct {
+			AltText     *string                                            `json:"altText"`
+			ContentType string                                             `json:"contentType"`
+			Kind        PublicPublicationDetailSchemaRevisionObjectsKind   `json:"kind"`
+			Sha256      string                                             `json:"sha256"`
+			Size        int                                                `json:"size"`
+			SortOrder   *int                                               `json:"sortOrder"`
+			Status      PublicPublicationDetailSchemaRevisionObjectsStatus `json:"status"`
+			Url         string                                             `json:"url"`
+		} `json:"objects"`
+		ObservedAt      time.Time  `json:"observedAt"`
+		PublishedAt     *time.Time `json:"publishedAt"`
+		RevisionHash    string     `json:"revisionHash"`
+		SourcePageUrl   *string    `json:"sourcePageUrl"`
+		Summary         *string    `json:"summary"`
+		Title           string     `json:"title"`
+		UpdatedAtSource *time.Time `json:"updatedAtSource"`
+	} `json:"revision"`
+	Source struct {
+		Id                string `json:"id"`
+		Name              string `json:"name"`
+		OrganizationLevel string `json:"organizationLevel"`
+	} `json:"source"`
+}
+
+// PublicPublicationDetailSchemaPublicationType defines model for PublicPublicationDetailSchema.PublicationType.
+type PublicPublicationDetailSchemaPublicationType string
+
+// PublicPublicationDetailSchemaRevisionObjectsKind defines model for PublicPublicationDetailSchema.Revision.Objects.Kind.
+type PublicPublicationDetailSchemaRevisionObjectsKind string
+
+// PublicPublicationDetailSchemaRevisionObjectsStatus defines model for PublicPublicationDetailSchema.Revision.Objects.Status.
+type PublicPublicationDetailSchemaRevisionObjectsStatus string
+
+// PublicPublicationsResponseSchema defines model for publicPublicationsResponseSchema.
+type PublicPublicationsResponseSchema struct {
+	Data []struct {
+		CanonicalUrl string `json:"canonicalUrl"`
+		Id           string `json:"id"`
+		Objects      []struct {
+			AltText     *string                                           `json:"altText"`
+			ContentType string                                            `json:"contentType"`
+			Kind        PublicPublicationsResponseSchemaDataObjectsKind   `json:"kind"`
+			Sha256      string                                            `json:"sha256"`
+			Size        int                                               `json:"size"`
+			SortOrder   *int                                              `json:"sortOrder"`
+			Status      PublicPublicationsResponseSchemaDataObjectsStatus `json:"status"`
+			Url         string                                            `json:"url"`
+		} `json:"objects"`
+		PublicationType PublicPublicationsResponseSchemaDataPublicationType `json:"publicationType"`
+		Revision        struct {
+			Author          *string    `json:"author"`
+			Category        *string    `json:"category"`
+			Id              string     `json:"id"`
+			ObservedAt      time.Time  `json:"observedAt"`
+			PublishedAt     *time.Time `json:"publishedAt"`
+			RevisionHash    string     `json:"revisionHash"`
+			SourcePageUrl   *string    `json:"sourcePageUrl"`
+			Summary         *string    `json:"summary"`
+			Title           string     `json:"title"`
+			UpdatedAtSource *time.Time `json:"updatedAtSource"`
+		} `json:"revision"`
+		Source struct {
+			Id                string `json:"id"`
+			Name              string `json:"name"`
+			OrganizationLevel string `json:"organizationLevel"`
+		} `json:"source"`
+	} `json:"data"`
+	Pagination struct {
+		Page       int `json:"page"`
+		PageSize   int `json:"pageSize"`
+		Total      int `json:"total"`
+		TotalPages int `json:"totalPages"`
+	} `json:"pagination"`
+}
+
+// PublicPublicationsResponseSchemaDataObjectsKind defines model for PublicPublicationsResponseSchema.Data.Objects.Kind.
+type PublicPublicationsResponseSchemaDataObjectsKind string
+
+// PublicPublicationsResponseSchemaDataObjectsStatus defines model for PublicPublicationsResponseSchema.Data.Objects.Status.
+type PublicPublicationsResponseSchemaDataObjectsStatus string
+
+// PublicPublicationsResponseSchemaDataPublicationType defines model for PublicPublicationsResponseSchema.Data.PublicationType.
+type PublicPublicationsResponseSchemaDataPublicationType string
+
 // PublicUserProfileResponseSchema defines model for publicUserProfileResponseSchema.
 type PublicUserProfileResponseSchema struct {
 	SectionCount       int `json:"sectionCount"`
@@ -6511,6 +7132,164 @@ type PublicUserProfileResponseSchema struct {
 		Date  string `json:"date"`
 	} `json:"weeks"`
 }
+
+// PublicationIngestionBatchRequestSchema defines model for publicationIngestionBatchRequestSchema.
+type PublicationIngestionBatchRequestSchema struct {
+	BatchId         string                                                `json:"batchId"`
+	ClientRunId     string                                                `json:"clientRunId"`
+	Items           []PublicationIngestionBatchRequestSchema_Items_Item   `json:"items"`
+	ObservedAt      string                                                `json:"observedAt"`
+	ProducerVersion string                                                `json:"producerVersion"`
+	ProtocolVersion PublicationIngestionBatchRequestSchemaProtocolVersion `json:"protocolVersion"`
+	Sources         []struct {
+		Aliases           *[]string `json:"aliases,omitempty"`
+		AllowedHosts      *[]string `json:"allowedHosts,omitempty"`
+		BlockedHosts      *[]string `json:"blockedHosts,omitempty"`
+		DiscoveryOnly     *bool     `json:"discoveryOnly,omitempty"`
+		Id                string    `json:"id"`
+		MaxImagesPerPage  *int      `json:"maxImagesPerPage,omitempty"`
+		Name              string    `json:"name"`
+		OrganizationLevel *string   `json:"organizationLevel,omitempty"`
+		SeedUrls          *[]string `json:"seedUrls,omitempty"`
+	} `json:"sources"`
+}
+
+// PublicationIngestionBatchRequestSchemaItems0 defines model for .
+type PublicationIngestionBatchRequestSchemaItems0 struct {
+	Author            *string `json:"author,omitempty"`
+	BodyText          *string `json:"bodyText,omitempty"`
+	CanonicalUrl      string  `json:"canonicalUrl"`
+	Category          *string `json:"category,omitempty"`
+	ClassifierVersion *string `json:"classifierVersion,omitempty"`
+	ExtractionMethod  *string `json:"extractionMethod,omitempty"`
+	Objects           []struct {
+		AltText     *string                                                 `json:"altText,omitempty"`
+		ContentType string                                                  `json:"contentType"`
+		Kind        PublicationIngestionBatchRequestSchemaItems0ObjectsKind `json:"kind"`
+		Sha256      string                                                  `json:"sha256"`
+		Size        int                                                     `json:"size"`
+		SortOrder   *int                                                    `json:"sortOrder,omitempty"`
+	} `json:"objects"`
+	ObservedAt      string                                                      `json:"observedAt"`
+	PublicationType PublicationIngestionBatchRequestSchemaItems0PublicationType `json:"publicationType"`
+	PublishedAt     *string                                                     `json:"publishedAt,omitempty"`
+	RawMetadata     *map[string]interface{}                                     `json:"rawMetadata,omitempty"`
+	RevisionHash    string                                                      `json:"revisionHash"`
+	SourceId        string                                                      `json:"sourceId"`
+	SourcePageUrl   *string                                                     `json:"sourcePageUrl,omitempty"`
+	Summary         *string                                                     `json:"summary,omitempty"`
+	Title           string                                                      `json:"title"`
+	Tombstone       PublicationIngestionBatchRequestSchemaItems0Tombstone       `json:"tombstone"`
+	UpdatedAtSource *string                                                     `json:"updatedAtSource,omitempty"`
+}
+
+// PublicationIngestionBatchRequestSchemaItems0ObjectsKind defines model for PublicationIngestionBatchRequestSchema.Items.0.Objects.Kind.
+type PublicationIngestionBatchRequestSchemaItems0ObjectsKind string
+
+// PublicationIngestionBatchRequestSchemaItems0PublicationType defines model for PublicationIngestionBatchRequestSchema.Items.0.PublicationType.
+type PublicationIngestionBatchRequestSchemaItems0PublicationType string
+
+// PublicationIngestionBatchRequestSchemaItems0Tombstone defines model for PublicationIngestionBatchRequestSchema.Items.0.Tombstone.
+type PublicationIngestionBatchRequestSchemaItems0Tombstone bool
+
+// PublicationIngestionBatchRequestSchemaItems1 defines model for .
+type PublicationIngestionBatchRequestSchemaItems1 struct {
+	CanonicalUrl string                                                `json:"canonicalUrl"`
+	ObservedAt   string                                                `json:"observedAt"`
+	RevisionHash string                                                `json:"revisionHash"`
+	SourceId     string                                                `json:"sourceId"`
+	Tombstone    PublicationIngestionBatchRequestSchemaItems1Tombstone `json:"tombstone"`
+}
+
+// PublicationIngestionBatchRequestSchemaItems1Tombstone defines model for PublicationIngestionBatchRequestSchema.Items.1.Tombstone.
+type PublicationIngestionBatchRequestSchemaItems1Tombstone bool
+
+// PublicationIngestionBatchRequestSchema_Items_Item defines model for publicationIngestionBatchRequestSchema.items.Item.
+type PublicationIngestionBatchRequestSchema_Items_Item struct {
+	union json.RawMessage
+}
+
+// PublicationIngestionBatchRequestSchemaProtocolVersion defines model for PublicationIngestionBatchRequestSchema.ProtocolVersion.
+type PublicationIngestionBatchRequestSchemaProtocolVersion string
+
+// PublicationIngestionBatchResponseSchema defines model for publicationIngestionBatchResponseSchema.
+type PublicationIngestionBatchResponseSchema struct {
+	BatchId       string `json:"batchId"`
+	ClientRunId   string `json:"clientRunId"`
+	PayloadDigest string `json:"payloadDigest"`
+	Results       []struct {
+		CanonicalUrl  string                                               `json:"canonicalUrl"`
+		Error         *string                                              `json:"error,omitempty"`
+		PublicationId *string                                              `json:"publicationId"`
+		RevisionHash  string                                               `json:"revisionHash"`
+		RevisionId    *string                                              `json:"revisionId"`
+		SourceId      string                                               `json:"sourceId"`
+		Status        PublicationIngestionBatchResponseSchemaResultsStatus `json:"status"`
+	} `json:"results"`
+}
+
+// PublicationIngestionBatchResponseSchemaResultsStatus defines model for PublicationIngestionBatchResponseSchema.Results.Status.
+type PublicationIngestionBatchResponseSchemaResultsStatus string
+
+// PublicationObjectPlanRequestSchema defines model for publicationObjectPlanRequestSchema.
+type PublicationObjectPlanRequestSchema struct {
+	BatchId string `json:"batchId"`
+	Objects []struct {
+		Kind   PublicationObjectPlanRequestSchemaObjectsKind `json:"kind"`
+		Sha256 string                                        `json:"sha256"`
+	} `json:"objects"`
+}
+
+// PublicationObjectPlanRequestSchemaObjectsKind defines model for PublicationObjectPlanRequestSchema.Objects.Kind.
+type PublicationObjectPlanRequestSchemaObjectsKind string
+
+// PublicationObjectPlanResponseSchema defines model for publicationObjectPlanResponseSchema.
+type PublicationObjectPlanResponseSchema struct {
+	BatchId string `json:"batchId"`
+	Objects []struct {
+		Kind            PublicationObjectPlanResponseSchemaObjectsKind `json:"kind"`
+		R2Key           string                                         `json:"r2Key"`
+		RequiredHeaders struct {
+			ContentType string `json:"Content-Type"`
+		} `json:"requiredHeaders"`
+		Sha256    string                                           `json:"sha256"`
+		Status    PublicationObjectPlanResponseSchemaObjectsStatus `json:"status"`
+		UploadUrl *string                                          `json:"uploadUrl"`
+	} `json:"objects"`
+}
+
+// PublicationObjectPlanResponseSchemaObjectsKind defines model for PublicationObjectPlanResponseSchema.Objects.Kind.
+type PublicationObjectPlanResponseSchemaObjectsKind string
+
+// PublicationObjectPlanResponseSchemaObjectsStatus defines model for PublicationObjectPlanResponseSchema.Objects.Status.
+type PublicationObjectPlanResponseSchemaObjectsStatus string
+
+// PublicationObjectUploadResponseSchema defines model for publicationObjectUploadResponseSchema.
+type PublicationObjectUploadResponseSchema struct {
+	BatchId string                                      `json:"batchId"`
+	Kind    PublicationObjectUploadResponseSchemaKind   `json:"kind"`
+	Sha256  string                                      `json:"sha256"`
+	Status  PublicationObjectUploadResponseSchemaStatus `json:"status"`
+}
+
+// PublicationObjectUploadResponseSchemaKind defines model for PublicationObjectUploadResponseSchema.Kind.
+type PublicationObjectUploadResponseSchemaKind string
+
+// PublicationObjectUploadResponseSchemaStatus defines model for PublicationObjectUploadResponseSchema.Status.
+type PublicationObjectUploadResponseSchemaStatus string
+
+// RoomMapResponseSchema defines model for roomMapResponseSchema.
+type RoomMapResponseSchema struct {
+	Building       *string                     `json:"building"`
+	Code           string                      `json:"code"`
+	Floor          *string                     `json:"floor"`
+	ImageUrl       *string                     `json:"imageUrl"`
+	SourceImageUrl *string                     `json:"sourceImageUrl"`
+	Status         RoomMapResponseSchemaStatus `json:"status"`
+}
+
+// RoomMapResponseSchemaStatus defines model for RoomMapResponseSchema.Status.
+type RoomMapResponseSchemaStatus string
 
 // SectionDetailSchema defines model for sectionDetailSchema.
 type SectionDetailSchema struct {
@@ -6794,8 +7573,9 @@ type SubscribedHomeworksResponseSchema struct {
 		Completion   *struct {
 			CompletedAt time.Time `json:"completedAt"`
 		} `json:"completion"`
-		CreatedAt time.Time `json:"createdAt"`
-		CreatedBy *struct {
+		CompletionRequired bool      `json:"completionRequired"`
+		CreatedAt          time.Time `json:"createdAt"`
+		CreatedBy          *struct {
 			Id       string  `json:"id"`
 			Image    *string `json:"image"`
 			Name     *string `json:"name"`
@@ -7060,6 +7840,23 @@ type SubscribedSchedulesResponseSchema struct {
 		Weekday   int `json:"weekday"`
 	} `json:"schedules"`
 }
+
+// SubscriptionKindUpdateRequestSchema defines model for subscriptionKindUpdateRequestSchema.
+type SubscriptionKindUpdateRequestSchema struct {
+	Kind SubscriptionKindUpdateRequestSchemaKind `json:"kind"`
+}
+
+// SubscriptionKindUpdateRequestSchemaKind defines model for SubscriptionKindUpdateRequestSchema.Kind.
+type SubscriptionKindUpdateRequestSchemaKind string
+
+// SubscriptionKindUpdateResponseSchema defines model for subscriptionKindUpdateResponseSchema.
+type SubscriptionKindUpdateResponseSchema struct {
+	Kind        SubscriptionKindUpdateResponseSchemaKind `json:"kind"`
+	SectionJwId int                                      `json:"sectionJwId"`
+}
+
+// SubscriptionKindUpdateResponseSchemaKind defines model for SubscriptionKindUpdateResponseSchema.Kind.
+type SubscriptionKindUpdateResponseSchemaKind string
 
 // SuccessResponseSchema defines model for successResponseSchema.
 type SuccessResponseSchema struct {
@@ -7475,6 +8272,65 @@ type UploadsListResponseSchema struct {
 	} `json:"pagination"`
 }
 
+// WeatherSnapshotResponseSchema defines model for weatherSnapshotResponseSchema.
+type WeatherSnapshotResponseSchema struct {
+	Alerts []struct {
+		Content  *string    `json:"content,omitempty"`
+		IssuedAt *time.Time `json:"issuedAt,omitempty"`
+		Level    *string    `json:"level,omitempty"`
+		Title    string     `json:"title"`
+	} `json:"alerts"`
+	Current struct {
+		Condition struct {
+			Icon string `json:"icon"`
+			Text string `json:"text"`
+		} `json:"condition"`
+		FeelsLike     *float32 `json:"feelsLike,omitempty"`
+		Humidity      *float32 `json:"humidity,omitempty"`
+		Pressure      *float32 `json:"pressure,omitempty"`
+		Temperature   float32  `json:"temperature"`
+		Visibility    *float32 `json:"visibility,omitempty"`
+		WindDirection *string  `json:"windDirection,omitempty"`
+		WindSpeed     *float32 `json:"windSpeed,omitempty"`
+	} `json:"current"`
+	Daily []struct {
+		Condition *struct {
+			Icon string `json:"icon"`
+			Text string `json:"text"`
+		} `json:"condition,omitempty"`
+		Date            string  `json:"date"`
+		TemperatureHigh float32 `json:"temperatureHigh"`
+		TemperatureLow  float32 `json:"temperatureLow"`
+	} `json:"daily"`
+	Extensions struct {
+		Amap      interface{} `json:"amap,omitempty"`
+		OpenMeteo interface{} `json:"openMeteo,omitempty"`
+	} `json:"extensions"`
+	FetchedAt time.Time `json:"fetchedAt"`
+	Hourly    []struct {
+		At        time.Time `json:"at"`
+		Condition *struct {
+			Icon string `json:"icon"`
+			Text string `json:"text"`
+		} `json:"condition,omitempty"`
+		PrecipitationAmount      *float32 `json:"precipitationAmount,omitempty"`
+		PrecipitationProbability *float32 `json:"precipitationProbability,omitempty"`
+		Temperature              float32  `json:"temperature"`
+	} `json:"hourly"`
+	Location struct {
+		Adcode string                                   `json:"adcode"`
+		Key    WeatherSnapshotResponseSchemaLocationKey `json:"key"`
+		Name   string                                   `json:"name"`
+	} `json:"location"`
+	Providers []WeatherSnapshotResponseSchemaProviders `json:"providers"`
+}
+
+// WeatherSnapshotResponseSchemaLocationKey defines model for WeatherSnapshotResponseSchema.Location.Key.
+type WeatherSnapshotResponseSchemaLocationKey string
+
+// WeatherSnapshotResponseSchemaProviders defines model for WeatherSnapshotResponseSchema.Providers.
+type WeatherSnapshotResponseSchemaProviders string
+
 // WorkspaceLinkPinBatchRequestSchema defines model for workspaceLinkPinBatchRequestSchema.
 type WorkspaceLinkPinBatchRequestSchema struct {
 	Items []struct {
@@ -7501,6 +8357,28 @@ type WorkspaceLinkPinResponseSchema struct {
 	Error          *string  `json:"error"`
 	MaxPinnedLinks int      `json:"maxPinnedLinks"`
 	PinnedSlugs    []string `json:"pinnedSlugs"`
+}
+
+// YoungEventDetailSchema defines model for youngEventDetailSchema.
+type YoungEventDetailSchema struct {
+	AppliedCount       *int        `json:"appliedCount"`
+	ApplyEndAt         *time.Time  `json:"applyEndAt"`
+	ApplyStartAt       *time.Time  `json:"applyStartAt"`
+	Capacity           *int        `json:"capacity"`
+	Category           *string     `json:"category"`
+	Department         *string     `json:"department"`
+	EndAt              *time.Time  `json:"endAt"`
+	Hours              *float32    `json:"hours"`
+	ImageUrl           *string     `json:"imageUrl"`
+	IsActive           bool        `json:"isActive"`
+	Location           *string     `json:"location"`
+	Name               string      `json:"name"`
+	Organizer          *string     `json:"organizer"`
+	RawJson            interface{} `json:"rawJson"`
+	RegistrationStatus *string     `json:"registrationStatus"`
+	StartAt            *time.Time  `json:"startAt"`
+	Status             *string     `json:"status"`
+	YoungId            string      `json:"youngId"`
 }
 
 // AccountClientActivityListParams defines parameters for AccountClientActivityList.
@@ -7773,6 +8651,36 @@ type GetTeacherParams struct {
 // GetTeacherParamsLocale defines parameters for GetTeacher.
 type GetTeacherParamsLocale string
 
+// CatalogWeatherGetParams defines parameters for CatalogWeatherGet.
+type CatalogWeatherGetParams struct {
+	LocationKey *CatalogWeatherGetParamsLocationKey `form:"locationKey,omitempty" json:"locationKey,omitempty"`
+}
+
+// CatalogWeatherGetParamsLocationKey defines parameters for CatalogWeatherGet.
+type CatalogWeatherGetParamsLocationKey string
+
+// GetApiCatalogYoungEventsParams defines parameters for GetApiCatalogYoungEvents.
+type GetApiCatalogYoungEventsParams struct {
+	// Active Filter by signup-open (active) events.
+	Active *GetApiCatalogYoungEventsParamsActive `form:"active,omitempty" json:"active,omitempty"`
+
+	// Category Exact category filter, e.g. 单次项目 or 系列项目.
+	Category *string `form:"category,omitempty" json:"category,omitempty"`
+
+	// Search Case-insensitive substring match on the event name.
+	Search *string `form:"search,omitempty" json:"search,omitempty"`
+	Page   *int64  `form:"page,omitempty" json:"page,omitempty"`
+
+	// PageSize Number of items per page.
+	PageSize *int64 `form:"pageSize,omitempty" json:"pageSize,omitempty"`
+
+	// Limit Deprecated alias for pageSize. pageSize takes precedence when both are supplied.
+	Limit *int64 `form:"limit,omitempty" json:"limit,omitempty"`
+}
+
+// GetApiCatalogYoungEventsParamsActive defines parameters for GetApiCatalogYoungEvents.
+type GetApiCatalogYoungEventsParamsActive string
+
 // ListCommentsParams defines parameters for ListComments.
 type ListCommentsParams struct {
 	TargetType       ListCommentsParamsTargetType `form:"targetType" json:"targetType"`
@@ -7968,9 +8876,6 @@ type DeleteApiWorkspaceSubscriptionsJSONRequestBody = CalendarSubscriptionRemove
 // AppendCalendarSubscriptionSectionsJSONRequestBody defines body for AppendCalendarSubscriptionSections for application/json ContentType.
 type AppendCalendarSubscriptionSectionsJSONRequestBody = CalendarSubscriptionAppendRequestSchema
 
-// SetCalendarSubscriptionJSONRequestBody defines body for SetCalendarSubscription for application/json ContentType.
-type SetCalendarSubscriptionJSONRequestBody = CalendarSubscriptionCreateRequestSchema
-
 // BatchUpdateCalendarSubscriptionJSONRequestBody defines body for BatchUpdateCalendarSubscription for application/json ContentType.
 type BatchUpdateCalendarSubscriptionJSONRequestBody = CalendarSubscriptionBatchRequestSchema
 
@@ -7979,6 +8884,9 @@ type PostApiWorkspaceSubscriptionsImportCodesJSONRequestBody = MatchSectionCodes
 
 // QueryCalendarSubscriptionSectionsJSONRequestBody defines body for QueryCalendarSubscriptionSections for application/json ContentType.
 type QueryCalendarSubscriptionSectionsJSONRequestBody = CalendarSubscriptionQueryRequestSchema
+
+// PatchApiWorkspaceSubscriptionsJwIdJSONRequestBody defines body for PatchApiWorkspaceSubscriptionsJwId for application/json ContentType.
+type PatchApiWorkspaceSubscriptionsJwIdJSONRequestBody = SubscriptionKindUpdateRequestSchema
 
 // CreateTodoJSONRequestBody defines body for CreateTodo for application/json ContentType.
 type CreateTodoJSONRequestBody = TodoCreateRequestSchema
@@ -10451,6 +11359,68 @@ func (t *OauthTokenRequestSchema_Resource) UnmarshalJSON(b []byte) error {
 	return err
 }
 
+// AsPublicationIngestionBatchRequestSchemaItems0 returns the union data inside the PublicationIngestionBatchRequestSchema_Items_Item as a PublicationIngestionBatchRequestSchemaItems0
+func (t PublicationIngestionBatchRequestSchema_Items_Item) AsPublicationIngestionBatchRequestSchemaItems0() (PublicationIngestionBatchRequestSchemaItems0, error) {
+	var body PublicationIngestionBatchRequestSchemaItems0
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromPublicationIngestionBatchRequestSchemaItems0 overwrites any union data inside the PublicationIngestionBatchRequestSchema_Items_Item as the provided PublicationIngestionBatchRequestSchemaItems0
+func (t *PublicationIngestionBatchRequestSchema_Items_Item) FromPublicationIngestionBatchRequestSchemaItems0(v PublicationIngestionBatchRequestSchemaItems0) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergePublicationIngestionBatchRequestSchemaItems0 performs a merge with any union data inside the PublicationIngestionBatchRequestSchema_Items_Item, using the provided PublicationIngestionBatchRequestSchemaItems0
+func (t *PublicationIngestionBatchRequestSchema_Items_Item) MergePublicationIngestionBatchRequestSchemaItems0(v PublicationIngestionBatchRequestSchemaItems0) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsPublicationIngestionBatchRequestSchemaItems1 returns the union data inside the PublicationIngestionBatchRequestSchema_Items_Item as a PublicationIngestionBatchRequestSchemaItems1
+func (t PublicationIngestionBatchRequestSchema_Items_Item) AsPublicationIngestionBatchRequestSchemaItems1() (PublicationIngestionBatchRequestSchemaItems1, error) {
+	var body PublicationIngestionBatchRequestSchemaItems1
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromPublicationIngestionBatchRequestSchemaItems1 overwrites any union data inside the PublicationIngestionBatchRequestSchema_Items_Item as the provided PublicationIngestionBatchRequestSchemaItems1
+func (t *PublicationIngestionBatchRequestSchema_Items_Item) FromPublicationIngestionBatchRequestSchemaItems1(v PublicationIngestionBatchRequestSchemaItems1) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergePublicationIngestionBatchRequestSchemaItems1 performs a merge with any union data inside the PublicationIngestionBatchRequestSchema_Items_Item, using the provided PublicationIngestionBatchRequestSchemaItems1
+func (t *PublicationIngestionBatchRequestSchema_Items_Item) MergePublicationIngestionBatchRequestSchemaItems1(v PublicationIngestionBatchRequestSchemaItems1) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t PublicationIngestionBatchRequestSchema_Items_Item) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *PublicationIngestionBatchRequestSchema_Items_Item) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
 // AsTodoBatchDeleteResponseSchemaResults0 returns the union data inside the TodoBatchDeleteResponseSchema_Results_Item as a TodoBatchDeleteResponseSchemaResults0
 func (t TodoBatchDeleteResponseSchema_Results_Item) AsTodoBatchDeleteResponseSchemaResults0() (TodoBatchDeleteResponseSchemaResults0, error) {
 	var body TodoBatchDeleteResponseSchemaResults0
@@ -10913,6 +11883,9 @@ type ClientInterface interface {
 	// GetMetadata request
 	GetMetadata(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// CatalogRoomsMap request
+	CatalogRoomsMap(ctx context.Context, code string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// ListSchedules request
 	ListSchedules(ctx context.Context, params *ListSchedulesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -10950,6 +11923,18 @@ type ClientInterface interface {
 
 	// GetTeacher request
 	GetTeacher(ctx context.Context, id int64, params *GetTeacherParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// CatalogWeatherGet request
+	CatalogWeatherGet(ctx context.Context, params *CatalogWeatherGetParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetApiCatalogYoungEvents request
+	GetApiCatalogYoungEvents(ctx context.Context, params *GetApiCatalogYoungEventsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetApiCatalogYoungEventsYoungId request
+	GetApiCatalogYoungEventsYoungId(ctx context.Context, youngId string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetApiCatalogYoungEventsYoungIdImage request
+	GetApiCatalogYoungEventsYoungIdImage(ctx context.Context, youngId string, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// ListComments request
 	ListComments(ctx context.Context, params *ListCommentsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -11072,11 +12057,6 @@ type ClientInterface interface {
 
 	AppendCalendarSubscriptionSections(ctx context.Context, body AppendCalendarSubscriptionSectionsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// SetCalendarSubscriptionWithBody request with any body
-	SetCalendarSubscriptionWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
-
-	SetCalendarSubscription(ctx context.Context, body SetCalendarSubscriptionJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
-
 	// BatchUpdateCalendarSubscriptionWithBody request with any body
 	BatchUpdateCalendarSubscriptionWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -11094,6 +12074,11 @@ type ClientInterface interface {
 	QueryCalendarSubscriptionSectionsWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	QueryCalendarSubscriptionSections(ctx context.Context, body QueryCalendarSubscriptionSectionsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// PatchApiWorkspaceSubscriptionsJwIdWithBody request with any body
+	PatchApiWorkspaceSubscriptionsJwIdWithBody(ctx context.Context, jwId int64, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	PatchApiWorkspaceSubscriptionsJwId(ctx context.Context, jwId int64, body PatchApiWorkspaceSubscriptionsJwIdJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// ListTodos request
 	ListTodos(ctx context.Context, params *ListTodosParams, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -11485,6 +12470,18 @@ func (c *Client) GetMetadata(ctx context.Context, reqEditors ...RequestEditorFn)
 	return c.Client.Do(req)
 }
 
+func (c *Client) CatalogRoomsMap(ctx context.Context, code string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCatalogRoomsMapRequest(c.Server, code)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
 func (c *Client) ListSchedules(ctx context.Context, params *ListSchedulesParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewListSchedulesRequest(c.Server, params)
 	if err != nil {
@@ -11631,6 +12628,54 @@ func (c *Client) ListTeachers(ctx context.Context, params *ListTeachersParams, r
 
 func (c *Client) GetTeacher(ctx context.Context, id int64, params *GetTeacherParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewGetTeacherRequest(c.Server, id, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CatalogWeatherGet(ctx context.Context, params *CatalogWeatherGetParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCatalogWeatherGetRequest(c.Server, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetApiCatalogYoungEvents(ctx context.Context, params *GetApiCatalogYoungEventsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetApiCatalogYoungEventsRequest(c.Server, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetApiCatalogYoungEventsYoungId(ctx context.Context, youngId string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetApiCatalogYoungEventsYoungIdRequest(c.Server, youngId)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetApiCatalogYoungEventsYoungIdImage(ctx context.Context, youngId string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetApiCatalogYoungEventsYoungIdImageRequest(c.Server, youngId)
 	if err != nil {
 		return nil, err
 	}
@@ -12181,30 +13226,6 @@ func (c *Client) AppendCalendarSubscriptionSections(ctx context.Context, body Ap
 	return c.Client.Do(req)
 }
 
-func (c *Client) SetCalendarSubscriptionWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewSetCalendarSubscriptionRequestWithBody(c.Server, contentType, body)
-	if err != nil {
-		return nil, err
-	}
-	req = req.WithContext(ctx)
-	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
-		return nil, err
-	}
-	return c.Client.Do(req)
-}
-
-func (c *Client) SetCalendarSubscription(ctx context.Context, body SetCalendarSubscriptionJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewSetCalendarSubscriptionRequest(c.Server, body)
-	if err != nil {
-		return nil, err
-	}
-	req = req.WithContext(ctx)
-	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
-		return nil, err
-	}
-	return c.Client.Do(req)
-}
-
 func (c *Client) BatchUpdateCalendarSubscriptionWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewBatchUpdateCalendarSubscriptionRequestWithBody(c.Server, contentType, body)
 	if err != nil {
@@ -12279,6 +13300,30 @@ func (c *Client) QueryCalendarSubscriptionSectionsWithBody(ctx context.Context, 
 
 func (c *Client) QueryCalendarSubscriptionSections(ctx context.Context, body QueryCalendarSubscriptionSectionsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewQueryCalendarSubscriptionSectionsRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PatchApiWorkspaceSubscriptionsJwIdWithBody(ctx context.Context, jwId int64, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPatchApiWorkspaceSubscriptionsJwIdRequestWithBody(c.Server, jwId, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PatchApiWorkspaceSubscriptionsJwId(ctx context.Context, jwId int64, body PatchApiWorkspaceSubscriptionsJwIdJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPatchApiWorkspaceSubscriptionsJwIdRequest(c.Server, jwId, body)
 	if err != nil {
 		return nil, err
 	}
@@ -14022,6 +15067,40 @@ func NewGetMetadataRequest(server string) (*http.Request, error) {
 	return req, nil
 }
 
+// NewCatalogRoomsMapRequest generates requests for CatalogRoomsMap
+func NewCatalogRoomsMapRequest(server string, code string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "code", code, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/api/catalog/rooms/%s/map", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
 // NewListSchedulesRequest generates requests for ListSchedules
 func NewListSchedulesRequest(server string, params *ListSchedulesParams) (*http.Request, error) {
 	var err error
@@ -15218,6 +16297,252 @@ func NewGetTeacherRequest(server string, id int64, params *GetTeacherParams) (*h
 		}
 
 		queryURL.RawQuery = queryValues.Encode()
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewCatalogWeatherGetRequest generates requests for CatalogWeatherGet
+func NewCatalogWeatherGetRequest(server string, params *CatalogWeatherGetParams) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/api/catalog/weather")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		queryValues := queryURL.Query()
+
+		if params.LocationKey != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "locationKey", *params.LocationKey, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		queryURL.RawQuery = queryValues.Encode()
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetApiCatalogYoungEventsRequest generates requests for GetApiCatalogYoungEvents
+func NewGetApiCatalogYoungEventsRequest(server string, params *GetApiCatalogYoungEventsParams) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/api/catalog/young-events")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		queryValues := queryURL.Query()
+
+		if params.Active != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "active", *params.Active, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.Category != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "category", *params.Category, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.Search != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "search", *params.Search, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.Page != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "page", *params.Page, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "integer", Format: "int64"}); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.PageSize != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "pageSize", *params.PageSize, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "integer", Format: "int64"}); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.Limit != nil {
+
+			if queryFrag, err := runtime.StyleParamWithOptions("form", true, "limit", *params.Limit, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationQuery, Type: "integer", Format: "int64"}); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		queryURL.RawQuery = queryValues.Encode()
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetApiCatalogYoungEventsYoungIdRequest generates requests for GetApiCatalogYoungEventsYoungId
+func NewGetApiCatalogYoungEventsYoungIdRequest(server string, youngId string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "youngId", youngId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/api/catalog/young-events/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetApiCatalogYoungEventsYoungIdImageRequest generates requests for GetApiCatalogYoungEventsYoungIdImage
+func NewGetApiCatalogYoungEventsYoungIdImageRequest(server string, youngId string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "youngId", youngId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/api/catalog/young-events/%s/image", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
 	}
 
 	req, err := http.NewRequest("GET", queryURL.String(), nil)
@@ -17006,46 +18331,6 @@ func NewAppendCalendarSubscriptionSectionsRequestWithBody(server string, content
 	return req, nil
 }
 
-// NewSetCalendarSubscriptionRequest calls the generic SetCalendarSubscription builder with application/json body
-func NewSetCalendarSubscriptionRequest(server string, body SetCalendarSubscriptionJSONRequestBody) (*http.Request, error) {
-	var bodyReader io.Reader
-	buf, err := json.Marshal(body)
-	if err != nil {
-		return nil, err
-	}
-	bodyReader = bytes.NewReader(buf)
-	return NewSetCalendarSubscriptionRequestWithBody(server, "application/json", bodyReader)
-}
-
-// NewSetCalendarSubscriptionRequestWithBody generates requests for SetCalendarSubscription with any type of body
-func NewSetCalendarSubscriptionRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
-	var err error
-
-	serverURL, err := url.Parse(server)
-	if err != nil {
-		return nil, err
-	}
-
-	operationPath := fmt.Sprintf("/api/workspace/subscriptions")
-	if operationPath[0] == '/' {
-		operationPath = "." + operationPath
-	}
-
-	queryURL, err := serverURL.Parse(operationPath)
-	if err != nil {
-		return nil, err
-	}
-
-	req, err := http.NewRequest("POST", queryURL.String(), body)
-	if err != nil {
-		return nil, err
-	}
-
-	req.Header.Add("Content-Type", contentType)
-
-	return req, nil
-}
-
 // NewBatchUpdateCalendarSubscriptionRequest calls the generic BatchUpdateCalendarSubscription builder with application/json body
 func NewBatchUpdateCalendarSubscriptionRequest(server string, body BatchUpdateCalendarSubscriptionJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
@@ -17184,6 +18469,53 @@ func NewQueryCalendarSubscriptionSectionsRequestWithBody(server string, contentT
 	}
 
 	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewPatchApiWorkspaceSubscriptionsJwIdRequest calls the generic PatchApiWorkspaceSubscriptionsJwId builder with application/json body
+func NewPatchApiWorkspaceSubscriptionsJwIdRequest(server string, jwId int64, body PatchApiWorkspaceSubscriptionsJwIdJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewPatchApiWorkspaceSubscriptionsJwIdRequestWithBody(server, jwId, "application/json", bodyReader)
+}
+
+// NewPatchApiWorkspaceSubscriptionsJwIdRequestWithBody generates requests for PatchApiWorkspaceSubscriptionsJwId with any type of body
+func NewPatchApiWorkspaceSubscriptionsJwIdRequestWithBody(server string, jwId int64, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "jwId", jwId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "integer", Format: "int64"})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/api/workspace/subscriptions/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("PATCH", queryURL.String(), body)
 	if err != nil {
 		return nil, err
 	}
@@ -17952,6 +19284,9 @@ type ClientWithResponsesInterface interface {
 	// GetMetadataWithResponse request
 	GetMetadataWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetMetadataResponse, error)
 
+	// CatalogRoomsMapWithResponse request
+	CatalogRoomsMapWithResponse(ctx context.Context, code string, reqEditors ...RequestEditorFn) (*CatalogRoomsMapResponse, error)
+
 	// ListSchedulesWithResponse request
 	ListSchedulesWithResponse(ctx context.Context, params *ListSchedulesParams, reqEditors ...RequestEditorFn) (*ListSchedulesResponse, error)
 
@@ -17989,6 +19324,18 @@ type ClientWithResponsesInterface interface {
 
 	// GetTeacherWithResponse request
 	GetTeacherWithResponse(ctx context.Context, id int64, params *GetTeacherParams, reqEditors ...RequestEditorFn) (*GetTeacherResponse, error)
+
+	// CatalogWeatherGetWithResponse request
+	CatalogWeatherGetWithResponse(ctx context.Context, params *CatalogWeatherGetParams, reqEditors ...RequestEditorFn) (*CatalogWeatherGetResponse, error)
+
+	// GetApiCatalogYoungEventsWithResponse request
+	GetApiCatalogYoungEventsWithResponse(ctx context.Context, params *GetApiCatalogYoungEventsParams, reqEditors ...RequestEditorFn) (*GetApiCatalogYoungEventsResponse, error)
+
+	// GetApiCatalogYoungEventsYoungIdWithResponse request
+	GetApiCatalogYoungEventsYoungIdWithResponse(ctx context.Context, youngId string, reqEditors ...RequestEditorFn) (*GetApiCatalogYoungEventsYoungIdResponse, error)
+
+	// GetApiCatalogYoungEventsYoungIdImageWithResponse request
+	GetApiCatalogYoungEventsYoungIdImageWithResponse(ctx context.Context, youngId string, reqEditors ...RequestEditorFn) (*GetApiCatalogYoungEventsYoungIdImageResponse, error)
 
 	// ListCommentsWithResponse request
 	ListCommentsWithResponse(ctx context.Context, params *ListCommentsParams, reqEditors ...RequestEditorFn) (*ListCommentsResponse, error)
@@ -18111,11 +19458,6 @@ type ClientWithResponsesInterface interface {
 
 	AppendCalendarSubscriptionSectionsWithResponse(ctx context.Context, body AppendCalendarSubscriptionSectionsJSONRequestBody, reqEditors ...RequestEditorFn) (*AppendCalendarSubscriptionSectionsResponse, error)
 
-	// SetCalendarSubscriptionWithBodyWithResponse request with any body
-	SetCalendarSubscriptionWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*SetCalendarSubscriptionResponse, error)
-
-	SetCalendarSubscriptionWithResponse(ctx context.Context, body SetCalendarSubscriptionJSONRequestBody, reqEditors ...RequestEditorFn) (*SetCalendarSubscriptionResponse, error)
-
 	// BatchUpdateCalendarSubscriptionWithBodyWithResponse request with any body
 	BatchUpdateCalendarSubscriptionWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*BatchUpdateCalendarSubscriptionResponse, error)
 
@@ -18133,6 +19475,11 @@ type ClientWithResponsesInterface interface {
 	QueryCalendarSubscriptionSectionsWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*QueryCalendarSubscriptionSectionsResponse, error)
 
 	QueryCalendarSubscriptionSectionsWithResponse(ctx context.Context, body QueryCalendarSubscriptionSectionsJSONRequestBody, reqEditors ...RequestEditorFn) (*QueryCalendarSubscriptionSectionsResponse, error)
+
+	// PatchApiWorkspaceSubscriptionsJwIdWithBodyWithResponse request with any body
+	PatchApiWorkspaceSubscriptionsJwIdWithBodyWithResponse(ctx context.Context, jwId int64, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PatchApiWorkspaceSubscriptionsJwIdResponse, error)
+
+	PatchApiWorkspaceSubscriptionsJwIdWithResponse(ctx context.Context, jwId int64, body PatchApiWorkspaceSubscriptionsJwIdJSONRequestBody, reqEditors ...RequestEditorFn) (*PatchApiWorkspaceSubscriptionsJwIdResponse, error)
 
 	// ListTodosWithResponse request
 	ListTodosWithResponse(ctx context.Context, params *ListTodosParams, reqEditors ...RequestEditorFn) (*ListTodosResponse, error)
@@ -18753,6 +20100,29 @@ func (r GetMetadataResponse) StatusCode() int {
 	return 0
 }
 
+type CatalogRoomsMapResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *RoomMapResponseSchema
+	JSON400      *OpenApiErrorSchema
+}
+
+// Status returns HTTPResponse.Status
+func (r CatalogRoomsMapResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r CatalogRoomsMapResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 type ListSchedulesResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -19025,6 +20395,101 @@ func (r GetTeacherResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r GetTeacherResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type CatalogWeatherGetResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *WeatherSnapshotResponseSchema
+	JSON400      *OpenApiErrorSchema
+}
+
+// Status returns HTTPResponse.Status
+func (r CatalogWeatherGetResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r CatalogWeatherGetResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetApiCatalogYoungEventsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *PaginatedYoungEventResponseSchema
+	JSON400      *OpenApiErrorSchema
+}
+
+// Status returns HTTPResponse.Status
+func (r GetApiCatalogYoungEventsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetApiCatalogYoungEventsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetApiCatalogYoungEventsYoungIdResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *YoungEventDetailSchema
+	JSON400      *OpenApiErrorSchema
+	JSON404      *OpenApiErrorSchema
+}
+
+// Status returns HTTPResponse.Status
+func (r GetApiCatalogYoungEventsYoungIdResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetApiCatalogYoungEventsYoungIdResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetApiCatalogYoungEventsYoungIdImageResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON400      *OpenApiErrorSchema
+	JSON404      *OpenApiErrorSchema
+	JSON502      *OpenApiErrorSchema
+	JSON503      *OpenApiErrorSchema
+}
+
+// Status returns HTTPResponse.Status
+func (r GetApiCatalogYoungEventsYoungIdImageResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetApiCatalogYoungEventsYoungIdImageResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -19826,32 +21291,6 @@ func (r AppendCalendarSubscriptionSectionsResponse) StatusCode() int {
 	return 0
 }
 
-type SetCalendarSubscriptionResponse struct {
-	Body         []byte
-	HTTPResponse *http.Response
-	JSON200      *CalendarSubscriptionCreateResponseSchema
-	JSON400      *OpenApiErrorSchema
-	JSON401      *OpenApiErrorSchema
-	JSON429      *OpenApiErrorSchema
-	JSON503      *OpenApiErrorSchema
-}
-
-// Status returns HTTPResponse.Status
-func (r SetCalendarSubscriptionResponse) Status() string {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.Status
-	}
-	return http.StatusText(0)
-}
-
-// StatusCode returns HTTPResponse.StatusCode
-func (r SetCalendarSubscriptionResponse) StatusCode() int {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.StatusCode
-	}
-	return 0
-}
-
 type BatchUpdateCalendarSubscriptionResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -19948,6 +21387,33 @@ func (r QueryCalendarSubscriptionSectionsResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r QueryCalendarSubscriptionSectionsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type PatchApiWorkspaceSubscriptionsJwIdResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *SubscriptionKindUpdateResponseSchema
+	JSON400      *OpenApiErrorSchema
+	JSON401      *OpenApiErrorSchema
+	JSON404      *OpenApiErrorSchema
+	JSON429      *OpenApiErrorSchema
+	JSON503      *OpenApiErrorSchema
+}
+
+// Status returns HTTPResponse.Status
+func (r PatchApiWorkspaceSubscriptionsJwIdResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r PatchApiWorkspaceSubscriptionsJwIdResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -20544,6 +22010,15 @@ func (c *ClientWithResponses) GetMetadataWithResponse(ctx context.Context, reqEd
 	return ParseGetMetadataResponse(rsp)
 }
 
+// CatalogRoomsMapWithResponse request returning *CatalogRoomsMapResponse
+func (c *ClientWithResponses) CatalogRoomsMapWithResponse(ctx context.Context, code string, reqEditors ...RequestEditorFn) (*CatalogRoomsMapResponse, error) {
+	rsp, err := c.CatalogRoomsMap(ctx, code, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCatalogRoomsMapResponse(rsp)
+}
+
 // ListSchedulesWithResponse request returning *ListSchedulesResponse
 func (c *ClientWithResponses) ListSchedulesWithResponse(ctx context.Context, params *ListSchedulesParams, reqEditors ...RequestEditorFn) (*ListSchedulesResponse, error) {
 	rsp, err := c.ListSchedules(ctx, params, reqEditors...)
@@ -20658,6 +22133,42 @@ func (c *ClientWithResponses) GetTeacherWithResponse(ctx context.Context, id int
 		return nil, err
 	}
 	return ParseGetTeacherResponse(rsp)
+}
+
+// CatalogWeatherGetWithResponse request returning *CatalogWeatherGetResponse
+func (c *ClientWithResponses) CatalogWeatherGetWithResponse(ctx context.Context, params *CatalogWeatherGetParams, reqEditors ...RequestEditorFn) (*CatalogWeatherGetResponse, error) {
+	rsp, err := c.CatalogWeatherGet(ctx, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCatalogWeatherGetResponse(rsp)
+}
+
+// GetApiCatalogYoungEventsWithResponse request returning *GetApiCatalogYoungEventsResponse
+func (c *ClientWithResponses) GetApiCatalogYoungEventsWithResponse(ctx context.Context, params *GetApiCatalogYoungEventsParams, reqEditors ...RequestEditorFn) (*GetApiCatalogYoungEventsResponse, error) {
+	rsp, err := c.GetApiCatalogYoungEvents(ctx, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetApiCatalogYoungEventsResponse(rsp)
+}
+
+// GetApiCatalogYoungEventsYoungIdWithResponse request returning *GetApiCatalogYoungEventsYoungIdResponse
+func (c *ClientWithResponses) GetApiCatalogYoungEventsYoungIdWithResponse(ctx context.Context, youngId string, reqEditors ...RequestEditorFn) (*GetApiCatalogYoungEventsYoungIdResponse, error) {
+	rsp, err := c.GetApiCatalogYoungEventsYoungId(ctx, youngId, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetApiCatalogYoungEventsYoungIdResponse(rsp)
+}
+
+// GetApiCatalogYoungEventsYoungIdImageWithResponse request returning *GetApiCatalogYoungEventsYoungIdImageResponse
+func (c *ClientWithResponses) GetApiCatalogYoungEventsYoungIdImageWithResponse(ctx context.Context, youngId string, reqEditors ...RequestEditorFn) (*GetApiCatalogYoungEventsYoungIdImageResponse, error) {
+	rsp, err := c.GetApiCatalogYoungEventsYoungIdImage(ctx, youngId, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetApiCatalogYoungEventsYoungIdImageResponse(rsp)
 }
 
 // ListCommentsWithResponse request returning *ListCommentsResponse
@@ -21051,23 +22562,6 @@ func (c *ClientWithResponses) AppendCalendarSubscriptionSectionsWithResponse(ctx
 	return ParseAppendCalendarSubscriptionSectionsResponse(rsp)
 }
 
-// SetCalendarSubscriptionWithBodyWithResponse request with arbitrary body returning *SetCalendarSubscriptionResponse
-func (c *ClientWithResponses) SetCalendarSubscriptionWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*SetCalendarSubscriptionResponse, error) {
-	rsp, err := c.SetCalendarSubscriptionWithBody(ctx, contentType, body, reqEditors...)
-	if err != nil {
-		return nil, err
-	}
-	return ParseSetCalendarSubscriptionResponse(rsp)
-}
-
-func (c *ClientWithResponses) SetCalendarSubscriptionWithResponse(ctx context.Context, body SetCalendarSubscriptionJSONRequestBody, reqEditors ...RequestEditorFn) (*SetCalendarSubscriptionResponse, error) {
-	rsp, err := c.SetCalendarSubscription(ctx, body, reqEditors...)
-	if err != nil {
-		return nil, err
-	}
-	return ParseSetCalendarSubscriptionResponse(rsp)
-}
-
 // BatchUpdateCalendarSubscriptionWithBodyWithResponse request with arbitrary body returning *BatchUpdateCalendarSubscriptionResponse
 func (c *ClientWithResponses) BatchUpdateCalendarSubscriptionWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*BatchUpdateCalendarSubscriptionResponse, error) {
 	rsp, err := c.BatchUpdateCalendarSubscriptionWithBody(ctx, contentType, body, reqEditors...)
@@ -21126,6 +22620,23 @@ func (c *ClientWithResponses) QueryCalendarSubscriptionSectionsWithResponse(ctx 
 		return nil, err
 	}
 	return ParseQueryCalendarSubscriptionSectionsResponse(rsp)
+}
+
+// PatchApiWorkspaceSubscriptionsJwIdWithBodyWithResponse request with arbitrary body returning *PatchApiWorkspaceSubscriptionsJwIdResponse
+func (c *ClientWithResponses) PatchApiWorkspaceSubscriptionsJwIdWithBodyWithResponse(ctx context.Context, jwId int64, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PatchApiWorkspaceSubscriptionsJwIdResponse, error) {
+	rsp, err := c.PatchApiWorkspaceSubscriptionsJwIdWithBody(ctx, jwId, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePatchApiWorkspaceSubscriptionsJwIdResponse(rsp)
+}
+
+func (c *ClientWithResponses) PatchApiWorkspaceSubscriptionsJwIdWithResponse(ctx context.Context, jwId int64, body PatchApiWorkspaceSubscriptionsJwIdJSONRequestBody, reqEditors ...RequestEditorFn) (*PatchApiWorkspaceSubscriptionsJwIdResponse, error) {
+	rsp, err := c.PatchApiWorkspaceSubscriptionsJwId(ctx, jwId, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePatchApiWorkspaceSubscriptionsJwIdResponse(rsp)
 }
 
 // ListTodosWithResponse request returning *ListTodosResponse
@@ -22309,6 +23820,39 @@ func ParseGetMetadataResponse(rsp *http.Response) (*GetMetadataResponse, error) 
 	return response, nil
 }
 
+// ParseCatalogRoomsMapResponse parses an HTTP response from a CatalogRoomsMapWithResponse call
+func ParseCatalogRoomsMapResponse(rsp *http.Response) (*CatalogRoomsMapResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &CatalogRoomsMapResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest RoomMapResponseSchema
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest OpenApiErrorSchema
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	}
+
+	return response, nil
+}
+
 // ParseListSchedulesResponse parses an HTTP response from a ListSchedulesWithResponse call
 func ParseListSchedulesResponse(rsp *http.Response) (*ListSchedulesResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
@@ -22713,6 +24257,159 @@ func ParseGetTeacherResponse(rsp *http.Response) (*GetTeacherResponse, error) {
 			return nil, err
 		}
 		response.JSON404 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseCatalogWeatherGetResponse parses an HTTP response from a CatalogWeatherGetWithResponse call
+func ParseCatalogWeatherGetResponse(rsp *http.Response) (*CatalogWeatherGetResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &CatalogWeatherGetResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest WeatherSnapshotResponseSchema
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest OpenApiErrorSchema
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetApiCatalogYoungEventsResponse parses an HTTP response from a GetApiCatalogYoungEventsWithResponse call
+func ParseGetApiCatalogYoungEventsResponse(rsp *http.Response) (*GetApiCatalogYoungEventsResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetApiCatalogYoungEventsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest PaginatedYoungEventResponseSchema
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest OpenApiErrorSchema
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetApiCatalogYoungEventsYoungIdResponse parses an HTTP response from a GetApiCatalogYoungEventsYoungIdWithResponse call
+func ParseGetApiCatalogYoungEventsYoungIdResponse(rsp *http.Response) (*GetApiCatalogYoungEventsYoungIdResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetApiCatalogYoungEventsYoungIdResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest YoungEventDetailSchema
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest OpenApiErrorSchema
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest OpenApiErrorSchema
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetApiCatalogYoungEventsYoungIdImageResponse parses an HTTP response from a GetApiCatalogYoungEventsYoungIdImageWithResponse call
+func ParseGetApiCatalogYoungEventsYoungIdImageResponse(rsp *http.Response) (*GetApiCatalogYoungEventsYoungIdImageResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetApiCatalogYoungEventsYoungIdImageResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest OpenApiErrorSchema
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest OpenApiErrorSchema
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 502:
+		var dest OpenApiErrorSchema
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON502 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 503:
+		var dest OpenApiErrorSchema
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON503 = &dest
 
 	}
 
@@ -24316,60 +26013,6 @@ func ParseAppendCalendarSubscriptionSectionsResponse(rsp *http.Response) (*Appen
 	return response, nil
 }
 
-// ParseSetCalendarSubscriptionResponse parses an HTTP response from a SetCalendarSubscriptionWithResponse call
-func ParseSetCalendarSubscriptionResponse(rsp *http.Response) (*SetCalendarSubscriptionResponse, error) {
-	bodyBytes, err := io.ReadAll(rsp.Body)
-	defer func() { _ = rsp.Body.Close() }()
-	if err != nil {
-		return nil, err
-	}
-
-	response := &SetCalendarSubscriptionResponse{
-		Body:         bodyBytes,
-		HTTPResponse: rsp,
-	}
-
-	switch {
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest CalendarSubscriptionCreateResponseSchema
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON200 = &dest
-
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
-		var dest OpenApiErrorSchema
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON400 = &dest
-
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
-		var dest OpenApiErrorSchema
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON401 = &dest
-
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 429:
-		var dest OpenApiErrorSchema
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON429 = &dest
-
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 503:
-		var dest OpenApiErrorSchema
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON503 = &dest
-
-	}
-
-	return response, nil
-}
-
 // ParseBatchUpdateCalendarSubscriptionResponse parses an HTTP response from a BatchUpdateCalendarSubscriptionWithResponse call
 func ParseBatchUpdateCalendarSubscriptionResponse(rsp *http.Response) (*BatchUpdateCalendarSubscriptionResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
@@ -24566,6 +26209,67 @@ func ParseQueryCalendarSubscriptionSectionsResponse(rsp *http.Response) (*QueryC
 			return nil, err
 		}
 		response.JSON404 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParsePatchApiWorkspaceSubscriptionsJwIdResponse parses an HTTP response from a PatchApiWorkspaceSubscriptionsJwIdWithResponse call
+func ParsePatchApiWorkspaceSubscriptionsJwIdResponse(rsp *http.Response) (*PatchApiWorkspaceSubscriptionsJwIdResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &PatchApiWorkspaceSubscriptionsJwIdResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest SubscriptionKindUpdateResponseSchema
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest OpenApiErrorSchema
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest OpenApiErrorSchema
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest OpenApiErrorSchema
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 429:
+		var dest OpenApiErrorSchema
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON429 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 503:
+		var dest OpenApiErrorSchema
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON503 = &dest
 
 	}
 

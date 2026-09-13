@@ -69,6 +69,10 @@
       "description": "catalog.metadata operations"
     },
     {
+      "name": "catalog.rooms",
+      "description": "catalog.rooms operations"
+    },
+    {
       "name": "catalog.schedule",
       "description": "catalog.schedule operations"
     },
@@ -83,6 +87,14 @@
     {
       "name": "catalog.teachers",
       "description": "catalog.teachers operations"
+    },
+    {
+      "name": "catalog.weather",
+      "description": "catalog.weather operations"
+    },
+    {
+      "name": "catalog.young-events",
+      "description": "catalog.young-events operations"
     },
     {
       "name": "community.comments",
@@ -145,10 +157,13 @@
         "catalog.courses",
         "catalog.link",
         "catalog.metadata",
+        "catalog.rooms",
         "catalog.schedule",
         "catalog.section",
         "catalog.semesters",
-        "catalog.teachers"
+        "catalog.teachers",
+        "catalog.weather",
+        "catalog.young-events"
       ]
     },
     {
@@ -530,6 +545,87 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/openApiDocumentResponseSchema"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/publications": {
+      "get": {
+        "operationId": "get-api-publications",
+        "summary": "List public USTC news and notices",
+        "tags": [
+          "Api"
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "type",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "news",
+                "notice"
+              ]
+            }
+          },
+          {
+            "in": "query",
+            "name": "source",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64,
+              "pattern": "^[a-z0-9][a-z0-9._-]*$"
+            }
+          },
+          {
+            "in": "query",
+            "name": "query",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            }
+          },
+          {
+            "in": "query",
+            "name": "page",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100000
+            }
+          },
+          {
+            "in": "query",
+            "name": "pageSize",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/publicPublicationsResponseSchema"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Error response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/openApiErrorSchema"
                 }
               }
             }
@@ -2053,6 +2149,152 @@
         }
       }
     },
+    "/api/catalog/weather": {
+      "get": {
+        "operationId": "catalog_weather_get",
+        "summary": "Query weather for a USTC campus",
+        "tags": [
+          "catalog.weather"
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "locationKey",
+            "schema": {
+              "default": "ustc-main",
+              "type": "string",
+              "enum": [
+                "ustc-main",
+                "ustc-gaoxin"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/weatherSnapshotResponseSchema"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Error response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/openApiErrorSchema"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/catalog/young-events": {
+      "get": {
+        "operationId": "get-api-catalog-young-events",
+        "summary": "List second-classroom (Young) signup events",
+        "tags": [
+          "catalog.young-events"
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "active",
+            "schema": {
+              "description": "Filter by signup-open (active) events.",
+              "type": "string",
+              "enum": [
+                "true",
+                "false"
+              ]
+            },
+            "description": "Filter by signup-open (active) events."
+          },
+          {
+            "in": "query",
+            "name": "category",
+            "schema": {
+              "description": "Exact category filter, e.g. 单次项目 or 系列项目.",
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 100
+            },
+            "description": "Exact category filter, e.g. 单次项目 or 系列项目."
+          },
+          {
+            "in": "query",
+            "name": "search",
+            "schema": {
+              "description": "Case-insensitive substring match on the event name.",
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 100
+            },
+            "description": "Case-insensitive substring match on the event name."
+          },
+          {
+            "in": "query",
+            "name": "page",
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 1,
+              "maximum": 1000
+            }
+          },
+          {
+            "in": "query",
+            "name": "pageSize",
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 1,
+              "maximum": 100
+            },
+            "description": "Number of items per page."
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 1,
+              "maximum": 100
+            },
+            "deprecated": true,
+            "description": "Deprecated alias for pageSize. pageSize takes precedence when both are supplied."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/paginatedYoungEventResponseSchema"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Error response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/openApiErrorSchema"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/community/comments": {
       "get": {
         "operationId": "listComments",
@@ -2754,6 +2996,59 @@
         }
       }
     },
+    "/api/publications/{id}": {
+      "get": {
+        "operationId": "get-api-publications-id",
+        "summary": "Get one public USTC news item or notice",
+        "tags": [
+          "Api"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/publicPublicationDetailSchema"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Error response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/openApiErrorSchema"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Error response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/openApiErrorSchema"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/workspace/bus-preferences": {
       "get": {
         "operationId": "workspace_bus_preferences_get",
@@ -3307,101 +3602,6 @@
       }
     },
     "/api/workspace/subscriptions": {
-      "post": {
-        "operationId": "setCalendarSubscription",
-        "summary": "Replace section subscriptions",
-        "tags": [
-          "workspace.subscription"
-        ],
-        "security": [
-          {
-            "bearerAuth": []
-          },
-          {
-            "sessionCookie": []
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/calendarSubscriptionCreateRequestSchema"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Successful response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/calendarSubscriptionCreateResponseSchema"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Error response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/openApiErrorSchema"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Error response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/openApiErrorSchema"
-                }
-              }
-            }
-          },
-          "429": {
-            "description": "Error response",
-            "headers": {
-              "Retry-After": {
-                "description": "Seconds before retrying the mutation",
-                "schema": {
-                  "type": "integer",
-                  "minimum": 0
-                }
-              }
-            },
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/openApiErrorSchema"
-                }
-              }
-            }
-          },
-          "503": {
-            "description": "Error response",
-            "headers": {
-              "Retry-After": {
-                "description": "Seconds before retrying the mutation",
-                "schema": {
-                  "type": "integer",
-                  "minimum": 0
-                }
-              }
-            },
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/openApiErrorSchema"
-                }
-              }
-            }
-          }
-        }
-      },
       "patch": {
         "operationId": "appendCalendarSubscriptionSections",
         "summary": "Append section subscriptions",
@@ -4988,7 +5188,8 @@
               "enum": [
                 "auto",
                 "weekday",
-                "weekend"
+                "saturday",
+                "sunday"
               ]
             }
           },
@@ -5511,6 +5712,60 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/teacherDetailSchema"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Error response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/openApiErrorSchema"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Error response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/openApiErrorSchema"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/catalog/young-events/{youngId}": {
+      "get": {
+        "operationId": "get-api-catalog-young-events-youngId",
+        "summary": "Get a second-classroom (Young) signup event",
+        "tags": [
+          "catalog.young-events"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "youngId",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Upstream young.ustc.edu.cn event identifier."
+            },
+            "required": true,
+            "description": "Upstream young.ustc.edu.cn event identifier."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/youngEventDetailSchema"
                 }
               }
             }
@@ -6322,6 +6577,110 @@
         }
       }
     },
+    "/api/ingestion/publications/batches": {
+      "post": {
+        "operationId": "post-api-ingestion-publications-batches",
+        "summary": "Ingest a crawler publication batch",
+        "tags": [
+          "Api"
+        ],
+        "security": [
+          {
+            "publicationIngestionSecret": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/publicationIngestionBatchRequestSchema"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/publicationIngestionBatchResponseSchema"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Error response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/openApiErrorSchema"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Error response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/openApiErrorSchema"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Error response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/openApiErrorSchema"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Error response",
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds before retrying the mutation",
+                "schema": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/openApiErrorSchema"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Error response",
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds before retrying the mutation",
+                "schema": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/openApiErrorSchema"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/mcp/.well-known/oauth-authorization-server": {
       "get": {
         "operationId": "get-api-mcp-.well-known-oauth-authorization-server",
@@ -6580,6 +6939,124 @@
           },
           "500": {
             "description": "Error response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/openApiErrorSchema"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Error response",
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds before retrying the mutation",
+                "schema": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/openApiErrorSchema"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/workspace/subscriptions/{jwId}": {
+      "patch": {
+        "operationId": "patch-api-workspace-subscriptions-jwId",
+        "summary": "Update an existing subscription's personal kind",
+        "tags": [
+          "workspace.subscription"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "sessionCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "jwId",
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "required": true
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/subscriptionKindUpdateRequestSchema"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/subscriptionKindUpdateResponseSchema"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Error response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/openApiErrorSchema"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Error response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/openApiErrorSchema"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Error response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/openApiErrorSchema"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Error response",
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds before retrying the mutation",
+                "schema": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            },
             "content": {
               "application/json": {
                 "schema": {
@@ -7842,6 +8319,48 @@
         }
       }
     },
+    "/api/catalog/rooms/{code}/map": {
+      "get": {
+        "operationId": "catalog_rooms_map",
+        "summary": "Look up a room's highlighted map or an available building overview",
+        "tags": [
+          "catalog.rooms"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "code",
+            "schema": {
+              "type": "string",
+              "maxLength": 64
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/roomMapResponseSchema"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Error response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/openApiErrorSchema"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/catalog/sections/{jwId}/calendar.ics": {
       "get": {
         "operationId": "getSectionCalendar",
@@ -8025,6 +8544,93 @@
           },
           "404": {
             "description": "Error response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/openApiErrorSchema"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/catalog/young-events/{youngId}/image": {
+      "get": {
+        "operationId": "get-api-catalog-young-events-youngId-image",
+        "summary": "Serve the cached poster image for a second-classroom (Young) signup event",
+        "tags": [
+          "catalog.young-events"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "youngId",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Upstream young.ustc.edu.cn event identifier."
+            },
+            "required": true,
+            "description": "Upstream young.ustc.edu.cn event identifier."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Binary response",
+            "content": {
+              "application/octet-stream": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          "304": {
+            "description": "Response 304"
+          },
+          "400": {
+            "description": "Error response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/openApiErrorSchema"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Error response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/openApiErrorSchema"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Error response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/openApiErrorSchema"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Error response",
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds before retrying the mutation",
+                "schema": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            },
             "content": {
               "application/json": {
                 "schema": {
@@ -8369,6 +8975,200 @@
         }
       }
     },
+    "/api/ingestion/publications/objects/plan": {
+      "post": {
+        "operationId": "post-api-ingestion-publications-objects-plan",
+        "summary": "Plan content-addressed publication object uploads",
+        "tags": [
+          "Api"
+        ],
+        "security": [
+          {
+            "publicationIngestionSecret": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/publicationObjectPlanRequestSchema"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/publicationObjectPlanResponseSchema"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Error response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/openApiErrorSchema"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Error response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/openApiErrorSchema"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Error response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/openApiErrorSchema"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Error response",
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds before retrying the mutation",
+                "schema": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/openApiErrorSchema"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Error response",
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds before retrying the mutation",
+                "schema": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/openApiErrorSchema"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/publications/objects/{kind}/{sha256}": {
+      "get": {
+        "operationId": "get-api-publications-objects-kind-sha256",
+        "summary": "Read a verified object linked to a public publication revision",
+        "tags": [
+          "Api"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "kind",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "body_html",
+                "body_markdown",
+                "media",
+                "asset",
+                "raw_page"
+              ]
+            },
+            "required": true
+          },
+          {
+            "in": "path",
+            "name": "sha256",
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Binary response",
+            "content": {
+              "application/octet-stream": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          "304": {
+            "description": "Response 304"
+          },
+          "400": {
+            "description": "Error response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/openApiErrorSchema"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Error response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/openApiErrorSchema"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Error response",
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds before retrying the mutation",
+                "schema": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/openApiErrorSchema"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/workspace/homeworks/{id}/completion": {
       "put": {
         "operationId": "setHomeworkCompletion",
@@ -8537,6 +9337,136 @@
           },
           "404": {
             "description": "Error response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/openApiErrorSchema"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/ingestion/publications/objects/{batchId}/{kind}/{sha256}": {
+      "put": {
+        "operationId": "put-api-ingestion-publications-objects-batchId-kind-sha256",
+        "summary": "Stream and verify one content-addressed publication object through the",
+        "tags": [
+          "Api"
+        ],
+        "security": [
+          {
+            "publicationIngestionSecret": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "batchId",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            },
+            "required": true
+          },
+          {
+            "in": "path",
+            "name": "kind",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "body_html",
+                "body_markdown",
+                "media",
+                "asset",
+                "raw_page"
+              ]
+            },
+            "required": true
+          },
+          {
+            "in": "path",
+            "name": "sha256",
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/publicationObjectUploadResponseSchema"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Error response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/openApiErrorSchema"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Error response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/openApiErrorSchema"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Error response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/openApiErrorSchema"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Error response",
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds before retrying the mutation",
+                "schema": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/openApiErrorSchema"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Error response",
+            "headers": {
+              "Retry-After": {
+                "description": "Seconds before retrying the mutation",
+                "schema": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            },
             "content": {
               "application/json": {
                 "schema": {
@@ -9045,6 +9975,223 @@
           "openapi",
           "info",
           "paths"
+        ],
+        "additionalProperties": false
+      },
+      "publicPublicationsResponseSchema": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "canonicalUrl": {
+                  "type": "string",
+                  "format": "uri"
+                },
+                "publicationType": {
+                  "type": "string",
+                  "enum": [
+                    "news",
+                    "notice"
+                  ]
+                },
+                "source": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "name": {
+                      "type": "string"
+                    },
+                    "organizationLevel": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "name",
+                    "organizationLevel"
+                  ],
+                  "additionalProperties": false
+                },
+                "revision": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "revisionHash": {
+                      "type": "string",
+                      "pattern": "^[a-f0-9]{64}$"
+                    },
+                    "observedAt": {
+                      "type": "string",
+                      "format": "date-time",
+                      "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "author": {
+                      "nullable": true,
+                      "type": "string"
+                    },
+                    "publishedAt": {
+                      "nullable": true,
+                      "type": "string",
+                      "format": "date-time",
+                      "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                    },
+                    "updatedAtSource": {
+                      "nullable": true,
+                      "type": "string",
+                      "format": "date-time",
+                      "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                    },
+                    "category": {
+                      "nullable": true,
+                      "type": "string"
+                    },
+                    "summary": {
+                      "nullable": true,
+                      "type": "string"
+                    },
+                    "sourcePageUrl": {
+                      "nullable": true,
+                      "type": "string",
+                      "format": "uri"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "revisionHash",
+                    "observedAt",
+                    "title",
+                    "author",
+                    "publishedAt",
+                    "updatedAtSource",
+                    "category",
+                    "summary",
+                    "sourcePageUrl"
+                  ],
+                  "additionalProperties": false
+                },
+                "objects": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "kind": {
+                        "type": "string",
+                        "enum": [
+                          "body_html",
+                          "body_markdown",
+                          "media",
+                          "asset",
+                          "raw_page"
+                        ]
+                      },
+                      "sha256": {
+                        "type": "string",
+                        "pattern": "^[a-f0-9]{64}$"
+                      },
+                      "size": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 9007199254740991
+                      },
+                      "contentType": {
+                        "type": "string"
+                      },
+                      "status": {
+                        "type": "string",
+                        "enum": [
+                          "verified",
+                          "linked"
+                        ]
+                      },
+                      "url": {
+                        "type": "string",
+                        "pattern": "^\\/api\\/publications\\/objects\\/.*"
+                      },
+                      "sortOrder": {
+                        "nullable": true,
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 9007199254740991
+                      },
+                      "altText": {
+                        "nullable": true,
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "kind",
+                      "sha256",
+                      "size",
+                      "contentType",
+                      "status",
+                      "url",
+                      "sortOrder",
+                      "altText"
+                    ],
+                    "additionalProperties": false
+                  }
+                }
+              },
+              "required": [
+                "id",
+                "canonicalUrl",
+                "publicationType",
+                "source",
+                "revision",
+                "objects"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "pagination": {
+            "type": "object",
+            "properties": {
+              "page": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "pageSize": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "total": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "totalPages": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              }
+            },
+            "required": [
+              "page",
+              "pageSize",
+              "total",
+              "totalPages"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "data",
+          "pagination"
         ],
         "additionalProperties": false
       },
@@ -10662,7 +11809,8 @@
                   "type": "string",
                   "enum": [
                     "weekday",
-                    "weekend"
+                    "saturday",
+                    "sunday"
                   ]
                 },
                 "position": {
@@ -13020,6 +14168,371 @@
         ],
         "additionalProperties": false
       },
+      "weatherSnapshotResponseSchema": {
+        "type": "object",
+        "properties": {
+          "location": {
+            "type": "object",
+            "properties": {
+              "key": {
+                "type": "string",
+                "enum": [
+                  "ustc-main",
+                  "ustc-gaoxin"
+                ]
+              },
+              "name": {
+                "type": "string"
+              },
+              "adcode": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "key",
+              "name",
+              "adcode"
+            ],
+            "additionalProperties": false
+          },
+          "fetchedAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+          },
+          "providers": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "amap",
+                "open-meteo"
+              ]
+            }
+          },
+          "current": {
+            "type": "object",
+            "properties": {
+              "temperature": {
+                "type": "number"
+              },
+              "feelsLike": {
+                "type": "number"
+              },
+              "humidity": {
+                "type": "number"
+              },
+              "windDirection": {
+                "type": "string"
+              },
+              "windSpeed": {
+                "type": "number"
+              },
+              "pressure": {
+                "type": "number"
+              },
+              "visibility": {
+                "type": "number"
+              },
+              "condition": {
+                "type": "object",
+                "properties": {
+                  "text": {
+                    "type": "string"
+                  },
+                  "icon": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "text",
+                  "icon"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "required": [
+              "temperature",
+              "condition"
+            ],
+            "additionalProperties": false
+          },
+          "hourly": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "at": {
+                  "type": "string",
+                  "format": "date-time",
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                },
+                "temperature": {
+                  "type": "number"
+                },
+                "condition": {
+                  "type": "object",
+                  "properties": {
+                    "text": {
+                      "type": "string"
+                    },
+                    "icon": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "text",
+                    "icon"
+                  ],
+                  "additionalProperties": false
+                },
+                "precipitationProbability": {
+                  "type": "number"
+                },
+                "precipitationAmount": {
+                  "type": "number"
+                }
+              },
+              "required": [
+                "at",
+                "temperature"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "daily": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "date": {
+                  "type": "string"
+                },
+                "temperatureHigh": {
+                  "type": "number"
+                },
+                "temperatureLow": {
+                  "type": "number"
+                },
+                "condition": {
+                  "type": "object",
+                  "properties": {
+                    "text": {
+                      "type": "string"
+                    },
+                    "icon": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "text",
+                    "icon"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "required": [
+                "date",
+                "temperatureHigh",
+                "temperatureLow"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "alerts": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "title": {
+                  "type": "string"
+                },
+                "level": {
+                  "type": "string"
+                },
+                "content": {
+                  "type": "string"
+                },
+                "issuedAt": {
+                  "type": "string",
+                  "format": "date-time",
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                }
+              },
+              "required": [
+                "title"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "extensions": {
+            "type": "object",
+            "properties": {
+              "amap": {},
+              "openMeteo": {}
+            },
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "location",
+          "fetchedAt",
+          "providers",
+          "current",
+          "hourly",
+          "daily",
+          "alerts",
+          "extensions"
+        ],
+        "additionalProperties": false
+      },
+      "paginatedYoungEventResponseSchema": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "youngId": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "category": {
+                  "nullable": true,
+                  "type": "string"
+                },
+                "department": {
+                  "nullable": true,
+                  "type": "string"
+                },
+                "organizer": {
+                  "nullable": true,
+                  "type": "string"
+                },
+                "status": {
+                  "nullable": true,
+                  "type": "string"
+                },
+                "registrationStatus": {
+                  "nullable": true,
+                  "type": "string"
+                },
+                "location": {
+                  "nullable": true,
+                  "type": "string"
+                },
+                "imageUrl": {
+                  "nullable": true,
+                  "type": "string"
+                },
+                "hours": {
+                  "nullable": true,
+                  "type": "number"
+                },
+                "capacity": {
+                  "nullable": true,
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "appliedCount": {
+                  "nullable": true,
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "startAt": {
+                  "nullable": true,
+                  "type": "string",
+                  "format": "date-time",
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                },
+                "endAt": {
+                  "nullable": true,
+                  "type": "string",
+                  "format": "date-time",
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                },
+                "applyStartAt": {
+                  "nullable": true,
+                  "type": "string",
+                  "format": "date-time",
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                },
+                "applyEndAt": {
+                  "nullable": true,
+                  "type": "string",
+                  "format": "date-time",
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                },
+                "isActive": {
+                  "type": "boolean"
+                }
+              },
+              "required": [
+                "youngId",
+                "name",
+                "category",
+                "department",
+                "organizer",
+                "status",
+                "registrationStatus",
+                "location",
+                "imageUrl",
+                "hours",
+                "capacity",
+                "appliedCount",
+                "startAt",
+                "endAt",
+                "applyStartAt",
+                "applyEndAt",
+                "isActive"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "pagination": {
+            "type": "object",
+            "properties": {
+              "page": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "pageSize": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "total": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "totalPages": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              }
+            },
+            "required": [
+              "page",
+              "pageSize",
+              "total",
+              "totalPages"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "data",
+          "pagination"
+        ],
+        "additionalProperties": false
+      },
       "commentsListResponseSchema": {
         "type": "object",
         "properties": {
@@ -13765,6 +15278,9 @@
                 "requiresTeam": {
                   "type": "boolean"
                 },
+                "completionRequired": {
+                  "type": "boolean"
+                },
                 "publishedAt": {
                   "nullable": true,
                   "type": "string",
@@ -13842,6 +15358,7 @@
                 "title",
                 "isMajor",
                 "requiresTeam",
+                "completionRequired",
                 "publishedAt",
                 "submissionStartAt",
                 "submissionDueAt",
@@ -14144,6 +15661,9 @@
                 "type": "boolean"
               },
               "requiresTeam": {
+                "type": "boolean"
+              },
+              "completionRequired": {
                 "type": "boolean"
               },
               "publishedAt": {
@@ -14676,6 +16196,7 @@
               "title",
               "isMajor",
               "requiresTeam",
+              "completionRequired",
               "publishedAt",
               "submissionStartAt",
               "submissionDueAt",
@@ -14700,6 +16221,193 @@
         "required": [
           "id",
           "homework"
+        ],
+        "additionalProperties": false
+      },
+      "publicPublicationDetailSchema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "canonicalUrl": {
+            "type": "string",
+            "format": "uri"
+          },
+          "publicationType": {
+            "type": "string",
+            "enum": [
+              "news",
+              "notice"
+            ]
+          },
+          "source": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              },
+              "organizationLevel": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "id",
+              "name",
+              "organizationLevel"
+            ],
+            "additionalProperties": false
+          },
+          "revision": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "revisionHash": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "observedAt": {
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+              },
+              "title": {
+                "type": "string"
+              },
+              "author": {
+                "nullable": true,
+                "type": "string"
+              },
+              "publishedAt": {
+                "nullable": true,
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+              },
+              "updatedAtSource": {
+                "nullable": true,
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+              },
+              "category": {
+                "nullable": true,
+                "type": "string"
+              },
+              "summary": {
+                "nullable": true,
+                "type": "string"
+              },
+              "sourcePageUrl": {
+                "nullable": true,
+                "type": "string",
+                "format": "uri"
+              },
+              "bodyText": {
+                "nullable": true,
+                "type": "string"
+              },
+              "extractionMethod": {
+                "nullable": true,
+                "type": "string"
+              },
+              "classifierVersion": {
+                "nullable": true,
+                "type": "string"
+              },
+              "objects": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "kind": {
+                      "type": "string",
+                      "enum": [
+                        "body_html",
+                        "body_markdown",
+                        "media",
+                        "asset",
+                        "raw_page"
+                      ]
+                    },
+                    "sha256": {
+                      "type": "string",
+                      "pattern": "^[a-f0-9]{64}$"
+                    },
+                    "size": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 9007199254740991
+                    },
+                    "contentType": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "string",
+                      "enum": [
+                        "verified",
+                        "linked"
+                      ]
+                    },
+                    "url": {
+                      "type": "string",
+                      "pattern": "^\\/api\\/publications\\/objects\\/.*"
+                    },
+                    "sortOrder": {
+                      "nullable": true,
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 9007199254740991
+                    },
+                    "altText": {
+                      "nullable": true,
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "kind",
+                    "sha256",
+                    "size",
+                    "contentType",
+                    "status",
+                    "url",
+                    "sortOrder",
+                    "altText"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            },
+            "required": [
+              "id",
+              "revisionHash",
+              "observedAt",
+              "title",
+              "author",
+              "publishedAt",
+              "updatedAtSource",
+              "category",
+              "summary",
+              "sourcePageUrl",
+              "bodyText",
+              "extractionMethod",
+              "classifierVersion",
+              "objects"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "id",
+          "canonicalUrl",
+          "publicationType",
+          "source",
+          "revision"
         ],
         "additionalProperties": false
       },
@@ -14784,6 +16492,9 @@
                   "type": "boolean"
                 },
                 "requiresTeam": {
+                  "type": "boolean"
+                },
+                "completionRequired": {
                   "type": "boolean"
                 },
                 "publishedAt": {
@@ -15316,6 +17027,7 @@
                 "title",
                 "isMajor",
                 "requiresTeam",
+                "completionRequired",
                 "publishedAt",
                 "submissionStartAt",
                 "submissionDueAt",
@@ -16523,6 +18235,9 @@
                     "requiresTeam": {
                       "type": "boolean"
                     },
+                    "completionRequired": {
+                      "type": "boolean"
+                    },
                     "publishedAt": {
                       "nullable": true,
                       "type": "string",
@@ -17053,6 +18768,7 @@
                     "title",
                     "isMajor",
                     "requiresTeam",
+                    "completionRequired",
                     "publishedAt",
                     "submissionStartAt",
                     "submissionDueAt",
@@ -18413,706 +20129,6 @@
         ],
         "additionalProperties": false
       },
-      "calendarSubscriptionCreateRequestSchema": {
-        "type": "object",
-        "properties": {
-          "sectionIds": {
-            "maxItems": 500,
-            "type": "array",
-            "items": {
-              "type": "integer",
-              "maximum": 9007199254740991,
-              "minimum": 1
-            }
-          }
-        },
-        "additionalProperties": false
-      },
-      "calendarSubscriptionCreateResponseSchema": {
-        "type": "object",
-        "properties": {
-          "subscription": {
-            "nullable": true,
-            "type": "object",
-            "properties": {
-              "userId": {
-                "type": "string"
-              },
-              "sections": {
-                "type": "array",
-                "items": {
-                  "type": "object",
-                  "properties": {
-                    "id": {
-                      "type": "integer",
-                      "minimum": -9007199254740991,
-                      "maximum": 9007199254740991
-                    },
-                    "jwId": {
-                      "type": "integer",
-                      "minimum": -9007199254740991,
-                      "maximum": 9007199254740991
-                    },
-                    "retiredAt": {
-                      "nullable": true,
-                      "type": "string",
-                      "format": "date-time",
-                      "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
-                    },
-                    "code": {
-                      "type": "string"
-                    },
-                    "bizTypeId": {
-                      "nullable": true,
-                      "type": "integer",
-                      "minimum": -9007199254740991,
-                      "maximum": 9007199254740991
-                    },
-                    "credits": {
-                      "nullable": true,
-                      "type": "number"
-                    },
-                    "period": {
-                      "nullable": true,
-                      "type": "integer",
-                      "minimum": -9007199254740991,
-                      "maximum": 9007199254740991
-                    },
-                    "periodsPerWeek": {
-                      "nullable": true,
-                      "type": "number"
-                    },
-                    "timesPerWeek": {
-                      "nullable": true,
-                      "type": "integer",
-                      "minimum": -9007199254740991,
-                      "maximum": 9007199254740991
-                    },
-                    "stdCount": {
-                      "nullable": true,
-                      "type": "integer",
-                      "minimum": -9007199254740991,
-                      "maximum": 9007199254740991
-                    },
-                    "limitCount": {
-                      "nullable": true,
-                      "type": "integer",
-                      "minimum": -9007199254740991,
-                      "maximum": 9007199254740991
-                    },
-                    "graduateAndPostgraduate": {
-                      "nullable": true,
-                      "type": "boolean"
-                    },
-                    "dateTimePlaceText": {
-                      "nullable": true,
-                      "type": "string"
-                    },
-                    "dateTimePlacePersonText": {
-                      "nullable": true
-                    },
-                    "actualPeriods": {
-                      "nullable": true,
-                      "type": "number"
-                    },
-                    "theoryPeriods": {
-                      "nullable": true,
-                      "type": "number"
-                    },
-                    "practicePeriods": {
-                      "nullable": true,
-                      "type": "number"
-                    },
-                    "experimentPeriods": {
-                      "nullable": true,
-                      "type": "number"
-                    },
-                    "machinePeriods": {
-                      "nullable": true,
-                      "type": "number"
-                    },
-                    "designPeriods": {
-                      "nullable": true,
-                      "type": "number"
-                    },
-                    "testPeriods": {
-                      "nullable": true,
-                      "type": "number"
-                    },
-                    "scheduleState": {
-                      "nullable": true,
-                      "type": "string"
-                    },
-                    "suggestScheduleWeeks": {
-                      "nullable": true
-                    },
-                    "suggestScheduleWeekInfo": {
-                      "nullable": true,
-                      "type": "string"
-                    },
-                    "scheduleJsonParams": {
-                      "nullable": true
-                    },
-                    "selectedStdCount": {
-                      "nullable": true,
-                      "type": "integer",
-                      "minimum": -9007199254740991,
-                      "maximum": 9007199254740991
-                    },
-                    "remark": {
-                      "nullable": true,
-                      "type": "string"
-                    },
-                    "scheduleRemark": {
-                      "nullable": true,
-                      "type": "string"
-                    },
-                    "courseId": {
-                      "type": "integer",
-                      "minimum": -9007199254740991,
-                      "maximum": 9007199254740991
-                    },
-                    "semesterId": {
-                      "nullable": true,
-                      "type": "integer",
-                      "minimum": -9007199254740991,
-                      "maximum": 9007199254740991
-                    },
-                    "campusId": {
-                      "nullable": true,
-                      "type": "integer",
-                      "minimum": -9007199254740991,
-                      "maximum": 9007199254740991
-                    },
-                    "examModeId": {
-                      "nullable": true,
-                      "type": "integer",
-                      "minimum": -9007199254740991,
-                      "maximum": 9007199254740991
-                    },
-                    "openDepartmentId": {
-                      "nullable": true,
-                      "type": "integer",
-                      "minimum": -9007199254740991,
-                      "maximum": 9007199254740991
-                    },
-                    "teachLanguageId": {
-                      "nullable": true,
-                      "type": "integer",
-                      "minimum": -9007199254740991,
-                      "maximum": 9007199254740991
-                    },
-                    "roomTypeId": {
-                      "nullable": true,
-                      "type": "integer",
-                      "minimum": -9007199254740991,
-                      "maximum": 9007199254740991
-                    },
-                    "course": {
-                      "type": "object",
-                      "properties": {
-                        "id": {
-                          "type": "integer",
-                          "minimum": -9007199254740991,
-                          "maximum": 9007199254740991
-                        },
-                        "jwId": {
-                          "type": "integer",
-                          "minimum": -9007199254740991,
-                          "maximum": 9007199254740991
-                        },
-                        "code": {
-                          "type": "string"
-                        },
-                        "nameCn": {
-                          "type": "string"
-                        },
-                        "nameEn": {
-                          "nullable": true,
-                          "type": "string"
-                        },
-                        "categoryId": {
-                          "nullable": true,
-                          "type": "integer",
-                          "minimum": -9007199254740991,
-                          "maximum": 9007199254740991
-                        },
-                        "classTypeId": {
-                          "nullable": true,
-                          "type": "integer",
-                          "minimum": -9007199254740991,
-                          "maximum": 9007199254740991
-                        },
-                        "classifyId": {
-                          "nullable": true,
-                          "type": "integer",
-                          "minimum": -9007199254740991,
-                          "maximum": 9007199254740991
-                        },
-                        "educationLevelId": {
-                          "nullable": true,
-                          "type": "integer",
-                          "minimum": -9007199254740991,
-                          "maximum": 9007199254740991
-                        },
-                        "gradationId": {
-                          "nullable": true,
-                          "type": "integer",
-                          "minimum": -9007199254740991,
-                          "maximum": 9007199254740991
-                        },
-                        "typeId": {
-                          "nullable": true,
-                          "type": "integer",
-                          "minimum": -9007199254740991,
-                          "maximum": 9007199254740991
-                        },
-                        "namePrimary": {
-                          "type": "string"
-                        },
-                        "nameSecondary": {
-                          "nullable": true,
-                          "type": "string"
-                        },
-                        "category": {
-                          "nullable": true,
-                          "type": "object",
-                          "properties": {
-                            "id": {
-                              "type": "integer",
-                              "minimum": -9007199254740991,
-                              "maximum": 9007199254740991
-                            },
-                            "nameCn": {
-                              "type": "string"
-                            },
-                            "nameEn": {
-                              "nullable": true,
-                              "type": "string"
-                            },
-                            "namePrimary": {
-                              "type": "string"
-                            },
-                            "nameSecondary": {
-                              "nullable": true,
-                              "type": "string"
-                            }
-                          },
-                          "required": [
-                            "id",
-                            "nameCn",
-                            "nameEn",
-                            "namePrimary",
-                            "nameSecondary"
-                          ],
-                          "additionalProperties": false
-                        },
-                        "classType": {
-                          "nullable": true,
-                          "type": "object",
-                          "properties": {
-                            "id": {
-                              "type": "integer",
-                              "minimum": -9007199254740991,
-                              "maximum": 9007199254740991
-                            },
-                            "nameCn": {
-                              "type": "string"
-                            },
-                            "nameEn": {
-                              "nullable": true,
-                              "type": "string"
-                            },
-                            "namePrimary": {
-                              "type": "string"
-                            },
-                            "nameSecondary": {
-                              "nullable": true,
-                              "type": "string"
-                            }
-                          },
-                          "required": [
-                            "id",
-                            "nameCn",
-                            "nameEn",
-                            "namePrimary",
-                            "nameSecondary"
-                          ],
-                          "additionalProperties": false
-                        },
-                        "classify": {
-                          "nullable": true,
-                          "type": "object",
-                          "properties": {
-                            "id": {
-                              "type": "integer",
-                              "minimum": -9007199254740991,
-                              "maximum": 9007199254740991
-                            },
-                            "nameCn": {
-                              "type": "string"
-                            },
-                            "nameEn": {
-                              "nullable": true,
-                              "type": "string"
-                            },
-                            "namePrimary": {
-                              "type": "string"
-                            },
-                            "nameSecondary": {
-                              "nullable": true,
-                              "type": "string"
-                            }
-                          },
-                          "required": [
-                            "id",
-                            "nameCn",
-                            "nameEn",
-                            "namePrimary",
-                            "nameSecondary"
-                          ],
-                          "additionalProperties": false
-                        },
-                        "educationLevel": {
-                          "nullable": true,
-                          "type": "object",
-                          "properties": {
-                            "id": {
-                              "type": "integer",
-                              "minimum": -9007199254740991,
-                              "maximum": 9007199254740991
-                            },
-                            "nameCn": {
-                              "type": "string"
-                            },
-                            "nameEn": {
-                              "nullable": true,
-                              "type": "string"
-                            },
-                            "namePrimary": {
-                              "type": "string"
-                            },
-                            "nameSecondary": {
-                              "nullable": true,
-                              "type": "string"
-                            }
-                          },
-                          "required": [
-                            "id",
-                            "nameCn",
-                            "nameEn",
-                            "namePrimary",
-                            "nameSecondary"
-                          ],
-                          "additionalProperties": false
-                        },
-                        "gradation": {
-                          "nullable": true,
-                          "type": "object",
-                          "properties": {
-                            "id": {
-                              "type": "integer",
-                              "minimum": -9007199254740991,
-                              "maximum": 9007199254740991
-                            },
-                            "nameCn": {
-                              "type": "string"
-                            },
-                            "nameEn": {
-                              "nullable": true,
-                              "type": "string"
-                            },
-                            "namePrimary": {
-                              "type": "string"
-                            },
-                            "nameSecondary": {
-                              "nullable": true,
-                              "type": "string"
-                            }
-                          },
-                          "required": [
-                            "id",
-                            "nameCn",
-                            "nameEn",
-                            "namePrimary",
-                            "nameSecondary"
-                          ],
-                          "additionalProperties": false
-                        },
-                        "type": {
-                          "nullable": true,
-                          "type": "object",
-                          "properties": {
-                            "id": {
-                              "type": "integer",
-                              "minimum": -9007199254740991,
-                              "maximum": 9007199254740991
-                            },
-                            "nameCn": {
-                              "type": "string"
-                            },
-                            "nameEn": {
-                              "nullable": true,
-                              "type": "string"
-                            },
-                            "namePrimary": {
-                              "type": "string"
-                            },
-                            "nameSecondary": {
-                              "nullable": true,
-                              "type": "string"
-                            }
-                          },
-                          "required": [
-                            "id",
-                            "nameCn",
-                            "nameEn",
-                            "namePrimary",
-                            "nameSecondary"
-                          ],
-                          "additionalProperties": false
-                        }
-                      },
-                      "required": [
-                        "id",
-                        "jwId",
-                        "code",
-                        "nameCn",
-                        "nameEn",
-                        "categoryId",
-                        "classTypeId",
-                        "classifyId",
-                        "educationLevelId",
-                        "gradationId",
-                        "typeId",
-                        "namePrimary",
-                        "nameSecondary",
-                        "category",
-                        "classType",
-                        "classify",
-                        "educationLevel",
-                        "gradation",
-                        "type"
-                      ],
-                      "additionalProperties": false
-                    },
-                    "semester": {
-                      "nullable": true,
-                      "allOf": [
-                        {
-                          "$ref": "#/components/schemas/semesterSchema"
-                        }
-                      ]
-                    },
-                    "campus": {
-                      "nullable": true,
-                      "type": "object",
-                      "properties": {
-                        "id": {
-                          "type": "integer",
-                          "minimum": -9007199254740991,
-                          "maximum": 9007199254740991
-                        },
-                        "jwId": {
-                          "type": "integer",
-                          "minimum": -9007199254740991,
-                          "maximum": 9007199254740991
-                        },
-                        "nameCn": {
-                          "type": "string"
-                        },
-                        "nameEn": {
-                          "nullable": true,
-                          "type": "string"
-                        },
-                        "code": {
-                          "nullable": true,
-                          "type": "string"
-                        },
-                        "namePrimary": {
-                          "type": "string"
-                        },
-                        "nameSecondary": {
-                          "nullable": true,
-                          "type": "string"
-                        }
-                      },
-                      "required": [
-                        "id",
-                        "jwId",
-                        "nameCn",
-                        "nameEn",
-                        "code",
-                        "namePrimary",
-                        "nameSecondary"
-                      ],
-                      "additionalProperties": false
-                    },
-                    "openDepartment": {
-                      "nullable": true,
-                      "type": "object",
-                      "properties": {
-                        "id": {
-                          "type": "integer",
-                          "minimum": -9007199254740991,
-                          "maximum": 9007199254740991
-                        },
-                        "jwId": {
-                          "nullable": true,
-                          "type": "integer",
-                          "minimum": -9007199254740991,
-                          "maximum": 9007199254740991
-                        },
-                        "code": {
-                          "type": "string"
-                        },
-                        "nameCn": {
-                          "type": "string"
-                        },
-                        "nameEn": {
-                          "nullable": true,
-                          "type": "string"
-                        },
-                        "isCollege": {
-                          "nullable": true,
-                          "type": "boolean"
-                        },
-                        "namePrimary": {
-                          "type": "string"
-                        },
-                        "nameSecondary": {
-                          "nullable": true,
-                          "type": "string"
-                        }
-                      },
-                      "required": [
-                        "id",
-                        "jwId",
-                        "code",
-                        "nameCn",
-                        "nameEn",
-                        "isCollege",
-                        "namePrimary",
-                        "nameSecondary"
-                      ],
-                      "additionalProperties": false
-                    },
-                    "teachers": {
-                      "type": "array",
-                      "items": {
-                        "type": "object",
-                        "properties": {
-                          "id": {
-                            "type": "integer",
-                            "minimum": -9007199254740991,
-                            "maximum": 9007199254740991
-                          },
-                          "jwId": {
-                            "type": "integer",
-                            "minimum": -9007199254740991,
-                            "maximum": 9007199254740991
-                          },
-                          "personId": {
-                            "nullable": true,
-                            "type": "integer",
-                            "minimum": -9007199254740991,
-                            "maximum": 9007199254740991
-                          },
-                          "code": {
-                            "nullable": true,
-                            "type": "string"
-                          },
-                          "nameCn": {
-                            "type": "string"
-                          },
-                          "nameEn": {
-                            "nullable": true,
-                            "type": "string"
-                          },
-                          "namePrimary": {
-                            "type": "string"
-                          },
-                          "nameSecondary": {
-                            "nullable": true,
-                            "type": "string"
-                          }
-                        },
-                        "required": [
-                          "id",
-                          "jwId",
-                          "personId",
-                          "code",
-                          "nameCn",
-                          "nameEn",
-                          "namePrimary",
-                          "nameSecondary"
-                        ],
-                        "additionalProperties": false
-                      }
-                    }
-                  },
-                  "required": [
-                    "id",
-                    "jwId",
-                    "retiredAt",
-                    "code",
-                    "bizTypeId",
-                    "credits",
-                    "period",
-                    "periodsPerWeek",
-                    "timesPerWeek",
-                    "stdCount",
-                    "limitCount",
-                    "graduateAndPostgraduate",
-                    "dateTimePlaceText",
-                    "dateTimePlacePersonText",
-                    "actualPeriods",
-                    "theoryPeriods",
-                    "practicePeriods",
-                    "experimentPeriods",
-                    "machinePeriods",
-                    "designPeriods",
-                    "testPeriods",
-                    "scheduleState",
-                    "suggestScheduleWeeks",
-                    "suggestScheduleWeekInfo",
-                    "scheduleJsonParams",
-                    "selectedStdCount",
-                    "remark",
-                    "scheduleRemark",
-                    "courseId",
-                    "semesterId",
-                    "campusId",
-                    "examModeId",
-                    "openDepartmentId",
-                    "teachLanguageId",
-                    "roomTypeId",
-                    "course",
-                    "semester",
-                    "campus",
-                    "openDepartment",
-                    "teachers"
-                  ],
-                  "additionalProperties": false
-                }
-              },
-              "note": {
-                "type": "string"
-              }
-            },
-            "required": [
-              "userId",
-              "sections",
-              "note"
-            ],
-            "additionalProperties": false
-          }
-        },
-        "required": [
-          "subscription"
-        ],
-        "additionalProperties": false
-      },
       "calendarSubscriptionAppendRequestSchema": {
         "type": "object",
         "properties": {
@@ -19752,6 +20768,14 @@
                         ],
                         "additionalProperties": false
                       }
+                    },
+                    "kind": {
+                      "type": "string",
+                      "enum": [
+                        "regular",
+                        "auditor",
+                        "teaching_assistant"
+                      ]
                     }
                   },
                   "required": [
@@ -19794,7 +20818,8 @@
                     "semester",
                     "campus",
                     "openDepartment",
-                    "teachers"
+                    "teachers",
+                    "kind"
                   ],
                   "additionalProperties": false
                 }
@@ -20467,6 +21492,14 @@
                         ],
                         "additionalProperties": false
                       }
+                    },
+                    "kind": {
+                      "type": "string",
+                      "enum": [
+                        "regular",
+                        "auditor",
+                        "teaching_assistant"
+                      ]
                     }
                   },
                   "required": [
@@ -20509,7 +21542,8 @@
                     "semester",
                     "campus",
                     "openDepartment",
-                    "teachers"
+                    "teachers",
+                    "kind"
                   ],
                   "additionalProperties": false
                 }
@@ -21616,7 +22650,8 @@
             "type": "string",
             "enum": [
               "weekday",
-              "weekend"
+              "saturday",
+              "sunday"
             ]
           },
           "totalRoutes": {
@@ -21777,7 +22812,8 @@
                   "type": "string",
                   "enum": [
                     "weekday",
-                    "weekend"
+                    "saturday",
+                    "sunday"
                   ]
                 },
                 "status": {
@@ -21957,7 +22993,8 @@
                 "type": "string",
                 "enum": [
                   "weekday",
-                  "weekend"
+                  "saturday",
+                  "sunday"
                 ]
               },
               "status": {
@@ -22207,7 +23244,12 @@
                   "minimum": 0,
                   "maximum": 9007199254740991
                 },
-                "weekendTrips": {
+                "saturdayTrips": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                },
+                "sundayTrips": {
                   "type": "integer",
                   "minimum": 0,
                   "maximum": 9007199254740991
@@ -22281,7 +23323,8 @@
                 "destinationCampus",
                 "stopCount",
                 "weekdayTrips",
-                "weekendTrips",
+                "saturdayTrips",
+                "sundayTrips",
                 "stops"
               ],
               "additionalProperties": false
@@ -25773,6 +26816,110 @@
         ],
         "additionalProperties": false
       },
+      "youngEventDetailSchema": {
+        "type": "object",
+        "properties": {
+          "youngId": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "category": {
+            "nullable": true,
+            "type": "string"
+          },
+          "department": {
+            "nullable": true,
+            "type": "string"
+          },
+          "organizer": {
+            "nullable": true,
+            "type": "string"
+          },
+          "status": {
+            "nullable": true,
+            "type": "string"
+          },
+          "registrationStatus": {
+            "nullable": true,
+            "type": "string"
+          },
+          "location": {
+            "nullable": true,
+            "type": "string"
+          },
+          "imageUrl": {
+            "nullable": true,
+            "type": "string"
+          },
+          "hours": {
+            "nullable": true,
+            "type": "number"
+          },
+          "capacity": {
+            "nullable": true,
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "appliedCount": {
+            "nullable": true,
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "startAt": {
+            "nullable": true,
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+          },
+          "endAt": {
+            "nullable": true,
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+          },
+          "applyStartAt": {
+            "nullable": true,
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+          },
+          "applyEndAt": {
+            "nullable": true,
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+          },
+          "isActive": {
+            "type": "boolean"
+          },
+          "rawJson": {}
+        },
+        "required": [
+          "youngId",
+          "name",
+          "category",
+          "department",
+          "organizer",
+          "status",
+          "registrationStatus",
+          "location",
+          "imageUrl",
+          "hours",
+          "capacity",
+          "appliedCount",
+          "startAt",
+          "endAt",
+          "applyStartAt",
+          "applyEndAt",
+          "isActive",
+          "rawJson"
+        ],
+        "additionalProperties": false
+      },
       "commentThreadResponseSchema": {
         "type": "object",
         "properties": {
@@ -26137,6 +27284,9 @@
               "requiresTeam": {
                 "type": "boolean"
               },
+              "completionRequired": {
+                "type": "boolean"
+              },
               "publishedAt": {
                 "nullable": true,
                 "type": "string",
@@ -26667,6 +27817,7 @@
               "title",
               "isMajor",
               "requiresTeam",
+              "completionRequired",
               "publishedAt",
               "submissionStartAt",
               "submissionDueAt",
@@ -26859,6 +28010,9 @@
               "requiresTeam": {
                 "type": "boolean"
               },
+              "completionRequired": {
+                "type": "boolean"
+              },
               "publishedAt": {
                 "nullable": true,
                 "type": "string",
@@ -27389,6 +28543,7 @@
               "title",
               "isMajor",
               "requiresTeam",
+              "completionRequired",
               "publishedAt",
               "submissionStartAt",
               "submissionDueAt",
@@ -27618,6 +28773,399 @@
         ],
         "additionalProperties": false
       },
+      "publicationIngestionBatchRequestSchema": {
+        "type": "object",
+        "properties": {
+          "protocolVersion": {
+            "type": "string",
+            "enum": [
+              "1"
+            ]
+          },
+          "producerVersion": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "clientRunId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "batchId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "observedAt": {
+            "type": "string",
+            "minLength": 1
+          },
+          "sources": {
+            "minItems": 1,
+            "maxItems": 500,
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 64,
+                  "pattern": "^[a-z0-9][a-z0-9._-]*$"
+                },
+                "name": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 200
+                },
+                "organizationLevel": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 80
+                },
+                "allowedHosts": {
+                  "maxItems": 100,
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 253
+                  }
+                },
+                "blockedHosts": {
+                  "maxItems": 100,
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 253
+                  }
+                },
+                "seedUrls": {
+                  "maxItems": 100,
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "maxLength": 2048,
+                    "format": "uri"
+                  }
+                },
+                "aliases": {
+                  "maxItems": 100,
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 200
+                  }
+                },
+                "discoveryOnly": {
+                  "type": "boolean"
+                },
+                "maxImagesPerPage": {
+                  "nullable": true,
+                  "type": "integer",
+                  "exclusiveMinimum": true,
+                  "maximum": 1000
+                }
+              },
+              "required": [
+                "id",
+                "name"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "items": {
+            "minItems": 1,
+            "maxItems": 100,
+            "type": "array",
+            "items": {
+              "anyOf": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "sourceId": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 64,
+                      "pattern": "^[a-z0-9][a-z0-9._-]*$"
+                    },
+                    "canonicalUrl": {
+                      "type": "string",
+                      "maxLength": 2048,
+                      "format": "uri"
+                    },
+                    "revisionHash": {
+                      "type": "string",
+                      "pattern": "^[a-f0-9]{64}$"
+                    },
+                    "observedAt": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "tombstone": {
+                      "default": false,
+                      "type": "boolean",
+                      "enum": [
+                        false
+                      ]
+                    },
+                    "publicationType": {
+                      "type": "string",
+                      "enum": [
+                        "news",
+                        "notice",
+                        "other"
+                      ]
+                    },
+                    "title": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 1000
+                    },
+                    "author": {
+                      "nullable": true,
+                      "type": "string",
+                      "maxLength": 500
+                    },
+                    "publishedAt": {
+                      "nullable": true,
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "updatedAtSource": {
+                      "nullable": true,
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "category": {
+                      "nullable": true,
+                      "type": "string",
+                      "maxLength": 500
+                    },
+                    "summary": {
+                      "nullable": true,
+                      "type": "string",
+                      "maxLength": 20000
+                    },
+                    "bodyText": {
+                      "nullable": true,
+                      "type": "string",
+                      "maxLength": 5000000
+                    },
+                    "sourcePageUrl": {
+                      "nullable": true,
+                      "type": "string",
+                      "maxLength": 2048,
+                      "format": "uri"
+                    },
+                    "extractionMethod": {
+                      "nullable": true,
+                      "type": "string",
+                      "maxLength": 200
+                    },
+                    "classifierVersion": {
+                      "nullable": true,
+                      "type": "string",
+                      "maxLength": 200
+                    },
+                    "rawMetadata": {
+                      "nullable": true,
+                      "type": "object",
+                      "additionalProperties": {}
+                    },
+                    "objects": {
+                      "default": [],
+                      "maxItems": 100,
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "kind": {
+                            "type": "string",
+                            "enum": [
+                              "body_html",
+                              "body_markdown",
+                              "media",
+                              "asset",
+                              "raw_page"
+                            ]
+                          },
+                          "sha256": {
+                            "type": "string",
+                            "pattern": "^[a-f0-9]{64}$"
+                          },
+                          "size": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 33554432
+                          },
+                          "contentType": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 200,
+                            "pattern": "^[^\\s/]+\\/[A-Za-z0-9!#$&^_.+-]+$"
+                          },
+                          "sortOrder": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 10000
+                          },
+                          "altText": {
+                            "type": "string",
+                            "maxLength": 1000
+                          }
+                        },
+                        "required": [
+                          "kind",
+                          "sha256",
+                          "size",
+                          "contentType"
+                        ],
+                        "additionalProperties": false
+                      }
+                    }
+                  },
+                  "required": [
+                    "sourceId",
+                    "canonicalUrl",
+                    "revisionHash",
+                    "observedAt",
+                    "tombstone",
+                    "publicationType",
+                    "title",
+                    "objects"
+                  ],
+                  "additionalProperties": false
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "sourceId": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 64,
+                      "pattern": "^[a-z0-9][a-z0-9._-]*$"
+                    },
+                    "canonicalUrl": {
+                      "type": "string",
+                      "maxLength": 2048,
+                      "format": "uri"
+                    },
+                    "revisionHash": {
+                      "type": "string",
+                      "pattern": "^[a-f0-9]{64}$"
+                    },
+                    "observedAt": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "tombstone": {
+                      "type": "boolean",
+                      "enum": [
+                        true
+                      ]
+                    }
+                  },
+                  "required": [
+                    "sourceId",
+                    "canonicalUrl",
+                    "revisionHash",
+                    "observedAt",
+                    "tombstone"
+                  ],
+                  "additionalProperties": false
+                }
+              ]
+            }
+          }
+        },
+        "required": [
+          "protocolVersion",
+          "producerVersion",
+          "clientRunId",
+          "batchId",
+          "observedAt",
+          "sources",
+          "items"
+        ],
+        "additionalProperties": false
+      },
+      "publicationIngestionBatchResponseSchema": {
+        "type": "object",
+        "properties": {
+          "batchId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "clientRunId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "payloadDigest": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "results": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "canonicalUrl": {
+                  "type": "string",
+                  "format": "uri"
+                },
+                "sourceId": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "revisionHash": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                },
+                "status": {
+                  "type": "string",
+                  "enum": [
+                    "created",
+                    "updated",
+                    "unchanged",
+                    "rejected"
+                  ]
+                },
+                "publicationId": {
+                  "nullable": true,
+                  "type": "string"
+                },
+                "revisionId": {
+                  "nullable": true,
+                  "type": "string"
+                },
+                "error": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "canonicalUrl",
+                "sourceId",
+                "revisionHash",
+                "status",
+                "publicationId",
+                "revisionId"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "batchId",
+          "clientRunId",
+          "payloadDigest",
+          "results"
+        ],
+        "additionalProperties": false
+      },
       "homeworkCompletionBatchRequestSchema": {
         "type": "object",
         "properties": {
@@ -27775,6 +29323,46 @@
         ],
         "additionalProperties": false
       },
+      "subscriptionKindUpdateRequestSchema": {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "regular",
+              "auditor",
+              "teaching_assistant"
+            ]
+          }
+        },
+        "required": [
+          "kind"
+        ],
+        "additionalProperties": false
+      },
+      "subscriptionKindUpdateResponseSchema": {
+        "type": "object",
+        "properties": {
+          "sectionJwId": {
+            "type": "integer",
+            "exclusiveMinimum": true,
+            "maximum": 9007199254740991
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "regular",
+              "auditor",
+              "teaching_assistant"
+            ]
+          }
+        },
+        "required": [
+          "sectionJwId",
+          "kind"
+        ],
+        "additionalProperties": false
+      },
       "calendarSubscriptionBatchRequestSchema": {
         "type": "object",
         "properties": {
@@ -27810,8 +29398,7 @@
             "type": "string",
             "enum": [
               "add",
-              "remove",
-              "set"
+              "remove"
             ]
           }
         },
@@ -28552,8 +30139,7 @@
             "type": "string",
             "enum": [
               "add",
-              "remove",
-              "set"
+              "remove"
             ]
           },
           "addedCount": {
@@ -29189,6 +30775,14 @@
                         ],
                         "additionalProperties": false
                       }
+                    },
+                    "kind": {
+                      "type": "string",
+                      "enum": [
+                        "regular",
+                        "auditor",
+                        "teaching_assistant"
+                      ]
                     }
                   },
                   "required": [
@@ -29231,7 +30825,8 @@
                     "semester",
                     "campus",
                     "openDepartment",
-                    "teachers"
+                    "teachers",
+                    "kind"
                   ],
                   "additionalProperties": false
                 }
@@ -29886,6 +31481,14 @@
                         ],
                         "additionalProperties": false
                       }
+                    },
+                    "kind": {
+                      "type": "string",
+                      "enum": [
+                        "regular",
+                        "auditor",
+                        "teaching_assistant"
+                      ]
                     }
                   },
                   "required": [
@@ -29928,7 +31531,8 @@
                     "semester",
                     "campus",
                     "openDepartment",
-                    "teachers"
+                    "teachers",
+                    "kind"
                   ],
                   "additionalProperties": false
                 }
@@ -32613,6 +34217,14 @@
                         ],
                         "additionalProperties": false
                       }
+                    },
+                    "kind": {
+                      "type": "string",
+                      "enum": [
+                        "regular",
+                        "auditor",
+                        "teaching_assistant"
+                      ]
                     }
                   },
                   "required": [
@@ -32655,7 +34267,8 @@
                     "semester",
                     "campus",
                     "openDepartment",
-                    "teachers"
+                    "teachers",
+                    "kind"
                   ],
                   "additionalProperties": false
                 }
@@ -33979,6 +35592,47 @@
         ],
         "additionalProperties": false
       },
+      "roomMapResponseSchema": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "building": {
+            "nullable": true,
+            "type": "string"
+          },
+          "floor": {
+            "nullable": true,
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "highlighted",
+              "overview",
+              "unavailable"
+            ]
+          },
+          "imageUrl": {
+            "nullable": true,
+            "type": "string"
+          },
+          "sourceImageUrl": {
+            "nullable": true,
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "building",
+          "floor",
+          "status",
+          "imageUrl",
+          "sourceImageUrl"
+        ],
+        "additionalProperties": false
+      },
       "commentReactionRequestSchema": {
         "type": "object",
         "properties": {
@@ -34073,6 +35727,121 @@
         ],
         "additionalProperties": false
       },
+      "publicationObjectPlanRequestSchema": {
+        "type": "object",
+        "properties": {
+          "batchId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "objects": {
+            "minItems": 1,
+            "maxItems": 500,
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "kind": {
+                  "type": "string",
+                  "enum": [
+                    "body_html",
+                    "body_markdown",
+                    "media",
+                    "asset",
+                    "raw_page"
+                  ]
+                },
+                "sha256": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                }
+              },
+              "required": [
+                "kind",
+                "sha256"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "batchId",
+          "objects"
+        ],
+        "additionalProperties": false
+      },
+      "publicationObjectPlanResponseSchema": {
+        "type": "object",
+        "properties": {
+          "batchId": {
+            "type": "string"
+          },
+          "objects": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "kind": {
+                  "type": "string",
+                  "enum": [
+                    "body_html",
+                    "body_markdown",
+                    "media",
+                    "asset",
+                    "raw_page"
+                  ]
+                },
+                "sha256": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                },
+                "r2Key": {
+                  "type": "string"
+                },
+                "status": {
+                  "type": "string",
+                  "enum": [
+                    "already_present",
+                    "upload_required"
+                  ]
+                },
+                "uploadUrl": {
+                  "nullable": true,
+                  "type": "string",
+                  "format": "uri"
+                },
+                "requiredHeaders": {
+                  "type": "object",
+                  "properties": {
+                    "Content-Type": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "Content-Type"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "required": [
+                "kind",
+                "sha256",
+                "r2Key",
+                "status",
+                "uploadUrl",
+                "requiredHeaders"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "batchId",
+          "objects"
+        ],
+        "additionalProperties": false
+      },
       "homeworkCompletionRequestSchema": {
         "type": "object",
         "properties": {
@@ -34103,6 +35872,41 @@
           "completedAt"
         ],
         "additionalProperties": false
+      },
+      "publicationObjectUploadResponseSchema": {
+        "type": "object",
+        "properties": {
+          "batchId": {
+            "type": "string"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "body_html",
+              "body_markdown",
+              "media",
+              "asset",
+              "raw_page"
+            ]
+          },
+          "sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "linked"
+            ]
+          }
+        },
+        "required": [
+          "batchId",
+          "kind",
+          "sha256",
+          "status"
+        ],
+        "additionalProperties": false
       }
     },
     "securitySchemes": {
@@ -34129,6 +35933,12 @@
         "in": "query",
         "name": "token",
         "description": "Calendar feed token accepted by the personal iCal endpoint. Token-bearing feed URLs may also embed the token in the userId:token path segment."
+      },
+      "publicationIngestionSecret": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-Publication-Ingestion-Secret",
+        "description": "Dedicated Worker secret for the publication crawler ingestion API. It is separate from user OAuth and WEBHOOK_SECRET credentials."
       }
     }
   }
