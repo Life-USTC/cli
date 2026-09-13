@@ -69,13 +69,13 @@ func TestResolveLifeSemesterReturnsFalseWithoutMatch(t *testing.T) {
 	}
 }
 
-func TestNewSemesterScopedSubscriptionSetBody(t *testing.T) {
+func TestNewSemesterScopedSubscriptionAddBody(t *testing.T) {
 	t.Parallel()
 
 	sectionIDs := []int{11, 12}
-	body := newSemesterScopedSubscriptionSetBody(sectionIDs, "77")
-	if body.Action != openapi.CalendarSubscriptionBatchRequestSchemaActionSet {
-		t.Fatalf("body.Action = %q, want set", body.Action)
+	body := newSemesterScopedSubscriptionAddBody(sectionIDs, "77")
+	if body.Action != openapi.CalendarSubscriptionBatchRequestSchemaActionAdd {
+		t.Fatalf("body.Action = %q, want add", body.Action)
 	}
 	if body.SectionIds == nil || !slices.Equal(*body.SectionIds, sectionIDs) {
 		t.Fatalf("body.SectionIds = %v, want %v", body.SectionIds, sectionIDs)

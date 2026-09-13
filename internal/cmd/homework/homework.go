@@ -443,6 +443,12 @@ func annotateHomeworkRows(rows []map[string]any) {
 		if hasDue {
 			dueFmt = due.Format("2006-01-02 15:04")
 		}
+		if !homeworkCompletionRequired(row) {
+			row["_done"] = "无需完成"
+			row["_due"] = dueFmt
+			row["_timeLeft"] = color.New(color.Faint).Sprint("-")
+			continue
+		}
 
 		doneStr := color.New(color.Faint).Sprint("✗")
 		if completed {
@@ -482,6 +488,27 @@ func homeworkCompleted(row map[string]any) bool {
 	return completed
 }
 
+func homeworkCompletionRequired(row map[string]any) bool {
+	v, ok := row["completionRequired"].(bool)
+	return !ok || v
+}
+
+func homeworkPending(row map[string]any) bool {
+	if homeworkCompleted(row) {
+		return false
+	}
+	if homeworkCompletionRequired(row) {
+		return true
+	}
+
+	dueRaw, _ := row["submissionDueAt"].(string)
+	if dueRaw == "" {
+		return true
+	}
+	due, ok := timeutil.ParseAPI(dueRaw)
+	return !ok || due.After(time.Now())
+}
+
 func filterHomeworkRows(rows []map[string]any, opts myHomeworkListOpts) ([]map[string]any, error) {
 	var beforeTime, afterTime *time.Time
 	if opts.before != "" {
@@ -509,7 +536,7 @@ func filterHomeworkRows(rows []map[string]any, opts myHomeworkListOpts) ([]map[s
 		if opts.done && !completed {
 			continue
 		}
-		if opts.pending && completed {
+		if opts.pending && !homeworkPending(row) {
 			continue
 		}
 		if beforeTime != nil || afterTime != nil {

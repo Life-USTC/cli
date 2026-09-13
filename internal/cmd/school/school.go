@@ -51,11 +51,11 @@ func newMatchSectionCodesBody(codes []string, semesterID string) openapi.MatchSe
 	}
 }
 
-func newSemesterScopedSubscriptionSetBody(sectionIDs []int, semesterID string) openapi.BatchUpdateCalendarSubscriptionJSONRequestBody {
+func newSemesterScopedSubscriptionAddBody(sectionIDs []int, semesterID string) openapi.BatchUpdateCalendarSubscriptionJSONRequestBody {
 	semesterIDUnion := openapi.CalendarSubscriptionBatchRequestSchema_SemesterId{}
 	_ = semesterIDUnion.FromCalendarSubscriptionBatchRequestSchemaSemesterId0(semesterID)
 	return openapi.BatchUpdateCalendarSubscriptionJSONRequestBody{
-		Action:     openapi.CalendarSubscriptionBatchRequestSchemaActionSet,
+		Action:     openapi.CalendarSubscriptionBatchRequestSchemaActionAdd,
 		SectionIds: &sectionIDs,
 		SemesterId: &semesterIDUnion,
 	}
@@ -572,7 +572,7 @@ func newCmdSchoolSync() *cobra.Command {
 					if len(semesterSectionIDs) == 0 {
 						continue
 					}
-					subscribeRaw, err := api.ParseResponseRaw(apiClient.BatchUpdateCalendarSubscription(cmd.Context(), newSemesterScopedSubscriptionSetBody(semesterSectionIDs, lifeSemesterID)))
+					subscribeRaw, err := api.ParseResponseRaw(apiClient.BatchUpdateCalendarSubscription(cmd.Context(), newSemesterScopedSubscriptionAddBody(semesterSectionIDs, lifeSemesterID)))
 					if err != nil {
 						return err
 					}
