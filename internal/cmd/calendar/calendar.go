@@ -32,7 +32,6 @@ func NewCmdSubscription() *cobra.Command {
 	cmd.AddCommand(preview)
 	cmd.AddCommand(newCmdAdd())
 	cmd.AddCommand(newCmdRemove())
-	cmd.AddCommand(newCmdSet())
 	cmd.AddCommand(importCmd)
 	return cmd
 }
@@ -110,23 +109,6 @@ func newCmdGet() *cobra.Command {
 			return runCalendarGet(cmd)
 		},
 	}
-}
-
-func newCmdSet() *cobra.Command {
-	var semesterID string
-	cmd := &cobra.Command{
-		Use:   "set <section-id-or-code>...",
-		Short: "Replace calendar section subscriptions",
-		Args:  cobra.MinimumNArgs(1),
-		RunE: func(cmd *cobra.Command, args []string) error {
-			if strings.TrimSpace(semesterID) == "" {
-				return fmt.Errorf("--semester-id is required for calendar set")
-			}
-			return runCalendarBatch(cmd, args, openapi.CalendarSubscriptionBatchRequestSchemaActionSet, semesterID)
-		},
-	}
-	cmd.Flags().StringVar(&semesterID, "semester-id", "", "Semester ID whose subscriptions will be replaced")
-	return cmd
 }
 
 func newCmdAdd() *cobra.Command {
