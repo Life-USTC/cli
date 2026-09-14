@@ -17,7 +17,9 @@ func NewCmdSubscription() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "subscription [command]",
 		Short: "Manage section subscriptions",
-		Args:  cobra.NoArgs,
+		Long: `Manage your section subscriptions. The kind command accepts an external
+section JW ID; add and remove accept section database IDs or course codes.`,
+		Args: cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return runCalendarGet(cmd)
 		},
@@ -33,6 +35,7 @@ func NewCmdSubscription() *cobra.Command {
 	cmd.AddCommand(newCmdAdd())
 	cmd.AddCommand(newCmdRemove())
 	cmd.AddCommand(importCmd)
+	cmd.AddCommand(newCmdKind())
 	return cmd
 }
 
@@ -79,14 +82,57 @@ func runCalendarGet(cmd *cobra.Command) error {
 		fmt.Println()
 		output.Bold("  Sections")
 		rows := cmdutil.RowsFromAny(sections)
-		output.Table(rows, []output.Column{
-			{Header: "ID", Key: "id"},
-			{Header: "Code", Key: "code"},
-			{Header: "Course", Key: "course.name"},
-			{Header: "Semester", Key: "semester.name"},
-		})
+		output.Table(rows, subscriptionSectionColumns())
 	}
 	return nil
+}
+
+func subscriptionSectionColumns() []output.Column {
+	return []output.Column{
+		{Header: "JW ID", Key: "jwId"},
+		{Header: "Code", Key: "code"},
+		{Header: "Course", Key: "course.namePrimary"},
+		{Header: "Semester", Key: "semester.nameCn"},
+		{Header: "Kind", Key: "kind"},
+	}
+}
+
+func newCmdKind() *cobra.Command {
+	return &cobra.Command{
+		Use:       "kind <section-jw-id> <regular|teaching_assistant|auditor>",
+		Short:     "Set the identity of a subscribed section",
+		ValidArgs: []string{"regular", "teaching_assistant", "auditor"},
+		Args:      cobra.ExactArgs(2),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			jwID, err := strconv.ParseInt(args[0], 10, 64)
+			if err != nil || jwID <= 0 {
+				return fmt.Errorf("invalid section JW ID %q", args[0])
+			}
+			kind := openapi.SubscriptionKindUpdateRequestSchemaKind(args[1])
+			if !kind.Valid() {
+				return fmt.Errorf("kind must be regular, teaching_assistant, or auditor")
+			}
+			client, err := api.NewTypedClient(cmdutil.ServerFromCmd(cmd), true)
+			if err != nil {
+				return err
+			}
+			data, err := setSubscriptionKind(client, jwID, kind)
+			if err != nil {
+				return err
+			}
+			return output.OutputDetail(data, []output.FieldDef{
+				{Key: "sectionJwId", Label: "Section JW ID"},
+				{Key: "kind", Label: "Kind"},
+			}, "Subscription identity")
+		},
+	}
+}
+
+func setSubscriptionKind(client *api.TypedClient, jwID int64, kind openapi.SubscriptionKindUpdateRequestSchemaKind) (any, error) {
+	return api.ParseResponseRaw(client.PatchApiWorkspaceSubscriptionsJwId(
+		api.Ctx(), jwID,
+		openapi.PatchApiWorkspaceSubscriptionsJwIdJSONRequestBody{Kind: kind},
+	))
 }
 
 func calendarSubscriptionDetails(sub map[string]any) []output.KVPair {

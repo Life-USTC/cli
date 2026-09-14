@@ -77,8 +77,12 @@ func newCmdCalendar() *cobra.Command {
 	cmd := calendar.NewCmdCalendar()
 	events := &cobra.Command{
 		Use:   "events",
-		Short: "Show today's aggregated calendar events",
-		Args:  cobra.NoArgs,
+		Short: "Show bounded event samples from the workspace overview",
+		Long: `Show the event samples included in the compact workspace overview.
+
+Schedules cover today. Exams, homeworks, and due todos are bounded upcoming
+samples from the overview window; this command is not a complete calendar.`,
+		Args: cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			data, err := getOverview(cmd)
 			if err != nil {
@@ -92,10 +96,10 @@ func newCmdCalendar() *cobra.Command {
 				key, title string
 				cols       []output.Column
 			}{
-				{"schedules", "Schedules", []output.Column{{Header: "Course", Key: "section.course.namePrimary"}, {Header: "Time", Key: "startTime"}, {Header: "Place", Key: "customPlace"}}},
-				{"exams", "Exams", []output.Column{{Header: "Course", Key: "section.course.namePrimary"}, {Header: "Date", Key: "examDate"}, {Header: "Mode", Key: "examMode"}}},
-				{"homeworks", "Homeworks", []output.Column{{Header: "Title", Key: "title"}, {Header: "Due", Key: "submissionDueAt"}, {Header: "Course", Key: "section.course.namePrimary"}}},
-				{"dueTodos", "Due todos", []output.Column{{Header: "Title", Key: "title"}, {Header: "Due", Key: "dueAt"}, {Header: "Priority", Key: "priority"}}},
+				{"schedules", "Today's schedules", []output.Column{{Header: "Course", Key: "section.course.namePrimary"}, {Header: "Time", Key: "startTime"}, {Header: "Place", Key: "customPlace"}}},
+				{"exams", "Upcoming exam samples", []output.Column{{Header: "Course", Key: "section.course.namePrimary"}, {Header: "Date", Key: "examDate"}, {Header: "Mode", Key: "examMode"}}},
+				{"homeworks", "Homework samples", []output.Column{{Header: "Title", Key: "title"}, {Header: "Due", Key: "submissionDueAt"}, {Header: "Course", Key: "section.course.namePrimary"}}},
+				{"dueTodos", "Due todo samples", []output.Column{{Header: "Title", Key: "title"}, {Header: "Due", Key: "dueAt"}, {Header: "Priority", Key: "priority"}}},
 			} {
 				part := cmdutil.AsMap(m[group.key])
 				rows := cmdutil.RowsFromAny(part["items"])

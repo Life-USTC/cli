@@ -21,6 +21,7 @@ func NewCmdAccount() *cobra.Command {
 	}
 	cmd.AddCommand(
 		me.NewCmdProfile(),
+		newCmdClient(),
 		authcmd.NewCmdLogin(),
 		authcmd.NewCmdLogout(),
 		authcmd.NewCmdSession(),

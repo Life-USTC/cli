@@ -15,11 +15,11 @@
 
 | 域 | 能做什么 |
 |----|----------|
-| `catalog` | 公开事实：学期、课程、教学班、教师、课表、校车、校园链接、元数据 |
-| `workspace` | 个人概览、日历 / iCal、课表、考试、待办 CRUD、作业完成态、教学班订阅、校车偏好、链接置顶、上传 |
+| `catalog` | 公开事实：学期、课程、教学班、教师、课表、校车、校园链接、元数据、第二课堂活动、天气、教室地图、新闻公告 |
+| `workspace` | 个人概览、概览中的有界日历样例 / iCal、课表、考试、待办 CRUD、作业完成态、教学班订阅、校车偏好、链接置顶、上传 |
 | `workspace school` | 直连校方站点：本科/研究生学期、课表、考试、成绩、作业，并可 `sync` 回 Life@USTC 订阅 |
-| `community` | 评论（含反应）、描述、教学班作业 |
-| `account` | 登录 / 登出、session、token、资料、语言 |
+| `community` | 评论（含反应）、描述、教学班作业、公开用户资料 |
+| `account` | 登录 / 登出、session、token、资料、语言、当前客户端活动 |
 | `admin` | 用户、封禁、评论 / 描述 / 作业治理 |
 | `api` | 对任意 REST 路径的逃生舱（适合脚本） |
 | `config` / `completion` | 默认 server、教务程序偏好、shell 补全 |
@@ -29,6 +29,22 @@
 
 登录支持浏览器 OAuth（PKCE）与设备码；默认 server 为生产站点，也可用
 `--server` / `LIFE_USTC_SERVER` 指向其它实例。
+
+常用公开与账户命令示例：
+
+```bash
+life-ustc catalog young-event --active true --limit 20
+life-ustc catalog weather --location-key ustc-main
+life-ustc catalog room map <room-code>
+life-ustc catalog publication --type notice --limit 20
+life-ustc workspace subscription kind <section-jw-id> teaching_assistant
+life-ustc account client activity --limit 20
+life-ustc community user get <username-or-id>
+```
+
+`workspace calendar events` 展示 compact overview 返回的样例：课表是今天的，
+考试、作业和待办来自有限时间窗与条数上限。要订阅完整 iCal 日历，请使用
+`workspace calendar feed`，并将返回的 URL 导入日历应用。
 
 ## OpenAPI 契约
 

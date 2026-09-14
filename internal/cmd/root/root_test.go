@@ -43,17 +43,30 @@ func TestUnifiedDomainContents(t *testing.T) {
 	expected := map[string][]string{
 		"catalog": {
 			"metadata", "semester", "course", "section", "teacher", "schedule", "bus", "link",
+			"young-event", "weather", "room", "publication",
 		},
 		"workspace": {
 			"overview", "calendar", "schedule", "exam", "todo", "homework",
 			"subscription", "bus-preferences", "link-pin", "upload", "school",
 		},
 		"community": {
-			"comment", "description", "section-homework",
+			"comment", "description", "user", "section-homework",
 		},
 		"account": {
-			"profile", "login", "logout", "session", "token", "locale",
+			"profile", "client", "login", "logout", "session", "token", "locale",
 		},
+	}
+	for _, path := range [][]string{
+		{"account", "client", "activity"},
+		{"community", "user", "get"},
+		{"workspace", "subscription", "kind"},
+		{"catalog", "young-event", "get"},
+		{"catalog", "room", "map"},
+		{"catalog", "publication", "get"},
+	} {
+		if findCommand(cmd, path...) == nil {
+			t.Errorf("expected command %q is missing", strings.Join(path, " "))
+		}
 	}
 	for scope, children := range expected {
 		for _, child := range children {
