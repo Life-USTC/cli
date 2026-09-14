@@ -7,10 +7,14 @@ import (
 	"github.com/Life-USTC/CLI/internal/cmd/course"
 	"github.com/Life-USTC/CLI/internal/cmd/link"
 	"github.com/Life-USTC/CLI/internal/cmd/metadata"
+	"github.com/Life-USTC/CLI/internal/cmd/publication"
+	"github.com/Life-USTC/CLI/internal/cmd/room"
 	"github.com/Life-USTC/CLI/internal/cmd/schedule"
 	"github.com/Life-USTC/CLI/internal/cmd/section"
 	"github.com/Life-USTC/CLI/internal/cmd/semester"
 	"github.com/Life-USTC/CLI/internal/cmd/teacher"
+	"github.com/Life-USTC/CLI/internal/cmd/weather"
+	"github.com/Life-USTC/CLI/internal/cmd/young_event"
 )
 
 func NewCmdCatalog() *cobra.Command {
@@ -28,6 +32,10 @@ func NewCmdCatalog() *cobra.Command {
 		schedule.NewCmdSchedule(),
 		bus.NewCmdBus(),
 		link.NewCmdCatalogLink(),
+		young_event.NewCmdYoungEvent(),
+		weather.NewCmdWeather(),
+		room.NewCmdRoom(),
+		publication.NewCmdPublication(),
 	)
 	return cmd
 }

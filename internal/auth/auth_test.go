@@ -98,7 +98,7 @@ func TestOAuthScopesFromMetadata(t *testing.T) {
 	advertised = append(advertised,
 		"openid",
 		"profile",
-		"account.client-activity:read",
+		"admin:write",
 	)
 	for _, scope := range cliOAuthScopes {
 		advertised = append(advertised, scope)
@@ -116,15 +116,20 @@ func TestOAuthScopesFromMetadata(t *testing.T) {
 	for _, scope := range scopes {
 		granted[scope] = true
 	}
-	for _, forbidden := range []string{"account.client-activity:read", "openid", "profile"} {
+	for _, required := range []string{"account.client-activity:read", "workspace.subscription:write"} {
+		if !granted[required] {
+			t.Fatalf("command scope missing: %q", required)
+		}
+	}
+	for _, forbidden := range []string{"admin:write", "openid", "profile"} {
 		if granted[forbidden] {
 			t.Fatalf("scopes unexpectedly include %q: %#v", forbidden, scopes)
 		}
 	}
 }
 
-func TestOAuthScopesFromMetadataRequiresCalendarFeedAndEmail(t *testing.T) {
-	for _, missing := range []string{"email", "workspace.calendar-feed:read"} {
+func TestOAuthScopesFromMetadataRequiresCommandScopes(t *testing.T) {
+	for _, missing := range []string{"email", "workspace.calendar-feed:read", "account.client-activity:read"} {
 		t.Run(missing, func(t *testing.T) {
 			advertised := make([]any, 0, len(cliOAuthScopes)-1)
 			for _, scope := range cliOAuthScopes {

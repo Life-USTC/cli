@@ -91,6 +91,7 @@ func oauthResource(server string, meta map[string]any) string {
 var cliOAuthScopes = []string{
 	"email",
 	"offline_access",
+	"account.client-activity:read",
 	"account.profile:read",
 	"catalog.bus:read",
 	"catalog.course:read",

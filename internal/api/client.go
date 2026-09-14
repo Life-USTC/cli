@@ -50,7 +50,7 @@ func NewClientWithRefresh(server string, requireAuth bool, refresh refreshTokenF
 		return nil, err
 	}
 	if requireAuth && cred == nil {
-		return nil, fmt.Errorf("not logged in. Run `life-ustc auth login` first")
+		return nil, fmt.Errorf("not logged in. Run `life-ustc account login` first")
 	}
 	httpClient := &http.Client{
 		Timeout: 30 * time.Second,
@@ -89,7 +89,7 @@ func (t *authTransport) RoundTrip(req *http.Request) (*http.Response, error) {
 	if resp.StatusCode == 401 && cred != nil {
 		_ = resp.Body.Close()
 		if refreshed {
-			return nil, fmt.Errorf("session expired. Please run `life-ustc auth login` again")
+			return nil, fmt.Errorf("session expired. Please run `life-ustc account login` again")
 		}
 		t.mu.Lock()
 		newCred, refreshErr := t.refreshToken()
@@ -99,7 +99,7 @@ func (t *authTransport) RoundTrip(req *http.Request) (*http.Response, error) {
 		}
 		t.mu.Unlock()
 		if refreshErr != nil || newCred == nil {
-			return nil, fmt.Errorf("session expired while refreshing token. Please run `life-ustc auth login` again")
+			return nil, fmt.Errorf("session expired while refreshing token. Please run `life-ustc account login` again")
 		}
 
 		// Clone the request with a fresh body and the new token.
@@ -120,7 +120,7 @@ func (t *authTransport) RoundTrip(req *http.Request) (*http.Response, error) {
 		}
 		if resp.StatusCode == 401 {
 			_ = resp.Body.Close()
-			return nil, fmt.Errorf("session expired. Please run `life-ustc auth login` again")
+			return nil, fmt.Errorf("session expired. Please run `life-ustc account login` again")
 		}
 	}
 

@@ -19,6 +19,7 @@ func NewCmdCommunity() *cobra.Command {
 	cmd.AddCommand(
 		comment.NewCmdComment(),
 		description.NewCmdDescription(),
+		newCmdUser(),
 		sectionHomework,
 	)
 	return cmd
