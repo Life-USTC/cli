@@ -42,6 +42,9 @@ life-ustc account client activity --limit 20
 life-ustc community user get <username-or-id>
 ```
 
+当前客户端活动需要 `account.client-activity:read` 权限。旧版本登录的用户需运行
+`life-ustc account login` 重新授权，刷新旧 token 不会增加权限。
+
 `workspace calendar events` 展示 compact overview 返回的样例：课表是今天的，
 考试、作业和待办来自有限时间窗与条数上限。要订阅完整 iCal 日历，请使用
 `workspace calendar feed`，并将返回的 URL 导入日历应用。
