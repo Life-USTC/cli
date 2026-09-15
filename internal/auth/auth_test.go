@@ -116,7 +116,15 @@ func TestOAuthScopesFromMetadata(t *testing.T) {
 	for _, scope := range scopes {
 		granted[scope] = true
 	}
-	for _, required := range []string{"account.client-activity:read", "workspace.subscription:write"} {
+	for _, required := range []string{
+		"account.client-activity:read",
+		"workspace.subscription:write",
+		"workspace.calendar:read",
+		"workspace.young-subscription:read",
+		"workspace.young-subscription:write",
+		"workspace.young-notification:read",
+		"workspace.young-notification:write",
+	} {
 		if !granted[required] {
 			t.Fatalf("command scope missing: %q", required)
 		}

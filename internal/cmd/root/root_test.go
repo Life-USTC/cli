@@ -43,11 +43,12 @@ func TestUnifiedDomainContents(t *testing.T) {
 	expected := map[string][]string{
 		"catalog": {
 			"metadata", "semester", "course", "section", "teacher", "schedule", "bus", "link",
-			"young-event", "weather", "room", "publication",
+			"young-event", "young-organizer", "weather", "room", "publication",
 		},
 		"workspace": {
 			"overview", "calendar", "schedule", "exam", "todo", "homework",
-			"subscription", "bus-preferences", "link-pin", "upload", "school",
+			"subscription", "young-event-subscription", "young-organizer-subscription",
+			"young-notification", "bus-preferences", "link-pin", "upload", "school",
 		},
 		"community": {
 			"comment", "description", "user", "section-homework",
@@ -61,6 +62,12 @@ func TestUnifiedDomainContents(t *testing.T) {
 		{"community", "user", "get"},
 		{"workspace", "subscription", "kind"},
 		{"catalog", "young-event", "get"},
+		{"catalog", "young-organizer", "get"},
+		{"catalog", "young-event", "date", "week"},
+		{"workspace", "calendar", "events"},
+		{"workspace", "young-event-subscription", "set"},
+		{"workspace", "young-organizer-subscription", "set"},
+		{"workspace", "young-notification", "read"},
 		{"catalog", "room", "map"},
 		{"catalog", "publication", "get"},
 	} {

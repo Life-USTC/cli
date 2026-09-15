@@ -15,8 +15,8 @@
 
 | 域 | 能做什么 |
 |----|----------|
-| `catalog` | 公开事实：学期、课程、教学班、教师、课表、校车、校园链接、元数据、第二课堂活动、天气、教室地图、新闻公告 |
-| `workspace` | 个人概览、概览中的有界日历样例 / iCal、课表、考试、待办 CRUD、作业完成态、教学班订阅、校车偏好、链接置顶、上传 |
+| `catalog` | 公开事实：学期、课程、教学班、教师、课表、校车、校园链接、元数据、第二课堂活动与主办方、天气、教室地图、新闻公告 |
+| `workspace` | 个人概览、完整个人日历 / iCal、课表、考试、待办 CRUD、作业完成态、教学班订阅、第二课堂活动与主办方订阅、提醒通知、校车偏好、链接置顶、上传 |
 | `workspace school` | 直连校方站点：本科/研究生学期、课表、考试、成绩、作业，并可 `sync` 回 Life@USTC 订阅 |
 | `community` | 评论（含反应）、描述、教学班作业、公开用户资料 |
 | `account` | 登录 / 登出、session、token、资料、语言、当前客户端活动 |
@@ -34,6 +34,10 @@
 
 ```bash
 life-ustc catalog young-event --active true --limit 20
+life-ustc catalog young-organizer list --search 学生会
+life-ustc catalog young-event date week 2026-09-15
+life-ustc workspace calendar events --date-from 2026-09-01 --date-to 2026-09-30
+life-ustc workspace young-event-subscription set <young-id> --subscribed true --remind-start true
 life-ustc catalog weather --location-key ustc-main
 life-ustc catalog room map <room-code>
 life-ustc catalog publication --type notice --limit 20
@@ -45,9 +49,10 @@ life-ustc community user get <username-or-id>
 当前客户端活动需要 `account.client-activity:read` 权限。旧版本登录的用户需运行
 `life-ustc account login` 重新授权，刷新旧 token 不会增加权限。
 
-`workspace calendar events` 展示 compact overview 返回的样例：课表是今天的，
-考试、作业和待办来自有限时间窗与条数上限。要订阅完整 iCal 日历，请使用
-`workspace calendar feed`，并将返回的 URL 导入日历应用。
+`workspace calendar events` 使用完整个人日历 REST 接口，默认读取当前上海日期起的
+七天窗口；使用成对的 `--date-from` / `--date-to` 查询其它包含端点的日期范围。
+Young 活动的 `catalog young-event date day|week|month` 会遍历该范围的所有分页。
+要订阅 iCal 日历，请使用 `workspace calendar feed`，并将返回的 URL 导入日历应用。
 
 ## OpenAPI 契约
 
