@@ -313,6 +313,15 @@ func runDateView(cmd *cobra.Command, view youngutil.DateView, anchor string, opt
 	if err != nil {
 		return err
 	}
+	if !output.IsJSON() {
+		meta := cmdutil.AsMap(data)
+		output.KVWithTitle([]output.KVPair{
+			{Key: "Source", Value: output.Resolve(meta, "source.status")},
+			{Key: "Last synced", Value: output.Resolve(meta, "source.lastSyncedAt")},
+			{Key: "Unknown dates", Value: output.Resolve(meta, "unknownDateCount")},
+		}, "Calendar source")
+		fmt.Println("Unknown-date activities: young-event list --date-unknown true --time-basis " + opts.timeBasis)
+	}
 	list := cmdutil.NewListResult(data, "data")
 	return output.OutputList(list.Raw, list.Rows, []output.Column{
 		{Header: "Name", Key: "name"},

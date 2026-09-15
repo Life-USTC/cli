@@ -31,7 +31,7 @@ type commentTarget struct {
 
 func validVisibility(visibility string) bool {
 	switch visibility {
-	case "public", "logged_in_only", "anonymous":
+	case "public", "logged_in_only":
 		return true
 	default:
 		return false
@@ -92,6 +92,8 @@ func normalizeTarget(target commentTarget) commentTarget {
 func listCommentColumns() []output.Column {
 	return []output.Column{
 		{Header: "ID", Key: "id"},
+		{Header: "Parent ID", Key: "parentId"},
+		{Header: "More replies cursor", Key: "repliesNextCursor"},
 		{Header: "Body", Key: "body"},
 		{Header: "Visibility", Key: "visibility"},
 		{Header: "Created", Key: "createdAt"},
@@ -124,7 +126,7 @@ func runCommentList(cmd *cobra.Command, target commentTarget) error {
 		return err
 	}
 	list := cmdutil.NewListResult(data, "data")
-	return output.OutputList(list.Raw, list.Rows, listCommentColumns(), list.Total, list.Page)
+	return output.OutputList(list.Raw, flattenComments(list.Rows), listCommentColumns(), list.Total, list.Page)
 }
 
 func commentListParams(cmd *cobra.Command, target commentTarget) (url.Values, error) {
@@ -168,7 +170,7 @@ func commandIntFlag(cmd *cobra.Command, name string) int {
 func runCommentCreate(cmd *cobra.Command, target commentTarget, body, visibility, parentID string, anonymous bool) error {
 	target = normalizeTarget(target)
 	if !validVisibility(visibility) {
-		return fmt.Errorf("invalid --visibility %q (use public, logged_in_only, or anonymous)", visibility)
+		return fmt.Errorf("invalid --visibility %q (use public or logged_in_only)", visibility)
 	}
 	if err := validateTarget(target, true); err != nil {
 		return err
@@ -255,6 +257,7 @@ func NewCmdComment() *cobra.Command {
 	}
 	cmd.AddCommand(newCmdList())
 	cmd.AddCommand(newCmdView())
+	cmd.AddCommand(newCmdReplies())
 	cmd.AddCommand(newCmdCreate())
 	cmd.AddCommand(newCmdUpdate())
 	cmd.AddCommand(newCmdDelete())
@@ -272,6 +275,7 @@ func NewCmdCommentFor(targetType string) *cobra.Command {
 	}
 	cmd.AddCommand(newCmdListFor(targetType))
 	cmd.AddCommand(newCmdView())
+	cmd.AddCommand(newCmdReplies())
 	cmd.AddCommand(newCmdCreateFor(targetType))
 	cmd.AddCommand(newCmdUpdate())
 	cmd.AddCommand(newCmdDelete())
@@ -324,7 +328,7 @@ func newCmdCreateFor(targetType string) *cobra.Command {
 		},
 	}
 	cmd.Flags().StringVarP(&body, "body", "b", "", "Comment body")
-	cmd.Flags().StringVar(&visibility, "visibility", "public", "Visibility (public, logged_in_only, anonymous)")
+	cmd.Flags().StringVar(&visibility, "visibility", "public", "Visibility (public, logged_in_only)")
 	cmd.Flags().BoolVar(&anonymous, "anonymous", false, "Post anonymously")
 	cmd.Flags().StringVar(&parentID, "parent-id", "", "Reply to comment ID")
 	return cmd
@@ -387,24 +391,11 @@ func newCmdView() *cobra.Command {
 			}
 			m := cmdutil.AsMap(data)
 			output.KVWithTitle([]output.KVPair{
-				{Key: "ID", Value: output.Resolve(m, "id")},
-				{Key: "Body", Value: output.Resolve(m, "body")},
-				{Key: "Visibility", Value: output.Resolve(m, "visibility")},
-				{Key: "Anonymous", Value: output.Resolve(m, "isAnonymous")},
-				{Key: "Created", Value: output.Resolve(m, "createdAt")},
-				{Key: "Updated", Value: output.Resolve(m, "updatedAt")},
-			}, "Comment")
-
-			if replies, ok := m["replies"].([]any); ok && len(replies) > 0 {
-				fmt.Println()
-				output.Bold("  Replies")
-				rows := cmdutil.RowsFromAny(replies)
-				output.Table(rows, []output.Column{
-					{Header: "ID", Key: "id"},
-					{Header: "Body", Key: "body"},
-					{Header: "Created", Key: "createdAt"},
-				})
-			}
+				{Key: "Focus ID", Value: output.Resolve(m, "focusId")},
+				{Key: "Hidden comments", Value: output.Resolve(m, "hiddenCount")},
+			}, "Comment thread")
+			thread, _ := m["thread"].([]any)
+			output.Table(flattenComments(cmdutil.RowsFromAny(thread)), listCommentColumns())
 			return nil
 		},
 	}
@@ -467,7 +458,7 @@ func newCmdCreate() *cobra.Command {
 	cmd.Flags().StringVar(&sectionID, "section-id", "", "Section ID")
 	cmd.Flags().StringVar(&teacherID, "teacher-id", "", "Teacher ID")
 	cmd.Flags().StringVarP(&body, "body", "b", "", "Comment body")
-	cmd.Flags().StringVar(&visibility, "visibility", "public", "Visibility (public, logged_in_only, anonymous)")
+	cmd.Flags().StringVar(&visibility, "visibility", "public", "Visibility (public, logged_in_only)")
 	cmd.Flags().BoolVar(&anonymous, "anonymous", false, "Post anonymously")
 	cmd.Flags().StringVar(&parentID, "parent-id", "", "Reply to comment ID")
 	return cmd
@@ -482,11 +473,15 @@ func newCmdUpdate() *cobra.Command {
 		Args:  cobra.MaximumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if visibility != "" && !validVisibility(visibility) {
-				return fmt.Errorf("invalid --visibility %q (use public, logged_in_only, or anonymous)", visibility)
+				return fmt.Errorf("invalid --visibility %q (use public or logged_in_only)", visibility)
 			}
 			id := ""
 			if len(args) == 1 {
-				id = strings.TrimSpace(args[0])
+				var err error
+				id, err = youngutil.RequireID(args[0], "<comment-id>")
+				if err != nil {
+					return err
+				}
 			}
 			if id == "" {
 				if !cmdutil.IsInteractive() {
@@ -503,6 +498,9 @@ func newCmdUpdate() *cobra.Command {
 				if body == "" {
 					body = cmdutil.PromptText("New body")
 				}
+			}
+			if strings.TrimSpace(body) == "" {
+				return fmt.Errorf("--body is required to update a comment")
 			}
 			c, err := api.NewTypedClient(cmdutil.ServerFromCmd(cmd), true)
 			if err != nil {
@@ -541,7 +539,7 @@ func newCmdDelete() *cobra.Command {
 		Aliases: []string{"rm"},
 		Short:   "Delete comment(s)",
 		Long:    "Delete one or more comments. When run interactively without IDs, shows your recent comments and lets you pick one.",
-		Args:    cobra.ArbitraryArgs,
+		Args:    cobra.MaximumNArgs(50),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			var ids []string
 			var rows []map[string]any
@@ -744,4 +742,67 @@ func commentLabelFromRow(row map[string]any) string {
 		return "comment " + id
 	}
 	return "this comment"
+}
+
+// Preserve nested reply identities in human-readable output; JSON stays untouched.
+func flattenComments(roots []map[string]any) []map[string]any {
+	var rows []map[string]any
+	var visit func(map[string]any, string)
+	visit = func(node map[string]any, parent string) {
+		row := make(map[string]any, len(node)+1)
+		for key, value := range node {
+			row[key] = value
+		}
+		if parent != "" {
+			row["parentId"] = parent
+		}
+		if status, _ := node["status"].(string); status == "deleted" {
+			row["body"] = "[deleted comment]"
+		}
+		rows = append(rows, row)
+		children, _ := node["replies"].([]any)
+		id, _ := node["id"].(string)
+		for _, child := range cmdutil.RowsFromAny(children) {
+			visit(child, id)
+		}
+	}
+	for _, root := range roots {
+		visit(root, "")
+	}
+	return rows
+}
+
+func newCmdReplies() *cobra.Command {
+	var cursor string
+	cmd := &cobra.Command{
+		Use: "replies <comment-id>", Short: "Read a reply page (use --cursor for the next page)", Args: cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			id, err := youngutil.RequireID(args[0], "<comment-id>")
+			if err != nil {
+				return err
+			}
+			client, err := api.NewClient(cmdutil.ServerFromCmd(cmd), false)
+			if err != nil {
+				return err
+			}
+			params := url.Values{"pageSize": {"20"}}
+			if cursor != "" {
+				params.Set("cursor", cursor)
+			}
+			data, err := client.DoJSON(cmd.Context(), http.MethodGet, commentsPath+"/"+url.PathEscape(id)+"/replies", params, nil)
+			if err != nil {
+				return err
+			}
+			if output.IsJSON() {
+				return output.JSON(data)
+			}
+			m := cmdutil.AsMap(data)
+			thread, _ := m["thread"].([]any)
+			output.Table(flattenComments(cmdutil.RowsFromAny(thread)), listCommentColumns())
+			output.KVWithTitle([]output.KVPair{{Key: "Next cursor", Value: output.Resolve(m, "nextCursor")}}, "Replies")
+			return nil
+		},
+	}
+	cmd.Flags().StringVar(&cursor, "cursor", "", "Reply pagination cursor")
+	return cmd
 }

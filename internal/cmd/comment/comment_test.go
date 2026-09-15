@@ -155,3 +155,24 @@ func TestCommentBatchLabel(t *testing.T) {
 		t.Errorf("single id label = %q, want %q", got, "this comment")
 	}
 }
+
+func TestCommentOutputKeepsReplyIDsAndDeletedPlaceholders(t *testing.T) {
+	root := map[string]any{"id": "root", "body": "root body", "replies": []any{map[string]any{"id": "reply", "body": "", "status": "deleted"}}}
+	rows := flattenComments([]map[string]any{root})
+	if len(rows) != 2 || rows[1]["id"] != "reply" || rows[1]["parentId"] != "root" || rows[1]["body"] != "[deleted comment]" {
+		t.Fatalf("rows=%#v", rows)
+	}
+	if _, ok := root["parentId"]; ok {
+		t.Fatal("raw JSON was modified")
+	}
+}
+
+func TestCommentUpdateRejectsInvalidArgumentsBeforeNetwork(t *testing.T) {
+	for _, args := range [][]string{{"bad/id", "--body", "text"}, {"id", "--visibility", "public"}, {"id", "--body", "text", "--visibility", "anonymous"}} {
+		cmd := newCmdUpdate()
+		cmd.SetArgs(args)
+		if err := cmd.Execute(); err == nil {
+			t.Fatalf("accepted %v", args)
+		}
+	}
+}
