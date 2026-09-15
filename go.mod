@@ -10,7 +10,7 @@ require (
 	github.com/fatih/color v1.19.0
 	github.com/itchyny/gojq v0.12.19
 	github.com/joho/godotenv v1.5.1
-	github.com/mattn/go-runewidth v0.0.28
+	github.com/mattn/go-runewidth v0.0.29
 	github.com/muesli/termenv v0.16.0
 	github.com/oapi-codegen/runtime v1.7.0
 	github.com/spf13/cobra v1.10.2
