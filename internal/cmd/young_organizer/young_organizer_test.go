@@ -56,21 +56,13 @@ func TestOrganizerListUsesPublicEndpoint(t *testing.T) {
 	}
 }
 
-func TestOrganizerGetLoadsEventsFromPaginatedCatalog(t *testing.T) {
+func TestOrganizerGetUsesMetadataWithoutEmbeddedEvents(t *testing.T) {
 	t.Setenv("LIFE_USTC_CONFIG_DIR", t.TempDir())
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		switch r.URL.Path {
 		case "/api/catalog/young-organizers/org-1":
-			_, _ = io.WriteString(w, `{"id":"org-1","name":"Students Union","normalizedName":"students union","activeCount":1,"upcomingCount":1,"historyCount":0}`)
-		case "/api/catalog/young-events":
-			if r.URL.Query().Get("organizerId") != "org-1" {
-				t.Fatalf("organizerId = %q", r.URL.Query().Get("organizerId"))
-			}
-			if r.URL.Query().Get("page") != "1" || r.URL.Query().Get("pageSize") != "100" {
-				t.Fatalf("pagination = %s", r.URL.RawQuery)
-			}
-			_, _ = io.WriteString(w, `{"data":[{"youngId":"event-1","name":"Activity","category":"single","startAt":"2026-09-01T09:00:00+08:00","endAt":null,"isActive":true}],"pagination":{"page":1,"pageSize":100,"total":1,"totalPages":1},"unknownDates":[],"source":{"status":"fresh","lastSyncedAt":null}}`)
+			_, _ = io.WriteString(w, `{"id":"org-1","name":"Students Union","normalizedName":"students union","totalCount":1,"activeCount":1,"upcomingCount":1,"historyCount":0}`)
 		default:
 			http.NotFound(w, r)
 		}

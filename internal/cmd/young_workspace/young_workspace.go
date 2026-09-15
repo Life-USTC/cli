@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"net/url"
 	"strconv"
+	"strings"
 
 	"github.com/spf13/cobra"
 
@@ -42,7 +43,15 @@ func newEventSubscriptionList() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			data, err := client.DoJSON(cmd.Context(), http.MethodGet, youngutil.YoungEventSubscriptionsPath, params, nil)
+			data, err := youngutil.FetchAllIfUnpaged(
+				cmd.Context(),
+				client,
+				youngutil.YoungEventSubscriptionsPath,
+				params,
+				"data",
+				100,
+				"youngId",
+			)
 			if err != nil {
 				return err
 			}
@@ -69,6 +78,10 @@ func newEventSubscriptionGet() *cobra.Command {
 		Short:   "Read one Young event subscription state",
 		Args:    cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
+			youngID, err := youngutil.RequireID(args[0], "<young-id>")
+			if err != nil {
+				return err
+			}
 			client, err := api.NewClient(cmdutil.ServerFromCmd(cmd), true)
 			if err != nil {
 				return err
@@ -76,7 +89,7 @@ func newEventSubscriptionGet() *cobra.Command {
 			data, err := client.DoJSON(
 				cmd.Context(),
 				http.MethodGet,
-				youngutil.PathID(youngutil.YoungEventSubscriptionsPath, args[0]),
+				youngutil.PathID(youngutil.YoungEventSubscriptionsPath, youngID),
 				nil,
 				nil,
 			)
@@ -95,6 +108,10 @@ func newEventSubscriptionSet() *cobra.Command {
 		Short: "Set a Young event subscription and reminder flags",
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
+			youngID, err := youngutil.RequireID(args[0], "<young-id>")
+			if err != nil {
+				return err
+			}
 			if !cmd.Flags().Changed("subscribed") {
 				return fmt.Errorf("--subscribed is required (true or false)")
 			}
@@ -131,7 +148,7 @@ func newEventSubscriptionSet() *cobra.Command {
 			data, err := client.DoJSON(
 				cmd.Context(),
 				http.MethodPut,
-				youngutil.PathID(youngutil.YoungEventSubscriptionsPath, args[0]),
+				youngutil.PathID(youngutil.YoungEventSubscriptionsPath, youngID),
 				nil,
 				body,
 			)
@@ -186,7 +203,15 @@ func newOrganizerSubscriptionList() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			data, err := client.DoJSON(cmd.Context(), http.MethodGet, youngutil.YoungOrganizerSubscriptionsPath, params, nil)
+			data, err := youngutil.FetchAllIfUnpaged(
+				cmd.Context(),
+				client,
+				youngutil.YoungOrganizerSubscriptionsPath,
+				params,
+				"data",
+				100,
+				"organizerId",
+			)
 			if err != nil {
 				return err
 			}
@@ -210,6 +235,10 @@ func newOrganizerSubscriptionGet() *cobra.Command {
 		Short:   "Read one Young organizer subscription state",
 		Args:    cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
+			organizerID, err := youngutil.RequireID(args[0], "<organizer-id>")
+			if err != nil {
+				return err
+			}
 			client, err := api.NewClient(cmdutil.ServerFromCmd(cmd), true)
 			if err != nil {
 				return err
@@ -217,7 +246,7 @@ func newOrganizerSubscriptionGet() *cobra.Command {
 			data, err := client.DoJSON(
 				cmd.Context(),
 				http.MethodGet,
-				youngutil.PathID(youngutil.YoungOrganizerSubscriptionsPath, args[0]),
+				youngutil.PathID(youngutil.YoungOrganizerSubscriptionsPath, organizerID),
 				nil,
 				nil,
 			)
@@ -236,6 +265,10 @@ func newOrganizerSubscriptionSet() *cobra.Command {
 		Short: "Set a Young organizer subscription",
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
+			organizerID, err := youngutil.RequireID(args[0], "<organizer-id>")
+			if err != nil {
+				return err
+			}
 			if !cmd.Flags().Changed("subscribed") {
 				return fmt.Errorf("--subscribed is required (true or false)")
 			}
@@ -250,7 +283,7 @@ func newOrganizerSubscriptionSet() *cobra.Command {
 			data, err := client.DoJSON(
 				cmd.Context(),
 				http.MethodPut,
-				youngutil.PathID(youngutil.YoungOrganizerSubscriptionsPath, args[0]),
+				youngutil.PathID(youngutil.YoungOrganizerSubscriptionsPath, organizerID),
 				nil,
 				map[string]any{"subscribed": subscribedValue},
 			)
@@ -303,7 +336,15 @@ func newNotificationList() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			data, err := client.DoJSON(cmd.Context(), http.MethodGet, youngutil.YoungNotificationsPath, params, nil)
+			data, err := youngutil.FetchAllIfUnpaged(
+				cmd.Context(),
+				client,
+				youngutil.YoungNotificationsPath,
+				params,
+				"data",
+				100,
+				"id",
+			)
 			if err != nil {
 				return err
 			}
@@ -330,6 +371,10 @@ func newNotificationRead() *cobra.Command {
 		Short: "Mark a Young notification as read",
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
+			notificationID, err := youngutil.RequireID(args[0], "<notification-id>")
+			if err != nil {
+				return err
+			}
 			client, err := api.NewClient(cmdutil.ServerFromCmd(cmd), true)
 			if err != nil {
 				return err
@@ -337,7 +382,7 @@ func newNotificationRead() *cobra.Command {
 			data, err := client.DoJSON(
 				cmd.Context(),
 				http.MethodPost,
-				youngutil.PathID(youngutil.YoungNotificationsPath, args[0])+"/read",
+				youngutil.PathID(youngutil.YoungNotificationsPath, notificationID)+"/read",
 				nil,
 				nil,
 			)
@@ -357,6 +402,7 @@ func listParams(page, limit int) (url.Values, error) {
 }
 
 func parseBoolValue(flag, value string) (bool, error) {
+	value = strings.TrimSpace(value)
 	if value != "true" && value != "false" {
 		return false, fmt.Errorf("%s must be true or false", flag)
 	}

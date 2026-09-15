@@ -65,7 +65,26 @@ func runCalendarEvents(cmd *cobra.Command, opts calendarEventOpts) error {
 	if err != nil {
 		return err
 	}
-	data, err := client.DoJSON(cmd.Context(), http.MethodGet, youngutil.PersonalCalendarEventsPath, params, nil)
+	var data any
+	if opts.page == 0 && opts.pageSize == 0 {
+		data, err = youngutil.FetchAllPages(
+			cmd.Context(),
+			client,
+			youngutil.PersonalCalendarEventsPath,
+			params,
+			"data",
+			100,
+			"id",
+		)
+	} else {
+		data, err = client.DoJSON(
+			cmd.Context(),
+			http.MethodGet,
+			youngutil.PersonalCalendarEventsPath,
+			params,
+			nil,
+		)
+	}
 	if err != nil {
 		return err
 	}

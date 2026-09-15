@@ -68,3 +68,28 @@ func TestBuildListParamsRequiresDatePair(t *testing.T) {
 		t.Fatal("buildListParams accepted an unpaired date-from")
 	}
 }
+
+func TestBuildListParamsSupportsUnknownDateFilter(t *testing.T) {
+	params, err := buildListParams(listOpts{dateUnknown: "true"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got := params.Get("dateUnknown"); got != "true" {
+		t.Fatalf("dateUnknown = %q, want true", got)
+	}
+	if _, err := buildListParams(listOpts{dateUnknown: "true", dateFrom: "2026-09-01", dateTo: "2026-09-30"}); err == nil {
+		t.Fatal("buildListParams accepted dateUnknown with date bounds")
+	}
+}
+
+func TestDateRegistrationUsesRegistrationColumns(t *testing.T) {
+	if got := dateStartKey("registration"); got != "applyStartAt" {
+		t.Fatalf("registration start key = %q", got)
+	}
+	if got := dateEndKey("registration"); got != "applyEndAt" {
+		t.Fatalf("registration end key = %q", got)
+	}
+	if got := dateStartKey("activity"); got != "startAt" {
+		t.Fatalf("activity start key = %q", got)
+	}
+}

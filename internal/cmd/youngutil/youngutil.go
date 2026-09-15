@@ -5,6 +5,7 @@ package youngutil
 import (
 	"context"
 	"fmt"
+	"net/http"
 	"net/url"
 	"strconv"
 	"strings"
@@ -46,6 +47,35 @@ func PageParams(page, limit int) (url.Values, error) {
 		params.Set("pageSize", strconv.Itoa(limit))
 	}
 	return params, nil
+}
+
+// FetchAllIfUnpaged follows every page when the caller did not explicitly
+// select a page or page size. Explicit pagination remains server-side so the
+// command can be used for bounded scripts as well as complete interactive
+// listings.
+func FetchAllIfUnpaged(
+	ctx context.Context,
+	client *api.Client,
+	path string,
+	params url.Values,
+	key string,
+	pageSize int,
+	identityKey string,
+) (any, error) {
+	if params.Get("page") == "" && params.Get("pageSize") == "" {
+		return FetchAllPages(ctx, client, path, params, key, pageSize, identityKey)
+	}
+	return client.DoJSON(ctx, http.MethodGet, path, params, nil)
+}
+
+// RequireID trims a positional or path identifier and rejects an empty value.
+// Cobra's argument count checks do not catch whitespace-only IDs.
+func RequireID(value, flag string) (string, error) {
+	id := strings.TrimSpace(value)
+	if id == "" {
+		return "", fmt.Errorf("%s must not be empty", flag)
+	}
+	return id, nil
 }
 
 func cloneValues(values url.Values) url.Values {

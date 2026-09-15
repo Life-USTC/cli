@@ -18,6 +18,7 @@ import (
 
 type listOpts struct {
 	active      string
+	dateUnknown string
 	category    string
 	search      string
 	organizerID string
@@ -61,6 +62,7 @@ func NewCmdYoungEvent() *cobra.Command {
 
 func addListFlags(cmd *cobra.Command, opts *listOpts) {
 	cmd.Flags().StringVar(&opts.active, "active", "", "Filter by signup status (true or false)")
+	cmd.Flags().StringVar(&opts.dateUnknown, "date-unknown", "", "Filter events with unknown activity dates (true or false)")
 	cmd.Flags().StringVar(&opts.category, "category", "", "Exact event category")
 	cmd.Flags().StringVarP(&opts.search, "search", "s", "", "Search event names")
 	cmd.Flags().StringVar(&opts.organizerID, "organizer-id", "", "Filter by stable organizer ID")
@@ -78,6 +80,7 @@ func newCmdList() *cobra.Command {
 		Use:     "list",
 		Aliases: []string{"ls"},
 		Short:   "List Young events",
+		Args:    cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return runList(cmd, opts)
 		},
@@ -95,7 +98,15 @@ func runList(cmd *cobra.Command, opts listOpts) error {
 	if err != nil {
 		return err
 	}
-	data, err := fetchList(cmd.Context(), client, params)
+	data, err := youngutil.FetchAllIfUnpaged(
+		cmd.Context(),
+		client,
+		youngutil.EventsPath,
+		params,
+		"data",
+		100,
+		"youngId",
+	)
 	if err != nil {
 		return err
 	}
@@ -103,8 +114,8 @@ func runList(cmd *cobra.Command, opts listOpts) error {
 	return output.OutputList(list.Raw, list.Rows, []output.Column{
 		{Header: "Name", Key: "name"},
 		{Header: "Category", Key: "category"},
-		{Header: "Start", Key: "startAt"},
-		{Header: "End", Key: "endAt"},
+		{Header: "Start", Key: dateStartKey(opts.timeBasis)},
+		{Header: "End", Key: dateEndKey(opts.timeBasis)},
 		{Header: "Active", Key: "isActive"},
 		{Header: "Young ID", Key: "youngId"},
 	}, list.Total, list.Page)
@@ -126,35 +137,53 @@ func buildListParams(opts listOpts) (url.Values, error) {
 	if active != "" {
 		params.Set("active", active)
 	}
+	dateUnknown, err := normalizeBooleanFilter("--date-unknown", opts.dateUnknown)
+	if err != nil {
+		return nil, err
+	}
+	from := strings.TrimSpace(opts.dateFrom)
+	to := strings.TrimSpace(opts.dateTo)
+	if (from == "") != (to == "") {
+		return nil, fmt.Errorf("--date-from and --date-to must be provided together")
+	}
+	if dateUnknown != "" && (from != "" || to != "") {
+		return nil, fmt.Errorf("--date-unknown cannot be combined with --date-from or --date-to")
+	}
+	if dateUnknown != "" {
+		params.Set("dateUnknown", dateUnknown)
+	}
 	for key, value := range map[string]string{
 		"category":    opts.category,
 		"search":      opts.search,
 		"organizerId": opts.organizerID,
-		"dateFrom":    opts.dateFrom,
-		"dateTo":      opts.dateTo,
+		"dateFrom":    from,
+		"dateTo":      to,
 	} {
 		if value = strings.TrimSpace(value); value != "" {
 			params.Set(key, value)
 		}
 	}
-	if (opts.dateFrom == "") != (opts.dateTo == "") {
-		return nil, fmt.Errorf("--date-from and --date-to must be provided together")
-	}
-	if opts.timeBasis != "" {
-		if opts.timeBasis != "activity" && opts.timeBasis != "registration" {
+	timeBasis := strings.TrimSpace(opts.timeBasis)
+	if timeBasis != "" {
+		if timeBasis != "activity" && timeBasis != "registration" {
 			return nil, fmt.Errorf("--time-basis must be activity or registration")
 		}
-		params.Set("timeBasis", opts.timeBasis)
+		params.Set("timeBasis", timeBasis)
 	}
 	return params, nil
 }
 
 func normalizeActive(value string) (string, error) {
+	return normalizeBooleanFilter("--active", value)
+}
+
+func normalizeBooleanFilter(flag, value string) (string, error) {
+	value = strings.TrimSpace(value)
 	if value == "" {
 		return "", nil
 	}
 	if value != "true" && value != "false" {
-		return "", fmt.Errorf("--active must be true or false")
+		return "", fmt.Errorf("%s must be true or false", flag)
 	}
 	return value, nil
 }
@@ -166,6 +195,10 @@ func newCmdGet() *cobra.Command {
 		Short:   "View a Young event",
 		Args:    cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
+			youngID, err := youngutil.RequireID(args[0], "<young-id>")
+			if err != nil {
+				return err
+			}
 			client, err := api.NewClient(cmdutil.ServerFromCmd(cmd), false)
 			if err != nil {
 				return err
@@ -173,7 +206,7 @@ func newCmdGet() *cobra.Command {
 			data, err := client.DoJSON(
 				cmd.Context(),
 				http.MethodGet,
-				youngutil.PathID(youngutil.EventsPath, args[0]),
+				youngutil.PathID(youngutil.EventsPath, youngID),
 				nil,
 				nil,
 			)
@@ -284,11 +317,25 @@ func runDateView(cmd *cobra.Command, view youngutil.DateView, anchor string, opt
 	return output.OutputList(list.Raw, list.Rows, []output.Column{
 		{Header: "Name", Key: "name"},
 		{Header: "Category", Key: "category"},
-		{Header: "Start", Key: "startAt"},
-		{Header: "End", Key: "endAt"},
+		{Header: "Start", Key: dateStartKey(opts.timeBasis)},
+		{Header: "End", Key: dateEndKey(opts.timeBasis)},
 		{Header: "Organizer", Key: "organizer"},
 		{Header: "Young ID", Key: "youngId"},
 	}, list.Total, list.Page)
+}
+
+func dateStartKey(timeBasis string) string {
+	if strings.TrimSpace(timeBasis) == "registration" {
+		return "applyStartAt"
+	}
+	return "startAt"
+}
+
+func dateEndKey(timeBasis string) string {
+	if strings.TrimSpace(timeBasis) == "registration" {
+		return "applyEndAt"
+	}
+	return "endAt"
 }
 
 func fetchDateEvents(ctx context.Context, client *api.Client, query url.Values) (any, error) {

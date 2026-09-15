@@ -38,6 +38,15 @@ func TestDateRangeRejectsInvalidAnchor(t *testing.T) {
 	}
 }
 
+func TestRequireIDRejectsWhitespace(t *testing.T) {
+	if _, err := RequireID("  \t", "<young-id>"); err == nil {
+		t.Fatal("RequireID accepted whitespace-only input")
+	}
+	if got, err := RequireID(" event-1 ", "<young-id>"); err != nil || got != "event-1" {
+		t.Fatalf("RequireID = %q, %v; want event-1", got, err)
+	}
+}
+
 func TestFetchAllPagesTraversesCompleteResponse(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Query().Get("pageSize") != "2" {

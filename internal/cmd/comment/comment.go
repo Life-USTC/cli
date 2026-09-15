@@ -12,11 +12,14 @@ import (
 
 	"github.com/Life-USTC/CLI/internal/api"
 	"github.com/Life-USTC/CLI/internal/cmd/cmdutil"
+	"github.com/Life-USTC/CLI/internal/cmd/youngutil"
 	openapi "github.com/Life-USTC/CLI/internal/openapi"
 	"github.com/Life-USTC/CLI/internal/output"
 )
 
 var targetTypes = []string{"section", "course", "teacher", "section-teacher", "homework", "young-event"}
+
+const commentsPath = "/api/community/comments"
 
 type commentTarget struct {
 	targetType string
@@ -45,13 +48,14 @@ func validCommentTargetType(targetType string) bool {
 }
 
 func validateTarget(target commentTarget, requireID bool) error {
+	target = normalizeTarget(target)
 	if !validCommentTargetType(target.targetType) {
 		return fmt.Errorf("invalid --target-type %q", target.targetType)
 	}
 	if target.targetType == "young-event" {
 		target = normalizeTarget(target)
-		if target.youngID == "" {
-			return fmt.Errorf("--young-id is required for young-event target")
+		if _, err := youngutil.RequireID(target.youngID, "--young-id"); err != nil {
+			return err
 		}
 		return nil
 	}
@@ -59,18 +63,26 @@ func validateTarget(target commentTarget, requireID bool) error {
 		return nil
 	}
 	if target.targetType == "section-teacher" {
-		if target.sectionID == "" || target.teacherID == "" {
-			return fmt.Errorf("--section-id and --teacher-id are required for section-teacher target")
+		if _, err := youngutil.RequireID(target.sectionID, "--section-id"); err != nil {
+			return err
+		}
+		if _, err := youngutil.RequireID(target.teacherID, "--teacher-id"); err != nil {
+			return err
 		}
 		return nil
 	}
-	if target.targetID == "" {
-		return fmt.Errorf("--target-id is required for this target type")
+	if _, err := youngutil.RequireID(target.targetID, "--target-id"); err != nil {
+		return err
 	}
 	return nil
 }
 
 func normalizeTarget(target commentTarget) commentTarget {
+	target.targetType = strings.TrimSpace(target.targetType)
+	target.targetID = strings.TrimSpace(target.targetID)
+	target.youngID = strings.TrimSpace(target.youngID)
+	target.sectionID = strings.TrimSpace(target.sectionID)
+	target.teacherID = strings.TrimSpace(target.teacherID)
 	if target.targetType == "young-event" && target.youngID == "" {
 		target.youngID = target.targetID
 	}
@@ -91,50 +103,66 @@ func runCommentList(cmd *cobra.Command, target commentTarget) error {
 	if err := validateTarget(target, false); err != nil {
 		return err
 	}
-	if target.targetType == "young-event" {
-		client, err := api.NewClient(cmdutil.ServerFromCmd(cmd), false)
-		if err != nil {
-			return err
-		}
-		params := url.Values{
-			"targetType": []string{"young-event"},
-			"youngId":    []string{target.youngID},
-		}
-		data, err := client.DoJSON(cmd.Context(), http.MethodGet, "/api/community/comments", params, nil)
-		if err != nil {
-			return err
-		}
-		_, rows, total, pg := cmdutil.ExtractList(data, "comments", "data")
-		return output.OutputList(data, rows, listCommentColumns(), total, pg)
-	}
-	c, err := api.NewTypedClient(cmdutil.ServerFromCmd(cmd), false)
+	params, err := commentListParams(cmd, target)
 	if err != nil {
 		return err
 	}
-	params := &openapi.ListCommentsParams{
-		TargetType: openapi.ListCommentsParamsTargetType(target.targetType),
+	client, err := api.NewClient(cmdutil.ServerFromCmd(cmd), false)
+	if err != nil {
+		return err
 	}
-	if target.targetID != "" {
-		params.TargetId = &target.targetID
+	data, err := youngutil.FetchAllIfUnpaged(
+		cmd.Context(),
+		client,
+		commentsPath,
+		params,
+		"data",
+		100,
+		"id",
+	)
+	if err != nil {
+		return err
+	}
+	list := cmdutil.NewListResult(data, "data")
+	return output.OutputList(list.Raw, list.Rows, listCommentColumns(), list.Total, list.Page)
+}
+
+func commentListParams(cmd *cobra.Command, target commentTarget) (url.Values, error) {
+	params, err := youngutil.PageParams(commandIntFlag(cmd, "page"), commandIntFlag(cmd, "limit"))
+	if err != nil {
+		return nil, err
+	}
+	params.Set("targetType", target.targetType)
+	if target.targetID != "" && target.targetType != "young-event" {
+		params.Set("targetId", target.targetID)
+	}
+	if target.youngID != "" {
+		params.Set("youngId", target.youngID)
 	}
 	if target.sectionID != "" {
-		params.SectionId, err = cmdutil.Int64PtrIfSet(target.sectionID)
-		if err != nil {
-			return err
+		if _, err := cmdutil.Int64PtrIfSet(target.sectionID); err != nil {
+			return nil, err
 		}
+		params.Set("sectionId", target.sectionID)
 	}
 	if target.teacherID != "" {
-		params.TeacherId, err = cmdutil.Int64PtrIfSet(target.teacherID)
-		if err != nil {
-			return err
+		if _, err := cmdutil.Int64PtrIfSet(target.teacherID); err != nil {
+			return nil, err
 		}
+		params.Set("teacherId", target.teacherID)
 	}
-	data, err := api.ParseResponseRaw(c.ListComments(api.Ctx(), params))
+	return params, nil
+}
+
+func commandIntFlag(cmd *cobra.Command, name string) int {
+	if cmd.Flags().Lookup(name) == nil {
+		return 0
+	}
+	value, err := cmd.Flags().GetInt(name)
 	if err != nil {
-		return err
+		return 0
 	}
-	_, rows, total, pg := cmdutil.ExtractList(data, "comments")
-	return output.OutputList(data, rows, listCommentColumns(), total, pg)
+	return value
 }
 
 func runCommentCreate(cmd *cobra.Command, target commentTarget, body, visibility, parentID string, anonymous bool) error {
@@ -160,14 +188,11 @@ func runCommentCreate(cmd *cobra.Command, target commentTarget, body, visibility
 		if parentID != "" {
 			request["parentId"] = parentID
 		}
-		data, err := client.DoJSON(cmd.Context(), http.MethodPost, "/api/community/comments", nil, request)
+		data, err := client.DoJSON(cmd.Context(), http.MethodPost, commentsPath, nil, request)
 		if err != nil {
 			return err
 		}
-		m := cmdutil.AsMap(data)
-		id, _ := m["id"].(string)
-		output.Success(fmt.Sprintf("Comment created: %s", id))
-		return nil
+		return reportCommentCreated(data)
 	}
 	c, err := api.NewTypedClient(cmdutil.ServerFromCmd(cmd), true)
 	if err != nil {
@@ -203,8 +228,21 @@ func runCommentCreate(cmd *cobra.Command, target commentTarget, body, visibility
 	if err != nil {
 		return err
 	}
+	return reportCommentCreated(data)
+}
+
+func reportCommentCreated(data any) error {
+	if output.IsJSON() {
+		return output.JSON(data)
+	}
 	m := cmdutil.AsMap(data)
+	if m == nil {
+		return fmt.Errorf("unexpected comment response format")
+	}
 	id, _ := m["id"].(string)
+	if id == "" {
+		return fmt.Errorf("comment response has no id")
+	}
 	output.Success(fmt.Sprintf("Comment created: %s", id))
 	return nil
 }
@@ -213,6 +251,7 @@ func NewCmdComment() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "comment <command>",
 		Short: "Read and write comments",
+		Args:  cobra.NoArgs,
 	}
 	cmd.AddCommand(newCmdList())
 	cmd.AddCommand(newCmdView())
@@ -229,6 +268,7 @@ func NewCmdCommentFor(targetType string) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "comment <command>",
 		Short: fmt.Sprintf("Comments on this %s", targetType),
+		Args:  cobra.NoArgs,
 	}
 	cmd.AddCommand(newCmdListFor(targetType))
 	cmd.AddCommand(newCmdView())
@@ -246,9 +286,16 @@ func newCmdListFor(targetType string) *cobra.Command {
 		Short:   fmt.Sprintf("List comments for a %s", targetType),
 		Args:    cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return runCommentList(cmd, commentTarget{targetType: targetType, targetID: args[0]})
+			targetID, err := youngutil.RequireID(args[0], "<target-id>")
+			if err != nil {
+				return err
+			}
+			return runCommentList(cmd, commentTarget{targetType: targetType, targetID: targetID})
 		},
 	}
+	var page, limit int
+	cmd.Flags().IntVarP(&page, "page", "p", 0, "Page number")
+	cmd.Flags().IntVarP(&limit, "limit", "L", 0, "Number of comments per page")
 	return cmd
 }
 
@@ -263,13 +310,17 @@ func newCmdCreateFor(targetType string) *cobra.Command {
 		Short:   fmt.Sprintf("Post a comment on a %s", targetType),
 		Args:    cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
+			targetID, err := youngutil.RequireID(args[0], "<target-id>")
+			if err != nil {
+				return err
+			}
 			if body == "" {
 				if !cmdutil.IsInteractive() {
 					return fmt.Errorf("--body is required in non-interactive mode")
 				}
 				body = cmdutil.PromptText("Comment body")
 			}
-			return runCommentCreate(cmd, commentTarget{targetType: targetType, targetID: args[0]}, body, visibility, parentID, anonymous)
+			return runCommentCreate(cmd, commentTarget{targetType: targetType, targetID: targetID}, body, visibility, parentID, anonymous)
 		},
 	}
 	cmd.Flags().StringVarP(&body, "body", "b", "", "Comment body")
@@ -287,6 +338,7 @@ func newCmdList() *cobra.Command {
 		Use:     "list",
 		Aliases: []string{"ls"},
 		Short:   "List comments for a target",
+		Args:    cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if targetType == "" {
 				return fmt.Errorf("--target-type is required")
@@ -305,6 +357,9 @@ func newCmdList() *cobra.Command {
 	cmd.Flags().StringVar(&youngID, "young-id", "", "Young event ID (for --target-type young-event)")
 	cmd.Flags().StringVar(&sectionID, "section-id", "", "Section ID (for section-teacher)")
 	cmd.Flags().StringVar(&teacherID, "teacher-id", "", "Teacher ID (for section-teacher)")
+	var page, limit int
+	cmd.Flags().IntVarP(&page, "page", "p", 0, "Page number")
+	cmd.Flags().IntVarP(&limit, "limit", "L", 0, "Number of comments per page")
 	return cmd
 }
 
@@ -315,11 +370,15 @@ func newCmdView() *cobra.Command {
 		Short:   "View a comment thread",
 		Args:    cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
+			commentID, err := youngutil.RequireID(args[0], "<comment-id>")
+			if err != nil {
+				return err
+			}
 			c, err := api.NewTypedClient(cmdutil.ServerFromCmd(cmd), false)
 			if err != nil {
 				return err
 			}
-			data, err := api.ParseResponseRaw(c.GetComment(api.Ctx(), args[0]))
+			data, err := api.ParseResponseRaw(c.GetComment(api.Ctx(), commentID))
 			if err != nil {
 				return err
 			}
@@ -362,6 +421,7 @@ func newCmdCreate() *cobra.Command {
 		Aliases: []string{"new"},
 		Short:   "Post a comment",
 		Long:    "Post a comment. Prompts interactively when --target-type/--body are omitted.",
+		Args:    cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if targetType == "" || body == "" {
 				if !cmdutil.IsInteractive() {
@@ -462,12 +522,11 @@ func newCmdUpdate() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			_, err = api.ParseResponseRaw(c.UpdateCommentWithBody(api.Ctx(), id, "application/json", bytes.NewReader(jsonBytes)))
+			data, err := api.ParseResponseRaw(c.UpdateCommentWithBody(api.Ctx(), id, "application/json", bytes.NewReader(jsonBytes)))
 			if err != nil {
 				return err
 			}
-			output.Success("Comment updated.")
-			return nil
+			return reportCommentMutation(data, "Comment updated.")
 		},
 	}
 	cmd.Flags().StringVarP(&body, "body", "b", "", "New body")
@@ -489,7 +548,11 @@ func newCmdDelete() *cobra.Command {
 			if len(args) > 0 {
 				ids = make([]string, len(args))
 				for i, arg := range args {
-					ids[i] = strings.TrimSpace(arg)
+					id, err := youngutil.RequireID(arg, "<comment-id>")
+					if err != nil {
+						return err
+					}
+					ids[i] = id
 				}
 			} else {
 				if !cmdutil.IsInteractive() {
@@ -545,6 +608,9 @@ func deleteComments(cmd *cobra.Command, ids []string, rows []map[string]any) err
 }
 
 func reportCommentBatchResults(data any, rows []map[string]any) error {
+	if output.IsJSON() {
+		return output.JSON(data)
+	}
 	labels := make(map[string]string, len(rows))
 	for _, row := range rows {
 		id, _ := row["id"].(string)
@@ -597,6 +663,10 @@ func newCmdReact() *cobra.Command {
 		Short: "Add or remove a reaction",
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
+			commentID, err := youngutil.RequireID(args[0], "<comment-id>")
+			if err != nil {
+				return err
+			}
 			c, err := api.NewTypedClient(cmdutil.ServerFromCmd(cmd), true)
 			if err != nil {
 				return err
@@ -605,28 +675,35 @@ func newCmdReact() *cobra.Command {
 				params := &openapi.RemoveCommentReactionParams{
 					Type: openapi.RemoveCommentReactionParamsType(reactionType),
 				}
-				_, err = api.ParseResponseRaw(c.RemoveCommentReaction(api.Ctx(), args[0], params))
+				data, err := api.ParseResponseRaw(c.RemoveCommentReaction(api.Ctx(), commentID, params))
 				if err != nil {
 					return err
 				}
-				output.Success("Reaction removed.")
+				return reportCommentMutation(data, "Reaction removed.")
 			} else {
 				body := openapi.AddCommentReactionJSONRequestBody{
 					Type: openapi.CommentReactionRequestSchemaType(reactionType),
 				}
-				_, err = api.ParseResponseRaw(c.AddCommentReaction(api.Ctx(), args[0], body))
+				data, err := api.ParseResponseRaw(c.AddCommentReaction(api.Ctx(), commentID, body))
 				if err != nil {
 					return err
 				}
-				output.Success("Reaction added.")
+				return reportCommentMutation(data, "Reaction added.")
 			}
-			return nil
 		},
 	}
 	cmd.Flags().StringVar(&reactionType, "type", "", "Reaction type/emoji (required)")
 	_ = cmd.MarkFlagRequired("type")
 	cmd.Flags().BoolVar(&remove, "remove", false, "Remove reaction")
 	return cmd
+}
+
+func reportCommentMutation(data any, message string) error {
+	if output.IsJSON() {
+		return output.JSON(data)
+	}
+	output.Success(message)
+	return nil
 }
 
 // promptCommentPick loads the user's recent comments and lets them pick one.
@@ -641,7 +718,7 @@ func promptCommentPick(cmd *cobra.Command, prompt string) (map[string]any, error
 	if err != nil {
 		return nil, err
 	}
-	list := cmdutil.NewListResult(data, "comments").FinalizeServerSide(20)
+	list := cmdutil.NewListResult(data, "data").FinalizeServerSide(20)
 	if len(list.Rows) == 0 {
 		output.Dim("  No comments found.")
 		return nil, nil

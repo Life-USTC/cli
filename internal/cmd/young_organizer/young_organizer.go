@@ -1,7 +1,6 @@
 package young_organizer
 
 import (
-	"fmt"
 	"net/http"
 	"net/url"
 	"strings"
@@ -31,8 +30,11 @@ func NewCmdYoungOrganizer() *cobra.Command {
 		Example: `  # List organizers
   life-ustc catalog young-organizer list
 
-  # View one organizer and its event groups
-  life-ustc catalog young-organizer get <organizer-id>`,
+  # View organizer metadata and activity counts
+  life-ustc catalog young-organizer get <organizer-id>
+
+  # List the organizer's activities
+  life-ustc catalog young-event --organizer-id <organizer-id>`,
 		Args: cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return runList(cmd, opts)
@@ -85,7 +87,15 @@ func runList(cmd *cobra.Command, opts listOpts) error {
 	if err != nil {
 		return err
 	}
-	data, err := client.DoJSON(cmd.Context(), http.MethodGet, youngutil.OrganizersPath, params, nil)
+	data, err := youngutil.FetchAllIfUnpaged(
+		cmd.Context(),
+		client,
+		youngutil.OrganizersPath,
+		params,
+		"data",
+		100,
+		"id",
+	)
 	if err != nil {
 		return err
 	}
@@ -93,6 +103,7 @@ func runList(cmd *cobra.Command, opts listOpts) error {
 	return output.OutputList(list.Raw, list.Rows, []output.Column{
 		{Header: "ID", Key: "id"},
 		{Header: "Name", Key: "name"},
+		{Header: "Total", Key: "totalCount"},
 		{Header: "Active", Key: "activeCount"},
 		{Header: "Upcoming", Key: "upcomingCount"},
 		{Header: "History", Key: "historyCount"},
@@ -106,7 +117,11 @@ func newCmdGet() *cobra.Command {
 		Short:   "View a Young organizer",
 		Args:    cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return runGet(cmd, args[0])
+			organizerID, err := youngutil.RequireID(args[0], "<organizer-id>")
+			if err != nil {
+				return err
+			}
+			return runGet(cmd, organizerID)
 		},
 	}
 }
@@ -127,52 +142,13 @@ func runGet(cmd *cobra.Command, organizerID string) error {
 		return err
 	}
 
-	params := url.Values{"organizerId": []string{organizerID}}
-	events, err := youngutil.FetchAllPages(
-		cmd.Context(),
-		client,
-		youngutil.EventsPath,
-		params,
-		"data",
-		100,
-		"youngId",
-	)
-	if err != nil {
-		return err
-	}
-	eventList := cmdutil.NewListResult(events, "data")
-	if output.IsJSON() {
-		result := make(map[string]any)
-		if organizer := cmdutil.AsMap(data); organizer != nil {
-			for key, value := range organizer {
-				result[key] = value
-			}
-		}
-		result["events"] = eventList.Rows
-		return output.JSON(result)
-	}
-	if err := output.OutputDetail(data, []output.FieldDef{
+	return output.OutputDetail(data, []output.FieldDef{
 		{Key: "id", Label: "ID"},
 		{Key: "name", Label: "Name"},
 		{Key: "normalizedName", Label: "Normalized name", SkipEmpty: true},
+		{Key: "totalCount", Label: "Total events"},
 		{Key: "activeCount", Label: "Active events"},
 		{Key: "upcomingCount", Label: "Upcoming events"},
 		{Key: "historyCount", Label: "Historical events"},
-	}, "Young organizer"); err != nil {
-		return err
-	}
-	if len(eventList.Rows) == 0 {
-		return nil
-	}
-	fmt.Println()
-	output.Bold("  Events")
-	output.Table(eventList.Rows, []output.Column{
-		{Header: "Name", Key: "name"},
-		{Header: "Category", Key: "category"},
-		{Header: "Start", Key: "startAt"},
-		{Header: "End", Key: "endAt"},
-		{Header: "Active", Key: "isActive"},
-		{Header: "Young ID", Key: "youngId"},
-	})
-	return nil
+	}, "Young organizer")
 }
