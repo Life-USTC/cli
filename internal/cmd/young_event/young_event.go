@@ -320,7 +320,7 @@ func runDateView(cmd *cobra.Command, view youngutil.DateView, anchor string, opt
 			{Key: "Last synced", Value: output.Resolve(meta, "source.lastSyncedAt")},
 			{Key: "Unknown dates", Value: output.Resolve(meta, "unknownDateCount")},
 		}, "Calendar source")
-		fmt.Println("Unknown-date activities: young-event list --date-unknown true --time-basis " + opts.timeBasis)
+		fmt.Println("Unknown-date activities: life-ustc catalog young-event list --date-unknown true --time-basis " + opts.timeBasis)
 	}
 	list := cmdutil.NewListResult(data, "data")
 	return output.OutputList(list.Raw, list.Rows, []output.Column{
