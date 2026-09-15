@@ -15,6 +15,7 @@ var (
 		"teacher\tTeacher comments",
 		"section-teacher\tSection-teacher comments",
 		"homework\tHomework comments",
+		"young-event\tYoung event comments",
 	}
 	descriptionTargetTypeCompletions = []string{
 		"section\tSection descriptions",

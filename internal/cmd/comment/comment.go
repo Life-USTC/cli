@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"net/http"
+	"net/url"
 	"strings"
 
 	"github.com/spf13/cobra"
@@ -14,11 +16,12 @@ import (
 	"github.com/Life-USTC/CLI/internal/output"
 )
 
-var targetTypes = []string{"section", "course", "teacher", "section-teacher", "homework"}
+var targetTypes = []string{"section", "course", "teacher", "section-teacher", "homework", "young-event"}
 
 type commentTarget struct {
 	targetType string
 	targetID   string
+	youngID    string
 	sectionID  string
 	teacherID  string
 }
@@ -45,6 +48,13 @@ func validateTarget(target commentTarget, requireID bool) error {
 	if !validCommentTargetType(target.targetType) {
 		return fmt.Errorf("invalid --target-type %q", target.targetType)
 	}
+	if target.targetType == "young-event" {
+		target = normalizeTarget(target)
+		if target.youngID == "" {
+			return fmt.Errorf("--young-id is required for young-event target")
+		}
+		return nil
+	}
 	if !requireID {
 		return nil
 	}
@@ -60,6 +70,13 @@ func validateTarget(target commentTarget, requireID bool) error {
 	return nil
 }
 
+func normalizeTarget(target commentTarget) commentTarget {
+	if target.targetType == "young-event" && target.youngID == "" {
+		target.youngID = target.targetID
+	}
+	return target
+}
+
 func listCommentColumns() []output.Column {
 	return []output.Column{
 		{Header: "ID", Key: "id"},
@@ -70,8 +87,25 @@ func listCommentColumns() []output.Column {
 }
 
 func runCommentList(cmd *cobra.Command, target commentTarget) error {
+	target = normalizeTarget(target)
 	if err := validateTarget(target, false); err != nil {
 		return err
+	}
+	if target.targetType == "young-event" {
+		client, err := api.NewClient(cmdutil.ServerFromCmd(cmd), false)
+		if err != nil {
+			return err
+		}
+		params := url.Values{
+			"targetType": []string{"young-event"},
+			"youngId":    []string{target.youngID},
+		}
+		data, err := client.DoJSON(cmd.Context(), http.MethodGet, "/api/community/comments", params, nil)
+		if err != nil {
+			return err
+		}
+		_, rows, total, pg := cmdutil.ExtractList(data, "comments", "data")
+		return output.OutputList(data, rows, listCommentColumns(), total, pg)
 	}
 	c, err := api.NewTypedClient(cmdutil.ServerFromCmd(cmd), false)
 	if err != nil {
@@ -104,11 +138,36 @@ func runCommentList(cmd *cobra.Command, target commentTarget) error {
 }
 
 func runCommentCreate(cmd *cobra.Command, target commentTarget, body, visibility, parentID string, anonymous bool) error {
+	target = normalizeTarget(target)
 	if !validVisibility(visibility) {
 		return fmt.Errorf("invalid --visibility %q (use public, logged_in_only, or anonymous)", visibility)
 	}
 	if err := validateTarget(target, true); err != nil {
 		return err
+	}
+	if target.targetType == "young-event" {
+		client, err := api.NewClient(cmdutil.ServerFromCmd(cmd), true)
+		if err != nil {
+			return err
+		}
+		request := map[string]any{
+			"targetType":  "young-event",
+			"youngId":     target.youngID,
+			"body":        body,
+			"visibility":  visibility,
+			"isAnonymous": anonymous,
+		}
+		if parentID != "" {
+			request["parentId"] = parentID
+		}
+		data, err := client.DoJSON(cmd.Context(), http.MethodPost, "/api/community/comments", nil, request)
+		if err != nil {
+			return err
+		}
+		m := cmdutil.AsMap(data)
+		id, _ := m["id"].(string)
+		output.Success(fmt.Sprintf("Comment created: %s", id))
+		return nil
 	}
 	c, err := api.NewTypedClient(cmdutil.ServerFromCmd(cmd), true)
 	if err != nil {
@@ -222,7 +281,7 @@ func newCmdCreateFor(targetType string) *cobra.Command {
 
 func newCmdList() *cobra.Command {
 	var (
-		targetType, targetID, sectionID, teacherID string
+		targetType, targetID, youngID, sectionID, teacherID string
 	)
 	cmd := &cobra.Command{
 		Use:     "list",
@@ -235,13 +294,15 @@ func newCmdList() *cobra.Command {
 			return runCommentList(cmd, commentTarget{
 				targetType: targetType,
 				targetID:   targetID,
+				youngID:    youngID,
 				sectionID:  sectionID,
 				teacherID:  teacherID,
 			})
 		},
 	}
-	cmd.Flags().StringVar(&targetType, "target-type", "", "Target type (section, course, teacher, section-teacher, homework)")
+	cmd.Flags().StringVar(&targetType, "target-type", "", "Target type (section, course, teacher, section-teacher, homework, young-event)")
 	cmd.Flags().StringVar(&targetID, "target-id", "", "Target ID")
+	cmd.Flags().StringVar(&youngID, "young-id", "", "Young event ID (for --target-type young-event)")
 	cmd.Flags().StringVar(&sectionID, "section-id", "", "Section ID (for section-teacher)")
 	cmd.Flags().StringVar(&teacherID, "teacher-id", "", "Teacher ID (for section-teacher)")
 	return cmd
@@ -292,9 +353,9 @@ func newCmdView() *cobra.Command {
 
 func newCmdCreate() *cobra.Command {
 	var (
-		targetType, targetID, sectionID, teacherID string
-		body, visibility, parentID                 string
-		anonymous                                  bool
+		targetType, targetID, youngID, sectionID, teacherID string
+		body, visibility, parentID                          string
+		anonymous                                           bool
 	)
 	cmd := &cobra.Command{
 		Use:     "create",
@@ -316,6 +377,13 @@ func newCmdCreate() *cobra.Command {
 					if teacherID == "" {
 						teacherID = cmdutil.PromptText("Teacher ID")
 					}
+				} else if targetType == "young-event" {
+					if youngID == "" && targetID != "" {
+						youngID = targetID
+					}
+					if youngID == "" {
+						youngID = cmdutil.PromptText("Young event ID")
+					}
 				} else if targetID == "" {
 					targetID = cmdutil.PromptText("Target ID")
 				}
@@ -327,6 +395,7 @@ func newCmdCreate() *cobra.Command {
 			return runCommentCreate(cmd, commentTarget{
 				targetType: targetType,
 				targetID:   targetID,
+				youngID:    youngID,
 				sectionID:  sectionID,
 				teacherID:  teacherID,
 			}, body, visibility, parentID, anonymous)
@@ -334,6 +403,7 @@ func newCmdCreate() *cobra.Command {
 	}
 	cmd.Flags().StringVar(&targetType, "target-type", "", "Target type")
 	cmd.Flags().StringVar(&targetID, "target-id", "", "Target ID")
+	cmd.Flags().StringVar(&youngID, "young-id", "", "Young event ID (for young-event target)")
 	cmd.Flags().StringVar(&sectionID, "section-id", "", "Section ID")
 	cmd.Flags().StringVar(&teacherID, "teacher-id", "", "Teacher ID")
 	cmd.Flags().StringVarP(&body, "body", "b", "", "Comment body")

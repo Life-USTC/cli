@@ -103,6 +103,7 @@ var cliOAuthScopes = []string{
 	"community.description:write",
 	"community.section-homework:write",
 	"workspace.bus-preferences:write",
+	"workspace.calendar:read",
 	"workspace.calendar-feed:read",
 	"workspace.homework:write",
 	"workspace.link-pin:write",
@@ -111,6 +112,10 @@ var cliOAuthScopes = []string{
 	"workspace.subscription:write",
 	"workspace.todo:write",
 	"workspace.upload:write",
+	"workspace.young-notification:read",
+	"workspace.young-notification:write",
+	"workspace.young-subscription:read",
+	"workspace.young-subscription:write",
 }
 
 func oauthScopesFromMetadata(meta map[string]any) ([]string, error) {

@@ -15,6 +15,7 @@ import (
 	"github.com/Life-USTC/CLI/internal/cmd/teacher"
 	"github.com/Life-USTC/CLI/internal/cmd/weather"
 	"github.com/Life-USTC/CLI/internal/cmd/young_event"
+	"github.com/Life-USTC/CLI/internal/cmd/young_organizer"
 )
 
 func NewCmdCatalog() *cobra.Command {
@@ -33,6 +34,7 @@ func NewCmdCatalog() *cobra.Command {
 		bus.NewCmdBus(),
 		link.NewCmdCatalogLink(),
 		young_event.NewCmdYoungEvent(),
+		young_organizer.NewCmdYoungOrganizer(),
 		weather.NewCmdWeather(),
 		room.NewCmdRoom(),
 		publication.NewCmdPublication(),

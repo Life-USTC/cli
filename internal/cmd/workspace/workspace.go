@@ -2,6 +2,9 @@ package workspace
 
 import (
 	"fmt"
+	"net/http"
+	"net/url"
+	"strings"
 
 	"github.com/spf13/cobra"
 
@@ -15,6 +18,8 @@ import (
 	schoolcmd "github.com/Life-USTC/CLI/internal/cmd/school"
 	"github.com/Life-USTC/CLI/internal/cmd/todo"
 	"github.com/Life-USTC/CLI/internal/cmd/upload"
+	"github.com/Life-USTC/CLI/internal/cmd/young_workspace"
+	"github.com/Life-USTC/CLI/internal/cmd/youngutil"
 	openapi "github.com/Life-USTC/CLI/internal/openapi"
 	"github.com/Life-USTC/CLI/internal/output"
 )
@@ -33,12 +38,64 @@ func NewCmdWorkspace() *cobra.Command {
 		todo.NewCmdTodo(),
 		homework.NewCmdMyHomework(),
 		calendar.NewCmdSubscription(),
+		young_workspace.NewCmdYoungEventSubscription(),
+		young_workspace.NewCmdYoungOrganizerSubscription(),
+		young_workspace.NewCmdYoungNotification(),
 		bus.NewCmdBusPreferences(),
 		link.NewCmdWorkspaceLinkPin(),
 		upload.NewCmdUpload(),
 		schoolcmd.NewCmdSchool(),
 	)
 	return cmd
+}
+
+type calendarEventOpts struct {
+	dateFrom string
+	dateTo   string
+	page     int
+	pageSize int
+}
+
+func runCalendarEvents(cmd *cobra.Command, opts calendarEventOpts) error {
+	params, err := buildCalendarEventParams(opts)
+	if err != nil {
+		return err
+	}
+	client, err := api.NewClient(cmdutil.ServerFromCmd(cmd), true)
+	if err != nil {
+		return err
+	}
+	data, err := client.DoJSON(cmd.Context(), http.MethodGet, youngutil.PersonalCalendarEventsPath, params, nil)
+	if err != nil {
+		return err
+	}
+	list := cmdutil.NewListResult(data, "data")
+	return output.OutputList(list.Raw, list.Rows, []output.Column{
+		{Header: "At", Key: "at"},
+		{Header: "End", Key: "endsAt"},
+		{Header: "Type", Key: "type"},
+		{Header: "Title", Key: "title"},
+		{Header: "Location", Key: "location"},
+		{Header: "Young ID", Key: "youngId"},
+		{Header: "URL", Key: "url"},
+	}, list.Total, list.Page)
+}
+
+func buildCalendarEventParams(opts calendarEventOpts) (url.Values, error) {
+	params, err := youngutil.PageParams(opts.page, opts.pageSize)
+	if err != nil {
+		return nil, err
+	}
+	from := strings.TrimSpace(opts.dateFrom)
+	to := strings.TrimSpace(opts.dateTo)
+	if (from == "") != (to == "") {
+		return nil, fmt.Errorf("--date-from and --date-to must be provided together")
+	}
+	if from != "" {
+		params.Set("dateFrom", from)
+		params.Set("dateTo", to)
+	}
+	return params, nil
 }
 
 func newCmdOverview() *cobra.Command {
@@ -75,44 +132,29 @@ func newCmdOverview() *cobra.Command {
 
 func newCmdCalendar() *cobra.Command {
 	cmd := calendar.NewCmdCalendar()
+	var dateFrom, dateTo string
+	var page, pageSize int
 	events := &cobra.Command{
 		Use:   "events",
-		Short: "Show bounded event samples from the workspace overview",
-		Long: `Show the event samples included in the compact workspace overview.
-
-Schedules cover today. Exams, homeworks, and due todos are bounded upcoming
-samples from the overview window; this command is not a complete calendar.`,
+		Short: "List your complete personal calendar events",
+		Long: `List personal calendar events from the date range returned by the
+workspace calendar API. With no bounds, the server uses the current Shanghai
+date and the following seven days. Use --date-from and --date-to together for
+another inclusive range.`,
 		Args: cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			data, err := getOverview(cmd)
-			if err != nil {
-				return err
-			}
-			if output.IsJSON() {
-				return output.JSON(data)
-			}
-			m := cmdutil.AsMap(data)
-			for _, group := range []struct {
-				key, title string
-				cols       []output.Column
-			}{
-				{"schedules", "Today's schedules", []output.Column{{Header: "Course", Key: "section.course.namePrimary"}, {Header: "Time", Key: "startTime"}, {Header: "Place", Key: "customPlace"}}},
-				{"exams", "Upcoming exam samples", []output.Column{{Header: "Course", Key: "section.course.namePrimary"}, {Header: "Date", Key: "examDate"}, {Header: "Mode", Key: "examMode"}}},
-				{"homeworks", "Homework samples", []output.Column{{Header: "Title", Key: "title"}, {Header: "Due", Key: "submissionDueAt"}, {Header: "Course", Key: "section.course.namePrimary"}}},
-				{"dueTodos", "Due todo samples", []output.Column{{Header: "Title", Key: "title"}, {Header: "Due", Key: "dueAt"}, {Header: "Priority", Key: "priority"}}},
-			} {
-				part := cmdutil.AsMap(m[group.key])
-				rows := cmdutil.RowsFromAny(part["items"])
-				if len(rows) == 0 {
-					continue
-				}
-				fmt.Println()
-				output.Bold("  " + group.title)
-				output.Table(rows, group.cols)
-			}
-			return nil
+			return runCalendarEvents(cmd, calendarEventOpts{
+				dateFrom: dateFrom,
+				dateTo:   dateTo,
+				page:     page,
+				pageSize: pageSize,
+			})
 		},
 	}
+	events.Flags().StringVar(&dateFrom, "date-from", "", "Inclusive Shanghai date/time range start")
+	events.Flags().StringVar(&dateTo, "date-to", "", "Inclusive Shanghai date/time range end")
+	events.Flags().IntVarP(&page, "page", "p", 0, "Page number")
+	events.Flags().IntVarP(&pageSize, "limit", "L", 0, "Number of calendar events per page")
 	cmd.AddCommand(events)
 	return cmd
 }

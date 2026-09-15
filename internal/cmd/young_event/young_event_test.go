@@ -17,8 +17,34 @@ func TestYoungEventFlagsMapToCanonicalPageSize(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if *params.Active != "true" || *params.Category != "系列项目" || *params.Search != "robotics" || *params.Page != 2 || *params.PageSize != 20 {
+	for key, want := range map[string]string{
+		"active": "true", "category": "系列项目", "search": "robotics", "page": "2", "pageSize": "20",
+	} {
+		if got := params.Get(key); got != want {
+			t.Errorf("params[%s] = %q, want %q", key, got, want)
+		}
+	}
+	if len(params) != 5 {
 		t.Fatalf("params = %#v", params)
+	}
+}
+
+func TestYoungEventFlagsMapNewFilters(t *testing.T) {
+	params, err := buildListParams(listOpts{
+		organizerID: "org-1",
+		dateFrom:    "2026-09-01",
+		dateTo:      "2026-09-30",
+		timeBasis:   "registration",
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	for key, want := range map[string]string{
+		"organizerId": "org-1", "dateFrom": "2026-09-01", "dateTo": "2026-09-30", "timeBasis": "registration",
+	} {
+		if got := params.Get(key); got != want {
+			t.Errorf("params[%s] = %q, want %q", key, got, want)
+		}
 	}
 }
 
@@ -34,5 +60,11 @@ func TestBuildListParamsRejectsNegativePagination(t *testing.T) {
 	}
 	if _, err := buildListParams(listOpts{pageSize: -1}); err == nil {
 		t.Fatal("buildListParams accepted a negative limit")
+	}
+}
+
+func TestBuildListParamsRequiresDatePair(t *testing.T) {
+	if _, err := buildListParams(listOpts{dateFrom: "2026-09-01"}); err == nil {
+		t.Fatal("buildListParams accepted an unpaired date-from")
 	}
 }
