@@ -7246,11 +7246,22 @@ type PersonalCalendarPageSchemaDataType string
 
 // PublicPublicationDetailSchema defines model for publicPublicationDetailSchema.
 type PublicPublicationDetailSchema struct {
+	AlsoPublishedIn []struct {
+		CanonicalUrl string     `json:"canonicalUrl"`
+		Id           string     `json:"id"`
+		PublishedAt  *time.Time `json:"publishedAt"`
+		Source       struct {
+			Id                string `json:"id"`
+			Name              string `json:"name"`
+			OrganizationLevel string `json:"organizationLevel"`
+		} `json:"source"`
+	} `json:"alsoPublishedIn"`
 	CanonicalUrl    string                                       `json:"canonicalUrl"`
 	Id              string                                       `json:"id"`
 	PublicationType PublicPublicationDetailSchemaPublicationType `json:"publicationType"`
 	Revision        struct {
 		Author            *string `json:"author"`
+		BodyMarkdown      *string `json:"bodyMarkdown"`
 		BodyText          *string `json:"bodyText"`
 		Category          *string `json:"category"`
 		ClassifierVersion *string `json:"classifierVersion"`
@@ -7294,8 +7305,11 @@ type PublicPublicationDetailSchemaRevisionObjectsStatus string
 type PublicPublicationsResponseSchema struct {
 	Data []struct {
 		CanonicalUrl string `json:"canonicalUrl"`
-		Id           string `json:"id"`
-		Objects      []struct {
+		FoldGroup    *struct {
+			SiblingCount int `json:"siblingCount"`
+		} `json:"foldGroup,omitempty"`
+		Id      string `json:"id"`
+		Objects []struct {
 			AltText     *string                                           `json:"altText"`
 			ContentType string                                            `json:"contentType"`
 			Kind        PublicPublicationsResponseSchemaDataObjectsKind   `json:"kind"`
@@ -7387,12 +7401,13 @@ type PublicationIngestionBatchRequestSchema struct {
 
 // PublicationIngestionBatchRequestSchemaItems0 defines model for .
 type PublicationIngestionBatchRequestSchemaItems0 struct {
-	Author            *string `json:"author,omitempty"`
-	BodyText          *string `json:"bodyText,omitempty"`
-	CanonicalUrl      string  `json:"canonicalUrl"`
-	Category          *string `json:"category,omitempty"`
-	ClassifierVersion *string `json:"classifierVersion,omitempty"`
-	ExtractionMethod  *string `json:"extractionMethod,omitempty"`
+	Author            *string           `json:"author,omitempty"`
+	BodyText          *string           `json:"bodyText,omitempty"`
+	CanonicalUrl      string            `json:"canonicalUrl"`
+	Category          *string           `json:"category,omitempty"`
+	ClassifierVersion *string           `json:"classifierVersion,omitempty"`
+	ExtractionMethod  *string           `json:"extractionMethod,omitempty"`
+	ImageSources      map[string]string `json:"imageSources"`
 	Objects           []struct {
 		AltText     *string                                                 `json:"altText,omitempty"`
 		ContentType string                                                  `json:"contentType"`

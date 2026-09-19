@@ -74,6 +74,7 @@ var generatedAPIPaths = []string{
 	"/api/mcp/.well-known/openid-configuration",
 	"/api/openapi",
 	"/api/publications",
+	"/api/publications/images/{hash}",
 	"/api/publications/objects/{kind}/{sha256}",
 	"/api/publications/{id}",
 	"/api/search",
