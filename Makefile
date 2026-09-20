@@ -3,7 +3,7 @@ OPENAPI_SERVER_DIR ?= ../server
 SERVER_COMMIT ?=
 LDFLAGS := -ldflags "-X github.com/Life-USTC/CLI/internal/cmd/root.version=$(VERSION)"
 
-.PHONY: build clean test lint vet install generate sync-openapi check-openapi-provenance check-openapi-sync
+.PHONY: build clean test test-scripts lint vet install generate sync-openapi check-openapi-provenance check-openapi-reachability check-openapi-sync
 
 build: check-openapi-provenance generate
 	go build $(LDFLAGS) -o life-ustc ./cmd/life-ustc
@@ -12,8 +12,11 @@ clean:
 	rm -f life-ustc
 	rm -rf dist/
 
-test:
+test: test-scripts
 	go test -race ./...
+
+test-scripts:
+	./scripts/openapi-contract.test.sh
 
 lint:
 	golangci-lint run ./...
@@ -33,6 +36,9 @@ sync-openapi:
 
 check-openapi-provenance:
 	./scripts/openapi-contract verify
+
+check-openapi-reachability:
+	./scripts/openapi-contract verify-reachable "$(OPENAPI_SERVER_DIR)"
 
 check-openapi-sync:
 	./scripts/openapi-contract verify-source "$(OPENAPI_SERVER_DIR)"

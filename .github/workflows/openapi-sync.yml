@@ -54,6 +54,15 @@ jobs:
           repository: Life-USTC/server
           ref: ${{ steps.server.outputs.sha }}
           path: .openapi-server
+          # Needed so the sync refuses to pin a commit that never landed on
+          # server main (a pull-request head stays fetchable by SHA forever).
+          fetch-depth: 0
+
+      - name: Fetch server main for the pin reachability check
+        run: |
+          git -C .openapi-server fetch --no-tags --quiet origin \
+            +refs/heads/main:refs/remotes/origin/main
+          git -C .openapi-server rev-parse --verify refs/remotes/origin/main >/dev/null
 
       - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
@@ -62,8 +71,7 @@ jobs:
       - name: Sync contract and generated client
         run: |
           make sync-openapi OPENAPI_SERVER_DIR=.openapi-server SERVER_COMMIT=${{ steps.server.outputs.sha }}
-          ./scripts/openapi-contract verify
-          cmp -s .openapi-server/public/openapi.generated.json api/openapi.json
+          make check-openapi-sync OPENAPI_SERVER_DIR=.openapi-server
           make generate
 
       - name: Build, test, and vet
