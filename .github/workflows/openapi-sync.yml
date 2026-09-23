@@ -70,8 +70,15 @@ jobs:
 
       - name: Sync contract and generated client
         run: |
-          make sync-openapi OPENAPI_SERVER_DIR=.openapi-server SERVER_COMMIT=${{ steps.server.outputs.sha }}
-          make check-openapi-sync OPENAPI_SERVER_DIR=.openapi-server
+          test "$(git -C .openapi-server rev-parse HEAD)" = "${{ steps.server.outputs.sha }}"
+          if ./scripts/openapi-contract verify >/dev/null 2>&1 \
+            && ./scripts/openapi-contract verify-reachable .openapi-server >/dev/null 2>&1 \
+            && cmp -s .openapi-server/public/openapi.generated.json api/openapi.json; then
+            echo "Server contract is unchanged; preserving the existing provenance pin." >> "$GITHUB_STEP_SUMMARY"
+          else
+            make sync-openapi OPENAPI_SERVER_DIR=.openapi-server SERVER_COMMIT=${{ steps.server.outputs.sha }}
+            make check-openapi-sync OPENAPI_SERVER_DIR=.openapi-server
+          fi
           make generate
 
       - name: Build, test, and vet
