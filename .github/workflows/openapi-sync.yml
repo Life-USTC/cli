@@ -9,8 +9,6 @@ on:
         description: Exact Life-USTC/server commit SHA (defaults to current main)
         required: false
         type: string
-  repository_dispatch:
-    types: [openapi-updated]
 
 permissions:
   contents: write
@@ -29,10 +27,9 @@ jobs:
       - name: Resolve immutable server commit
         id: server
         env:
-          DISPATCH_SHA: ${{ github.event.client_payload.server_sha }}
           INPUT_SHA: ${{ inputs.server_sha }}
         run: |
-          explicit="${INPUT_SHA:-${DISPATCH_SHA:-}}"
+          explicit="${INPUT_SHA:-}"
           if [[ -n "$explicit" ]]; then
             if [[ ! "$explicit" =~ ^[0-9a-f]{40}$ ]]; then
               echo "Explicit server_sha must be an exact 40-character lowercase commit SHA" >&2
