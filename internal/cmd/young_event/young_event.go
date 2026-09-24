@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/PuerkitoBio/goquery"
 	"github.com/spf13/cobra"
 
 	"github.com/Life-USTC/CLI/internal/api"
@@ -213,6 +214,9 @@ func newCmdGet() *cobra.Command {
 			if err != nil {
 				return err
 			}
+			if !output.IsJSON() {
+				data = youngDetailDisplay(data)
+			}
 			return output.OutputDetail(data, []output.FieldDef{
 				{Key: "youngId", Label: "Young ID"},
 				{Key: "name", Label: "Name"},
@@ -253,6 +257,7 @@ func newCmdGet() *cobra.Command {
 				{Key: "sponsor", Label: "Sponsor", SkipEmpty: true},
 				{Key: "contactName", Label: "Contact", SkipEmpty: true},
 				{Key: "contactTel", Label: "Phone", SkipEmpty: true},
+				{Key: "description", Label: "Description", SkipEmpty: true},
 				{Key: "participationNotes", Label: "Participation notes", SkipEmpty: true},
 				{Key: "status", Label: "Status", SkipEmpty: true},
 				{Key: "isActive", Label: "Active"},
@@ -386,3 +391,38 @@ func fetchDateEvents(ctx context.Context, client *api.Client, query url.Values) 
 
 // timeNow is a variable for deterministic date-range tests.
 var timeNow = func() time.Time { return time.Now() }
+
+// Human-readable output uses plain text while JSON/JQ retain the server payload.
+func youngDetailDisplay(raw any) any {
+	source, ok := raw.(map[string]any)
+	if !ok {
+		return raw
+	}
+	display := make(map[string]any, len(source))
+	for key, value := range source {
+		switch v := value.(type) {
+		case []any:
+			parts := make([]string, 0, len(v))
+			for _, item := range v {
+				parts = append(parts, fmt.Sprint(item))
+			}
+			display[key] = strings.Join(parts, ", ")
+		default:
+			display[key] = value
+		}
+	}
+	for _, key := range []string{"description", "participationNotes"} {
+		html, ok := source[key].(string)
+		if !ok || html == "" {
+			continue
+		}
+		document, err := goquery.NewDocumentFromReader(strings.NewReader(html))
+		if err != nil {
+			continue
+		}
+		document.Find("script,style,iframe").Remove()
+		document.Find("p,div,li,br").AfterHtml("\n")
+		display[key] = strings.TrimSpace(document.Text())
+	}
+	return display
+}
