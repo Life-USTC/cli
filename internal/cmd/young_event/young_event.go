@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/PuerkitoBio/goquery"
 	"github.com/spf13/cobra"
 
 	"github.com/Life-USTC/CLI/internal/api"
@@ -213,6 +214,9 @@ func newCmdGet() *cobra.Command {
 			if err != nil {
 				return err
 			}
+			if !output.IsJSON() {
+				data = youngDetailDisplay(data)
+			}
 			return output.OutputDetail(data, []output.FieldDef{
 				{Key: "youngId", Label: "Young ID"},
 				{Key: "name", Label: "Name"},
@@ -231,6 +235,30 @@ func newCmdGet() *cobra.Command {
 				{Key: "activityStatusCode", Label: "Activity status code", SkipEmpty: true},
 				{Key: "signupStatusCode", Label: "Signup status code", SkipEmpty: true},
 				{Key: "requiresSignup", Label: "Requires signup", SkipEmpty: true},
+				{Key: "categoryCode", Label: "Category code (upstream)", SkipEmpty: true},
+				{Key: "moduleCode", Label: "Module code (upstream)", SkipEmpty: true},
+				{Key: "formCode", Label: "Form code (upstream)", SkipEmpty: true},
+				{Key: "activityLevelCode", Label: "Activity level code (upstream)", SkipEmpty: true},
+				{Key: "departmentId", Label: "Department ID (upstream)", SkipEmpty: true},
+				{Key: "upstreamOrganizerIds", Label: "Organizer IDs (upstream)", SkipEmpty: true},
+				{Key: "upstreamSponsorIds", Label: "Sponsor IDs (upstream)", SkipEmpty: true},
+				{Key: "tagIds", Label: "Tag IDs (upstream)", SkipEmpty: true},
+				{Key: "signupScopeCode", Label: "Signup scope code (upstream)", SkipEmpty: true},
+				{Key: "signupDepartmentIds", Label: "Signup department IDs (upstream)", SkipEmpty: true},
+				{Key: "requiresSignupInfo", Label: "Additional signup information required", SkipEmpty: true},
+				{Key: "allowedAttachmentTypes", Label: "Accepted attachment formats", SkipEmpty: true},
+				{Key: "isOnline", Label: "Online meeting available", SkipEmpty: true},
+				{Key: "onlineMeetingInfo", Label: "Online meeting information", SkipEmpty: true},
+				{Key: "externalSponsor", Label: "External organizer", SkipEmpty: true},
+				{Key: "activityLevel", Label: "Activity level", SkipEmpty: true},
+				{Key: "module", Label: "Module", SkipEmpty: true},
+				{Key: "form", Label: "Participation format", SkipEmpty: true},
+				{Key: "grades", Label: "Eligible grades", SkipEmpty: true},
+				{Key: "sponsor", Label: "Sponsor", SkipEmpty: true},
+				{Key: "contactName", Label: "Contact", SkipEmpty: true},
+				{Key: "contactTel", Label: "Phone", SkipEmpty: true},
+				{Key: "description", Label: "Description", SkipEmpty: true},
+				{Key: "participationNotes", Label: "Participation notes", SkipEmpty: true},
 				{Key: "status", Label: "Status", SkipEmpty: true},
 				{Key: "isActive", Label: "Active"},
 				{Key: "sourceMissing", Label: "Source missing", SkipEmpty: true},
@@ -363,3 +391,38 @@ func fetchDateEvents(ctx context.Context, client *api.Client, query url.Values) 
 
 // timeNow is a variable for deterministic date-range tests.
 var timeNow = func() time.Time { return time.Now() }
+
+// Human-readable output uses plain text while JSON/JQ retain the server payload.
+func youngDetailDisplay(raw any) any {
+	source, ok := raw.(map[string]any)
+	if !ok {
+		return raw
+	}
+	display := make(map[string]any, len(source))
+	for key, value := range source {
+		switch v := value.(type) {
+		case []any:
+			parts := make([]string, 0, len(v))
+			for _, item := range v {
+				parts = append(parts, fmt.Sprint(item))
+			}
+			display[key] = strings.Join(parts, ", ")
+		default:
+			display[key] = value
+		}
+	}
+	for _, key := range []string{"description", "participationNotes"} {
+		html, ok := source[key].(string)
+		if !ok || html == "" {
+			continue
+		}
+		document, err := goquery.NewDocumentFromReader(strings.NewReader(html))
+		if err != nil {
+			continue
+		}
+		document.Find("script,style,iframe").Remove()
+		document.Find("p,div,li,br").AfterHtml("\n")
+		display[key] = strings.TrimSpace(document.Text())
+	}
+	return display
+}

@@ -93,3 +93,20 @@ func TestDateRegistrationUsesRegistrationColumns(t *testing.T) {
 		t.Fatalf("activity start key = %q", got)
 	}
 }
+
+func TestYoungDetailDisplayKeepsRawPayloadAndKnownZero(t *testing.T) {
+	raw := map[string]any{"description": "<p>First &amp; second</p><p>Next</p>", "allowedAttachmentTypes": []any{"pdf", "docx"}, "tagIds": []any{}, "requiresSignupInfo": false, "appliedCount": 0}
+	shown := youngDetailDisplay(raw).(map[string]any)
+	if shown["description"] != "First & second\nNext" {
+		t.Fatalf("description: %q", shown["description"])
+	}
+	if shown["allowedAttachmentTypes"] != "pdf, docx" || shown["tagIds"] != "" {
+		t.Fatal(shown)
+	}
+	if shown["requiresSignupInfo"] != false || shown["appliedCount"] != 0 {
+		t.Fatal("lost false or zero")
+	}
+	if raw["description"] != "<p>First &amp; second</p><p>Next</p>" {
+		t.Fatal("mutated raw payload")
+	}
+}
