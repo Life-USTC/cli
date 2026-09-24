@@ -247,7 +247,7 @@ func newCmdGet() *cobra.Command {
 				{Key: "signupDepartmentIds", Label: "Signup department IDs (upstream)", SkipEmpty: true},
 				{Key: "requiresSignupInfo", Label: "Additional signup information required", SkipEmpty: true},
 				{Key: "allowedAttachmentTypes", Label: "Accepted attachment formats", SkipEmpty: true},
-				{Key: "isOnline", Label: "Online event", SkipEmpty: true},
+				{Key: "isOnline", Label: "Online meeting available", SkipEmpty: true},
 				{Key: "onlineMeetingInfo", Label: "Online meeting information", SkipEmpty: true},
 				{Key: "externalSponsor", Label: "External organizer", SkipEmpty: true},
 				{Key: "activityLevel", Label: "Activity level", SkipEmpty: true},
