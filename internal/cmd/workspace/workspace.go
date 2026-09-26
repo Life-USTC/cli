@@ -178,29 +178,6 @@ another inclusive range.`,
 	return cmd
 }
 
-func newCmdExam() *cobra.Command {
-	return &cobra.Command{
-		Use:   "exam",
-		Short: "List your upcoming exams",
-		Args:  cobra.NoArgs,
-		RunE: func(cmd *cobra.Command, args []string) error {
-			data, err := getOverview(cmd)
-			if err != nil {
-				return err
-			}
-			exams := cmdutil.AsMap(cmdutil.AsMap(data)["exams"])
-			rows := cmdutil.RowsFromAny(exams["items"])
-			return output.OutputList(exams, rows, []output.Column{
-				{Header: "Course", Key: "section.course.namePrimary"},
-				{Header: "Date", Key: "examDate"},
-				{Header: "Start", Key: "startTime"},
-				{Header: "End", Key: "endTime"},
-				{Header: "Mode", Key: "examMode"},
-			}, len(rows), 1)
-		},
-	}
-}
-
 func getOverview(cmd *cobra.Command) (any, error) {
 	c, err := api.NewTypedClient(cmdutil.ServerFromCmd(cmd), true)
 	if err != nil {
