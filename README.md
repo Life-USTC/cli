@@ -37,6 +37,7 @@ life-ustc catalog young-event --active true --limit 20
 life-ustc catalog young-organizer list --search 学生会
 life-ustc catalog young-event date week 2026-09-15
 life-ustc workspace calendar events --date-from 2026-09-01 --date-to 2026-09-30
+life-ustc workspace exam --date-from 2026-09-01 --date-to 2026-09-30
 life-ustc workspace young-event-subscription set <young-id> --subscribed true --remind-start true
 life-ustc catalog weather --location-key ustc-main
 life-ustc catalog room map <room-code>
@@ -46,11 +47,14 @@ life-ustc account client activity --limit 20
 life-ustc community user get <username-or-id>
 ```
 
-当前客户端活动需要 `account.client-activity:read` 权限。旧版本登录的用户需运行
+客户端活动需要 `account.client-activity:read`，考试列表需要 `workspace.exam:read`。旧版本登录的用户需运行
 `life-ustc account login` 重新授权，刷新旧 token 不会增加权限。
 
 `workspace calendar events` 使用完整个人日历 REST 接口，默认读取当前上海日期起的
 七天窗口；使用成对的 `--date-from` / `--date-to` 查询其它包含端点的日期范围。
+`workspace exam` 默认遍历所有分页，包含已订阅教学班的历史、跨学期及日期未知考试；
+可用 `--semester-id`、`--date-from`、`--date-to` 筛选，或用
+`--include-date-unknown=false` 排除日期未知考试。显式传入 `--page` 或 `--limit` 只取一页。
 Young 活动的 `catalog young-event date day|week|month` 会遍历该范围的所有分页。
 要订阅 iCal 日历，请使用 `workspace calendar feed`，并将返回的 URL 导入日历应用。
 

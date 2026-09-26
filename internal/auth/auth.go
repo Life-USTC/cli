@@ -105,6 +105,7 @@ var cliOAuthScopes = []string{
 	"workspace.bus-preferences:write",
 	"workspace.calendar:read",
 	"workspace.calendar-feed:read",
+	"workspace.exam:read",
 	"workspace.homework:write",
 	"workspace.link-pin:write",
 	"workspace.overview:read",
