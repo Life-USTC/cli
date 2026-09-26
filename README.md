@@ -3,7 +3,7 @@
 终端里使用 [Life@USTC](https://life-ustc.tiankaima.dev) 的命令行客户端
 （`life-ustc`）。数据与权限来自
 [server](https://github.com/Life-USTC/server)；域与能力名与 Web / Bot / MCP 同一棵树
-（[interface hierarchy](https://github.com/Life-USTC/server/blob/main/docs/interface-hierarchy.md)）。
+（[interface hierarchy](https://github.com/Life-USTC/server/blob/main/docs/policies/interface-hierarchy.yaml)）。
 
 ## 面向谁
 
