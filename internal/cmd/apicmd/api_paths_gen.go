@@ -82,6 +82,7 @@ var generatedAPIPaths = []string{
 	"/api/search",
 	"/api/workspace/bus-preferences",
 	"/api/workspace/calendar/events",
+	"/api/workspace/exams",
 	"/api/workspace/homeworks",
 	"/api/workspace/homeworks/completions",
 	"/api/workspace/homeworks/{id}/completion",
