@@ -25,12 +25,7 @@ func renderDescription(data any, includeHistoryID bool) error {
 		return output.JSON(data)
 	}
 	m := cmdutil.AsMap(data)
-	content := ""
-	if c, ok := m["content"].(string); ok {
-		content = c
-	} else if c, ok := m["description"].(string); ok {
-		content = c
-	}
+	content, _ := cmdutil.AsMap(m["description"])["content"].(string)
 	if content != "" {
 		fmt.Println()
 		fmt.Println(content)
@@ -43,8 +38,8 @@ func renderDescription(data any, includeHistoryID bool) error {
 		output.Bold("  History")
 		rows := cmdutil.RowsFromAny(history)
 		cols := []output.Column{
-			{Header: "Updated", Key: "updatedAt"},
-			{Header: "By", Key: "updatedBy.name"},
+			{Header: "Updated", Key: "createdAt"},
+			{Header: "By", Key: "editor.name"},
 		}
 		if includeHistoryID {
 			cols = append([]output.Column{{Header: "ID", Key: "id"}}, cols...)
