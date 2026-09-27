@@ -721,7 +721,7 @@ func flattenComments(roots []map[string]any) []map[string]any {
 	var rows []map[string]any
 	var visit func(map[string]any, string)
 	visit = func(node map[string]any, parent string) {
-		row := make(map[string]any, len(node)+1)
+		row := make(map[string]any, len(node))
 		for key, value := range node {
 			row[key] = value
 		}
