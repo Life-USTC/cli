@@ -1,0 +1,122 @@
+{
+  "version": 1,
+  "owner": "CLI",
+  "requirements": [
+    {
+      "id": "exam.cli-complete-list",
+      "scope": "private",
+      "rule": "Without an explicit page or limit, the exam command exhausts all server pages and preserves the total.",
+      "acceptance": {
+        "given": "A signed-in user has 104 exams across two REST pages.",
+        "when": "The real exam command prints JSON without pagination flags.",
+        "then": [
+          "All 104 exams, including the last page, are printed once.",
+          "The combined total and page size are 104."
+        ],
+        "test": {
+          "file": "internal/cmd/workspace/exam_test.go",
+          "name": "TestSpecExamReadsEveryPageAndPreservesTotal/exam.cli-complete-list"
+        }
+      }
+    },
+    {
+      "id": "exam.cli-explicit-pagination",
+      "scope": "private",
+      "rule": "Explicit page or limit flags select one REST page without auto-fetching further pages.",
+      "acceptance": {
+        "given": "An exam command includes page and/or limit plus date and semester filters.",
+        "when": "The real command requests its list and prints a table.",
+        "then": [
+          "Exactly one request uses the selected page and pageSize."
+        ],
+        "test": {
+          "file": "internal/cmd/workspace/exam_test.go",
+          "name": "TestSpecExamExplicitPaginationAndFilters/exam.cli-explicit-pagination"
+        }
+      }
+    },
+    {
+      "id": "exam.cli-page-failure",
+      "scope": "private",
+      "rule": "A failed later exam page fails the command without printing partial results.",
+      "acceptance": {
+        "given": "The first exam page succeeds and the second returns forbidden.",
+        "when": "The command tries to read the complete exam list.",
+        "then": [
+          "The command returns an error.",
+          "No partial success is printed."
+        ],
+        "test": {
+          "file": "internal/cmd/workspace/exam_test.go",
+          "name": "TestSpecExamLaterPageFailureDoesNotPrintPartialSuccess/exam.cli-page-failure"
+        }
+      }
+    },
+    {
+      "id": "exam.cli-positive-input",
+      "scope": "private",
+      "rule": "Explicit page, limit and semester identifiers must be positive; limit is at most 100.",
+      "acceptance": {
+        "given": "Exam flags contain zero, negative values or limit 101.",
+        "when": "The command validates explicit flags.",
+        "then": [
+          "Invalid input fails before reading exams."
+        ],
+        "test": {
+          "file": "internal/cmd/workspace/exam_test.go",
+          "name": "TestSpecExamRejectsInvalidExplicitPaginationAndSemester/exam.cli-positive-input"
+        }
+      }
+    },
+    {
+      "id": "room-map.cli-request",
+      "scope": "public",
+      "rule": "Room-map lookup uses the catalog room code route and preserves the returned room code.",
+      "acceptance": {
+        "given": "The server provides a highlighted map for B001.",
+        "when": "The production CLI room-map client requests B001.",
+        "then": [
+          "GET /api/catalog/rooms/B001/map is used.",
+          "The returned code is B001."
+        ],
+        "test": {
+          "file": "internal/cmd/room/room_http_test.go",
+          "name": "TestSpecFetchRoomMapUsesRoomCodePath/room-map.cli-request"
+        }
+      }
+    },
+    {
+      "id": "room-map.cli-input",
+      "scope": "public",
+      "rule": "Room codes are trimmed and empty codes are rejected.",
+      "acceptance": {
+        "given": "Room input has surrounding whitespace or only whitespace.",
+        "when": "The command normalizes the code.",
+        "then": [
+          "Nonempty codes preserve their content after trimming.",
+          "Whitespace-only input fails."
+        ],
+        "test": {
+          "file": "internal/cmd/room/room_test.go",
+          "name": "TestSpecNormalizeRoomCodeTrimsAndRejectsEmpty/room-map.cli-input"
+        }
+      }
+    },
+    {
+      "id": "exam.cli-semester-display",
+      "scope": "private",
+      "rule": "Each exam row in the table identifies its semester.",
+      "acceptance": {
+        "given": "A returned exam belongs to 2026 Fall.",
+        "when": "The actual exam command prints its table.",
+        "then": [
+          "The table includes the exam semester."
+        ],
+        "test": {
+          "file": "internal/cmd/workspace/exam_test.go",
+          "name": "TestSpecExamSemesterDisplay/exam.cli-semester-display"
+        }
+      }
+    }
+  ]
+}
