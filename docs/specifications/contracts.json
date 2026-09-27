@@ -215,6 +215,155 @@
           "name": "TestSpecYoungParticipationOutput/young.cli-participation-fields"
         }
       }
+    },
+    {
+      "id": "school.cli-complete-semesters",
+      "scope": "private",
+      "rule": "School lesson and homework sync read every catalog semester using lawful page sizes before matching historical work; a failed later page aborts the read.",
+      "acceptance": {
+        "given": "101 catalog semesters across two pages, with a server enforcing pageSize at most 100.",
+        "when": "Run the shared production semester reader used by both sync commands and map a semester found only on the last page.",
+        "then": [
+          "Both pages are read with valid pagination and semester 101 is mapped.",
+          "A denied second page returns an error and no partial collection."
+        ],
+        "test": {
+          "file": "internal/cmd/school/contracts_test.go",
+          "name": "TestSpecSchoolCompleteSemesters/school.cli-complete-semesters"
+        }
+      }
+    },
+    {
+      "id": "school.cli-existing-homework",
+      "scope": "private",
+      "rule": "School homework sync matches existing assignments across all server pages before creating work, and updates the matched homework completion.",
+      "acceptance": {
+        "given": "101 existing section homeworks, with the matching submitted assignment on page two.",
+        "when": "Use the production homework collection reader and synchronization operation.",
+        "then": [
+          "No duplicate homework is created; the existing final-page ID receives completed=true.",
+          "A failed later page returns no partial collection."
+        ],
+        "test": {
+          "file": "internal/cmd/school/contracts_test.go",
+          "name": "TestSpecSchoolExistingHomework/school.cli-existing-homework"
+        }
+      }
+    },
+    {
+      "id": "homework.cli-section-pagination",
+      "scope": "public",
+      "rule": "Section homework list uses the full data collection before applying its local page and limit flags.",
+      "acceptance": {
+        "given": "101 section assignments across two server pages.",
+        "when": "Execute the section homework list command with page 2, limit 100 and include-deleted.",
+        "then": [
+          "The final assignment is shown once with total 101 and page 2."
+        ],
+        "test": {
+          "file": "internal/cmd/homework/contracts_test.go",
+          "name": "TestSpecHomeworkSectionList/homework.cli-section-pagination"
+        }
+      }
+    },
+    {
+      "id": "homework.cli-filter-after-pages",
+      "scope": "private",
+      "rule": "Workspace homework filters and local pagination apply after all subscribed or explicitly selected section pages have loaded.",
+      "acceptance": {
+        "given": "100 completed assignments followed by one pending assignment on a second server page.",
+        "when": "Execute workspace homework with pending and limit 1, for subscribed and explicit-section modes, including a failed-page variant.",
+        "then": [
+          "The pending final-page assignment is shown and the filtered total is 1.",
+          "A later-page failure prints no partial result."
+        ],
+        "test": {
+          "file": "internal/cmd/homework/contracts_test.go",
+          "name": "TestSpecHomeworkFilteredList/homework.cli-filter-after-pages"
+        }
+      }
+    },
+    {
+      "id": "homework.cli-picker-complete-input",
+      "scope": "private",
+      "rule": "Interactive homework picking filters the complete subscribed homework collection before limiting the available choices.",
+      "acceptance": {
+        "given": "100 completed assignments and a pending assignment on the next page.",
+        "when": "Load the production pending-homework picker with a limit of 20.",
+        "then": [
+          "The final-page pending assignment is available for selection."
+        ],
+        "test": {
+          "file": "internal/cmd/homework/contracts_test.go",
+          "name": "TestSpecHomeworkPicker/homework.cli-picker-complete-input"
+        }
+      }
+    },
+    {
+      "id": "homework.cli-subscription-fallback",
+      "scope": "private",
+      "rule": "When a current calendar subscription has no sections, the homework creation picker derives distinct sections from all subscribed homework pages.",
+      "acceptance": {
+        "given": "No current calendar subscription and homework pages containing repeated section 7 and later section 8.",
+        "when": "Run the production subscribed-section loader.",
+        "then": [
+          "Both unique sections are returned, including the section present only on the later page."
+        ],
+        "test": {
+          "file": "internal/cmd/homework/contracts_test.go",
+          "name": "TestSpecHomeworkSubscribedSections/homework.cli-subscription-fallback"
+        }
+      }
+    },
+    {
+      "id": "homework.cli-created-identity",
+      "scope": "private",
+      "rule": "The homework creation success message identifies the created record from the generated response envelope.",
+      "acceptance": {
+        "given": "A successful create endpoint returns homework.id.",
+        "when": "Execute the real section-homework create command.",
+        "then": [
+          "The success message includes the returned homework ID."
+        ],
+        "test": {
+          "file": "internal/cmd/homework/contracts_test.go",
+          "name": "TestSpecHomeworkCreatedIdentity/homework.cli-created-identity"
+        }
+      }
+    },
+    {
+      "id": "upload.cli-complete-list",
+      "scope": "private",
+      "rule": "Upload listing reads every server page, preserves quota metadata, and presents only fields declared by the upload contract.",
+      "acceptance": {
+        "given": "101 uploads across two pages and populated usage metadata.",
+        "when": "Execute the upload list command in JSON and table modes, including a failed-page variant.",
+        "then": [
+          "Every upload and the complete total survive JSON output along with usage metadata.",
+          "The table shows the final upload and quota usage without an unsupported content-type column.",
+          "A failed later page prints no partial result."
+        ],
+        "test": {
+          "file": "internal/cmd/upload/contracts_test.go",
+          "name": "TestSpecUploadCompleteList/upload.cli-complete-list"
+        }
+      }
+    },
+    {
+      "id": "upload.cli-picker-complete-input",
+      "scope": "private",
+      "rule": "The upload deletion picker includes every upload across all server pages.",
+      "acceptance": {
+        "given": "101 uploads and a selection of item 101.",
+        "when": "Run the production upload picker against the real HTTP fixture and supply the selection.",
+        "then": [
+          "The picker displays and returns the final-page upload with its filename and ID."
+        ],
+        "test": {
+          "file": "internal/cmd/upload/contracts_test.go",
+          "name": "TestSpecUploadPicker/upload.cli-picker-complete-input"
+        }
+      }
     }
   ]
 }

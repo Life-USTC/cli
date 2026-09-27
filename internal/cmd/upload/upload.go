@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 	"os"
 	"path/filepath"
 	"strings"
@@ -13,6 +14,7 @@ import (
 
 	"github.com/Life-USTC/CLI/internal/api"
 	"github.com/Life-USTC/CLI/internal/cmd/cmdutil"
+	"github.com/Life-USTC/CLI/internal/cmd/youngutil"
 	openapi "github.com/Life-USTC/CLI/internal/openapi"
 	"github.com/Life-USTC/CLI/internal/output"
 )
@@ -39,11 +41,11 @@ func runUploadList(cmd *cobra.Command) error {
 	if err != nil {
 		return err
 	}
-	data, err := api.ParseResponse[openapi.UploadsListResponseSchema](c.ListUploads(api.Ctx(), nil))
+	data, err := fetchAllUploads(cmd.Context(), c)
 	if err != nil {
 		return err
 	}
-	list := cmdutil.NewListResult(data, "uploads").FinalizeServerSide(0)
+	list := cmdutil.NewListResult(data, "data").FinalizeServerSide(0)
 
 	if !output.IsJSON() {
 		m := cmdutil.AsMap(data)
@@ -59,7 +61,6 @@ func runUploadList(cmd *cobra.Command) error {
 	return output.OutputList(list.Raw, list.Rows, []output.Column{
 		{Header: "ID", Key: "id"},
 		{Header: "Filename", Key: "filename"},
-		{Header: "Type", Key: "contentType"},
 		{Header: "Size", Key: "size"},
 	}, list.Total, list.Page)
 }
@@ -281,11 +282,11 @@ func promptUploadPick(cmd *cobra.Command, prompt string) (map[string]any, error)
 	if err != nil {
 		return nil, err
 	}
-	data, err := api.ParseResponse[openapi.UploadsListResponseSchema](c.ListUploads(api.Ctx(), nil))
+	data, err := fetchAllUploads(cmd.Context(), c)
 	if err != nil {
 		return nil, err
 	}
-	_, rows, _, _ := cmdutil.ExtractList(data, "uploads")
+	_, rows, _, _ := cmdutil.ExtractList(data, "data")
 	if len(rows) == 0 {
 		output.Dim("  No uploads found.")
 		return nil, nil
@@ -346,4 +347,18 @@ func guessContentType(path string) string {
 	default:
 		return "application/octet-stream"
 	}
+}
+
+func fetchAllUploads(ctx context.Context, client *api.TypedClient) (any, error) {
+	return youngutil.FetchAllPages(ctx, func(ctx context.Context, query url.Values) (any, error) {
+		page, err := cmdutil.Int64PtrIfSet(query.Get("page"))
+		if err != nil {
+			return nil, err
+		}
+		pageSize, err := cmdutil.Int64PtrIfSet(query.Get("pageSize"))
+		if err != nil {
+			return nil, err
+		}
+		return api.ParseResponse[openapi.UploadsListResponseSchema](client.ListUploads(ctx, &openapi.ListUploadsParams{Page: page, PageSize: pageSize}))
+	}, "/api/workspace/uploads", url.Values{}, "data", 100, "id")
 }

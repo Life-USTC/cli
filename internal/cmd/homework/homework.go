@@ -65,17 +65,11 @@ func newCmdSectionList() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			params := &openapi.CommunitySectionHomeworkListParams{
-				SectionId:      sectionID,
-				IncludeDeleted: &inclDel,
-			}
-			data, err := api.ParseResponse[openapi.HomeworksListResponseSchema](
-				c.CommunitySectionHomeworkList(api.Ctx(), params),
-			)
+			data, err := fetchAllHomeworks(cmd.Context(), c, sectionID, &inclDel)
 			if err != nil {
 				return err
 			}
-			list, err := cmdutil.NewListResult(data, "homeworks").FinalizeClientSide(page, limit)
+			list, err := cmdutil.NewListResult(data, "data").FinalizeClientSide(page, limit)
 			if err != nil {
 				return err
 			}
@@ -175,7 +169,7 @@ func newCmdSectionCreate() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			m := cmdutil.AsMap(data)
+			m := cmdutil.AsMap(cmdutil.AsMap(data)["homework"])
 			id, _ := m["id"].(string)
 			output.Success(fmt.Sprintf("Created homework %s: %s", id, title))
 			return nil
@@ -237,11 +231,11 @@ func loadSubscribedSections(cmd *cobra.Command) ([]map[string]any, error) {
 		}
 	}
 
-	data, err = api.ParseResponse[openapi.SubscribedHomeworksResponseSchema](c.GetSubscribedHomeworks(api.Ctx(), nil))
+	data, err = fetchAllHomeworks(cmd.Context(), c, nil, nil)
 	if err != nil {
 		return nil, fmt.Errorf("could not load subscribed sections: %w", err)
 	}
-	rows := cmdutil.NewListResult(data, "homeworks").Rows
+	rows := cmdutil.NewListResult(data, "data").Rows
 	seen := map[string]bool{}
 	sections := make([]map[string]any, 0)
 	for _, row := range rows {
@@ -375,24 +369,19 @@ func runMyHomeworkList(cmd *cobra.Command, opts myHomeworkListOpts) error {
 		if err != nil {
 			return err
 		}
-		params := &openapi.CommunitySectionHomeworkListParams{
-			SectionId: sectionID,
-		}
-		data, err = api.ParseResponse[openapi.HomeworksListResponseSchema](
-			c.CommunitySectionHomeworkList(api.Ctx(), params),
-		)
+		data, err = fetchAllHomeworks(cmd.Context(), c, sectionID, nil)
 		if err != nil {
 			return err
 		}
 	} else {
 		// All subscribed sections — use the combined endpoint
-		data, err = api.ParseResponse[openapi.SubscribedHomeworksResponseSchema](c.GetSubscribedHomeworks(api.Ctx(), nil))
+		data, err = fetchAllHomeworks(cmd.Context(), c, nil, nil)
 		if err != nil {
 			return err
 		}
 	}
 
-	list := cmdutil.NewListResult(data, "homeworks")
+	list := cmdutil.NewListResult(data, "data")
 	rows, err := filterHomeworkRows(list.Rows, opts)
 	if err != nil {
 		return err
@@ -577,11 +566,11 @@ func fetchHomeworkPickList(cmd *cobra.Command, opts myHomeworkListOpts) ([]map[s
 	if err != nil {
 		return nil, err
 	}
-	data, err := api.ParseResponse[openapi.SubscribedHomeworksResponseSchema](c.GetSubscribedHomeworks(api.Ctx(), nil))
+	data, err := fetchAllHomeworks(cmd.Context(), c, nil, nil)
 	if err != nil {
 		return nil, err
 	}
-	list := cmdutil.NewListResult(data, "homeworks")
+	list := cmdutil.NewListResult(data, "data")
 	rows, err := filterHomeworkRows(list.Rows, opts)
 	if err != nil {
 		return nil, err

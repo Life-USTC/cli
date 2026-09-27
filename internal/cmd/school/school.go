@@ -1,8 +1,10 @@
 package school
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
+	"net/url"
 	"os"
 	"slices"
 	"strconv"
@@ -13,6 +15,7 @@ import (
 
 	"github.com/Life-USTC/CLI/internal/api"
 	"github.com/Life-USTC/CLI/internal/cmd/cmdutil"
+	"github.com/Life-USTC/CLI/internal/cmd/youngutil"
 	"github.com/Life-USTC/CLI/internal/config"
 	"github.com/Life-USTC/CLI/internal/openapi"
 	"github.com/Life-USTC/CLI/internal/output"
@@ -403,9 +406,7 @@ func newCmdSchoolHomeworkSync() *cobra.Command {
 			var lifeSemesterRaw any
 			if err := withDebugStep("Life@USTC list semesters", func() error {
 				var err error
-				lifeSemesterRaw, err = api.ParseResponse[openapi.PaginatedSemesterResponseSchema](apiClient.ListSemesters(cmd.Context(), &openapi.ListSemestersParams{
-					PageSize: int64Ptr(200),
-				}))
+				lifeSemesterRaw, err = fetchAllLifeSemesters(cmd.Context(), apiClient)
 				return err
 			}); err != nil {
 				return err
@@ -487,9 +488,7 @@ func newCmdSchoolSync() *cobra.Command {
 				return err
 			}
 
-			lifeSemesterRaw, err := api.ParseResponse[openapi.PaginatedSemesterResponseSchema](apiClient.ListSemesters(cmd.Context(), &openapi.ListSemestersParams{
-				PageSize: int64Ptr(200),
-			}))
+			lifeSemesterRaw, err := fetchAllLifeSemesters(cmd.Context(), apiClient)
 			if err != nil {
 				return err
 			}
@@ -979,52 +978,19 @@ func syncHomeworkForSource(cmd *cobra.Command, apiClient *api.TypedClient, sourc
 			existingBySection[sectionID] = existing
 		}
 
-		matched := matchLifeHomework(existing, item)
-		homeworkID := anyString(matched["id"])
-		action := "matched"
-		if homeworkID == "" {
-			action = "created"
-			if !dryRun {
-				created, err := createLifeHomework(cmd, apiClient, sectionID, item)
-				if err != nil {
-					return homeworkSyncResult{}, err
-				}
-				matched = created
-				homeworkID = anyString(created["id"])
-				if homeworkID == "" {
-					return homeworkSyncResult{}, fmt.Errorf("created homework for %q did not return an id", item.Title)
-				}
-				existingBySection[sectionID] = append(existingBySection[sectionID], created)
-			}
+		row, err := syncLifeHomework(cmd, apiClient, sectionID, section, item, existing, dryRun)
+		if err != nil {
+			return homeworkSyncResult{}, err
 		}
-
-		completed, completionKnown := schoolHomeworkCompletion(item)
-		completionAction := "unknown"
-		if completionKnown {
-			completionAction = "planned"
+		if row.Action == "created" && !dryRun {
+			existingBySection[sectionID] = append(existing, row.LifeHomework)
 		}
-		if completionKnown && !dryRun && homeworkID != "" {
-			if err := setLifeHomeworkCompletion(cmd, apiClient, homeworkID, completed); err != nil {
-				return homeworkSyncResult{}, err
-			}
-			completionAction = "updated"
-		}
-
-		row := homeworkSyncItemResult{
-			SchoolHomework:   item,
-			LifeHomework:     matched,
-			Section:          section,
-			Action:           action,
-			Completion:       completed,
-			CompletionKnown:  completionKnown,
-			CompletionAction: completionAction,
-		}
-		if action == "created" {
+		if row.Action == "created" {
 			result.Created = append(result.Created, row)
 		} else {
 			result.Matched = append(result.Matched, row)
 		}
-		if completionKnown {
+		if row.CompletionKnown {
 			result.CompletionUpdated = append(result.CompletionUpdated, row)
 		}
 	}
@@ -1246,19 +1212,23 @@ func fetchLifeHomeworksForSection(cmd *cobra.Command, apiClient *api.TypedClient
 	if err != nil {
 		return nil, err
 	}
-	raw, err := api.ParseResponse[openapi.HomeworksListResponseSchema](
-		apiClient.CommunitySectionHomeworkList(
-			cmd.Context(),
-			&openapi.CommunitySectionHomeworkListParams{
-				SectionId:      parsedSectionID,
-				IncludeDeleted: &includeDeleted,
-			},
-		),
-	)
+	raw, err := youngutil.FetchAllPages(cmd.Context(), func(ctx context.Context, query url.Values) (any, error) {
+		page, err := cmdutil.Int64PtrIfSet(query.Get("page"))
+		if err != nil {
+			return nil, err
+		}
+		pageSize, err := cmdutil.Int64PtrIfSet(query.Get("pageSize"))
+		if err != nil {
+			return nil, err
+		}
+		return api.ParseResponse[openapi.HomeworksListResponseSchema](apiClient.CommunitySectionHomeworkList(ctx, &openapi.CommunitySectionHomeworkListParams{
+			SectionId: parsedSectionID, IncludeDeleted: &includeDeleted, Page: page, PageSize: pageSize,
+		}))
+	}, "/api/community/section-homeworks", url.Values{}, "data", 100, "id")
 	if err != nil {
 		return nil, err
 	}
-	return cmdutil.NewListResult(raw, "homeworks").Rows, nil
+	return cmdutil.NewListResult(raw, "data").Rows, nil
 }
 
 func createLifeHomework(cmd *cobra.Command, apiClient *api.TypedClient, sectionID string, item ustcschool.HomeworkItem) (map[string]any, error) {
@@ -1501,10 +1471,6 @@ func anyString(value any) string {
 	}
 }
 
-func int64Ptr(value int64) *int64 {
-	return &value
-}
-
 func firstNonEmpty(values ...string) string {
 	for _, value := range values {
 		if strings.TrimSpace(value) != "" {
@@ -1512,4 +1478,63 @@ func firstNonEmpty(values ...string) string {
 		}
 	}
 	return ""
+}
+
+// Both school sync paths need every catalog semester to match historical work.
+func fetchAllLifeSemesters(ctx context.Context, client *api.TypedClient) (any, error) {
+	return youngutil.FetchAllPages(ctx, func(ctx context.Context, query url.Values) (any, error) {
+		page, err := cmdutil.Int64PtrIfSet(query.Get("page"))
+		if err != nil {
+			return nil, err
+		}
+		pageSize, err := cmdutil.Int64PtrIfSet(query.Get("pageSize"))
+		if err != nil {
+			return nil, err
+		}
+		return api.ParseResponse[openapi.PaginatedSemesterResponseSchema](client.ListSemesters(ctx, &openapi.ListSemestersParams{
+			Page: page, PageSize: pageSize,
+		}))
+	}, "/api/catalog/semesters", url.Values{}, "data", 100, "id")
+}
+
+func syncLifeHomework(cmd *cobra.Command, apiClient *api.TypedClient, sectionID string, section map[string]any, item ustcschool.HomeworkItem, existing []map[string]any, dryRun bool) (homeworkSyncItemResult, error) {
+	matched := matchLifeHomework(existing, item)
+	homeworkID := anyString(matched["id"])
+	action := "matched"
+	if homeworkID == "" {
+		action = "created"
+		if !dryRun {
+			created, err := createLifeHomework(cmd, apiClient, sectionID, item)
+			if err != nil {
+				return homeworkSyncItemResult{}, err
+			}
+			matched = created
+			homeworkID = anyString(created["id"])
+			if homeworkID == "" {
+				return homeworkSyncItemResult{}, fmt.Errorf("created homework for %q did not return an id", item.Title)
+			}
+		}
+	}
+
+	completed, completionKnown := schoolHomeworkCompletion(item)
+	completionAction := "unknown"
+	if completionKnown {
+		completionAction = "planned"
+	}
+	if completionKnown && !dryRun && homeworkID != "" {
+		if err := setLifeHomeworkCompletion(cmd, apiClient, homeworkID, completed); err != nil {
+			return homeworkSyncItemResult{}, err
+		}
+		completionAction = "updated"
+	}
+
+	return homeworkSyncItemResult{
+		SchoolHomework:   item,
+		LifeHomework:     matched,
+		Section:          section,
+		Action:           action,
+		Completion:       completed,
+		CompletionKnown:  completionKnown,
+		CompletionAction: completionAction,
+	}, nil
 }
