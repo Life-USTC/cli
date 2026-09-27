@@ -52,8 +52,8 @@ func runSemesterList(cmd *cobra.Command, opts semesterListOpts) error {
 	}
 	params := &openapi.ListSemestersParams{}
 	params.Page = cmdutil.Int64PtrIfPositive(opts.page)
-	params.Limit = cmdutil.Int64PtrIfPositive(opts.limit)
-	data, err := api.ParseResponseRaw(c.ListSemesters(api.Ctx(), params))
+	params.PageSize = cmdutil.Int64PtrIfPositive(opts.limit)
+	data, err := api.ParseResponse[openapi.PaginatedSemesterResponseSchema](c.ListSemesters(api.Ctx(), params))
 	if err != nil {
 		return err
 	}
@@ -93,7 +93,7 @@ func newCmdCurrent() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			data, err := api.ParseResponseRaw(c.GetCurrentSemester(api.Ctx()))
+			data, err := api.ParseResponse[openapi.SemesterSchema](c.GetCurrentSemester(api.Ctx()))
 			if err != nil {
 				return err
 			}

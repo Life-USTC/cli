@@ -5,5 +5,3 @@ generate:
   client: true
 output-options:
   skip-prune: true
-  exclude-tags:
-    - Api

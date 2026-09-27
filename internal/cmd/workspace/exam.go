@@ -1,7 +1,9 @@
 package workspace
 
 import (
+	"context"
 	"fmt"
+	"github.com/Life-USTC/CLI/internal/openapi"
 	"net/url"
 	"strconv"
 	"strings"
@@ -41,11 +43,11 @@ func newCmdExam() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			client, err := api.NewClient(cmdutil.ServerFromCmd(cmd), true)
+			client, err := api.NewTypedClient(cmdutil.ServerFromCmd(cmd), true)
 			if err != nil {
 				return err
 			}
-			data, err := youngutil.FetchAllIfUnpaged(cmd.Context(), client, "/api/workspace/exams", params, "data", 100, "id")
+			data, err := youngutil.FetchAllIfUnpaged(cmd.Context(), func(ctx context.Context, query url.Values) (any, error) { return fetchExamPage(ctx, client, query) }, "/api/workspace/exams", params, "data", 100, "id")
 			if err != nil {
 				return err
 			}
@@ -91,4 +93,37 @@ func buildExamParams(opts examOpts) (url.Values, error) {
 	}
 	params.Set("includeDateUnknown", strconv.FormatBool(opts.includeDateUnknown))
 	return params, nil
+}
+
+func fetchExamPage(ctx context.Context, client *api.TypedClient, query url.Values) (any, error) {
+	var paramIncludeDateUnknown *openapi.WorkspaceExamListParamsIncludeDateUnknown
+	if value := query.Get("includeDateUnknown"); value != "" {
+		converted := openapi.WorkspaceExamListParamsIncludeDateUnknown(value)
+		paramIncludeDateUnknown = &converted
+	}
+	paramSemesterId, err := cmdutil.Int64PtrIfSet(query.Get("semesterId"))
+	if err != nil {
+		return nil, err
+	}
+	paramPage, err := cmdutil.Int64PtrIfSet(query.Get("page"))
+	if err != nil {
+		return nil, err
+	}
+	paramPageSize, err := cmdutil.Int64PtrIfSet(query.Get("pageSize"))
+	if err != nil {
+		return nil, err
+	}
+	var paramLocale *openapi.WorkspaceExamListParamsLocale
+	if value := query.Get("locale"); value != "" {
+		converted := openapi.WorkspaceExamListParamsLocale(value)
+		paramLocale = &converted
+	}
+	params := openapi.WorkspaceExamListParams{DateFrom: cmdutil.StringPtrIfSet(query.Get("dateFrom")),
+		DateTo:             cmdutil.StringPtrIfSet(query.Get("dateTo")),
+		IncludeDateUnknown: paramIncludeDateUnknown,
+		SemesterId:         paramSemesterId,
+		Page:               paramPage,
+		PageSize:           paramPageSize,
+		Locale:             paramLocale}
+	return api.ParseResponse[openapi.SubscribedExamsResponseSchema](client.WorkspaceExamList(ctx, &params))
 }

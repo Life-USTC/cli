@@ -50,7 +50,7 @@ func NewCmdWeather() *cobra.Command {
 }
 
 func fetchWeather(client *api.TypedClient, params *openapi.CatalogWeatherGetParams) (any, error) {
-	return api.ParseResponseRaw(client.CatalogWeatherGet(api.Ctx(), params))
+	return api.ParseResponse[openapi.WeatherSnapshotResponseSchema](client.CatalogWeatherGet(api.Ctx(), params))
 }
 
 func validateLocationKey(value string) error {

@@ -28,7 +28,7 @@ func TestFetchListMapsAllServerFilters(t *testing.T) {
 		_, _ = io.WriteString(w, `{"data":[],"pagination":{"page":2,"pageSize":20,"total":0,"totalPages":0}}`)
 	}))
 	defer server.Close()
-	client, err := api.NewClient(server.URL, false)
+	client, err := api.NewTypedClient(server.URL, false)
 	if err != nil {
 		t.Fatal(err)
 	}

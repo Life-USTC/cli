@@ -36,15 +36,37 @@ func NewTypedClient(server string, requireAuth bool) (*TypedClient, error) {
 	return &TypedClient{Client: oapiClient}, nil
 }
 
-// ParseResponseRaw reads a response and returns it as map[string]any for
-// backward compatibility with the output module.
-func ParseResponseRaw(resp *http.Response, err error) (any, error) {
+// ParseResponse decodes the generated response model before adapting it for
+// the shared table, JSON and jq presentation layer.
+func ParseResponse[T any](resp *http.Response, err error) (any, error) {
+	model, err := ReadTypedResponse[T](resp, err)
+	if err != nil {
+		return nil, err
+	}
+	encoded, err := json.Marshal(model)
+	if err != nil {
+		return nil, err
+	}
+	return DecodeResponseBody(encoded, "application/json", false)
+}
+
+// ReadTypedResponse retains the generated model for callers that derive another request.
+func ReadTypedResponse[T any](resp *http.Response, err error) (*T, error) {
 	body, ct, err := ReadResponse(resp, err)
 	if err != nil {
 		return nil, err
 	}
-
-	return DecodeResponseBody(body, ct, false)
+	if !IsJSONContentType(ct) {
+		return nil, fmt.Errorf("expected a JSON API response, got %q", ct)
+	}
+	var model *T
+	if err := json.Unmarshal(body, &model); err != nil {
+		return nil, err
+	}
+	if model == nil {
+		return nil, fmt.Errorf("expected a JSON API value")
+	}
+	return model, nil
 }
 
 func DecodeResponseBody(body []byte, contentType string, fallbackToText bool) (any, error) {

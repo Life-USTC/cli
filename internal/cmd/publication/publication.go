@@ -2,9 +2,7 @@ package publication
 
 import (
 	"fmt"
-	"net/http"
-	"net/url"
-	"strconv"
+	"github.com/Life-USTC/CLI/internal/openapi"
 	"strings"
 
 	"github.com/spf13/cobra"
@@ -79,7 +77,7 @@ func runList(cmd *cobra.Command, opts listOpts) error {
 	if err != nil {
 		return err
 	}
-	client, err := api.NewClient(cmdutil.ServerFromCmd(cmd), false)
+	client, err := api.NewTypedClient(cmdutil.ServerFromCmd(cmd), false)
 	if err != nil {
 		return err
 	}
@@ -97,28 +95,21 @@ func runList(cmd *cobra.Command, opts listOpts) error {
 	}, list.Total, list.Page)
 }
 
-func fetchList(client *api.Client, opts listOpts, typeValue *string) (any, error) {
+func fetchList(client *api.TypedClient, opts listOpts, typeValue *string) (any, error) {
 	if err := validateListBounds(opts); err != nil {
 		return nil, err
 	}
-	params := url.Values{}
+	params := openapi.GetApiPublicationsParams{
+		Source:   cmdutil.StringPtrIfSet(strings.TrimSpace(opts.source)),
+		Query:    cmdutil.StringPtrIfSet(strings.TrimSpace(opts.query)),
+		Page:     positiveInt(opts.page),
+		PageSize: positiveInt(opts.pageSize),
+	}
 	if typeValue != nil {
-		params.Set("type", string(*typeValue))
+		value := openapi.GetApiPublicationsParamsType(*typeValue)
+		params.Type = &value
 	}
-	if value := strings.TrimSpace(opts.source); value != "" {
-		params.Set("source", value)
-	}
-	if value := strings.TrimSpace(opts.query); value != "" {
-		params.Set("query", value)
-	}
-	if opts.page > 0 {
-		params.Set("page", strconv.Itoa(opts.page))
-	}
-	if opts.pageSize > 0 {
-		params.Set("pageSize", strconv.Itoa(opts.pageSize))
-	}
-	resp, err := client.DoRaw(api.Ctx(), http.MethodGet, "/api/publications", params, nil, "", nil)
-	return api.ParseResponseRaw(resp, err)
+	return api.ParseResponse[openapi.PublicPublicationsResponseSchema](client.GetApiPublications(api.Ctx(), &params))
 }
 
 func validateListBounds(opts listOpts) error {
@@ -149,7 +140,7 @@ func newCmdGet() *cobra.Command {
 		Short:   "View a publication",
 		Args:    cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			client, err := api.NewClient(cmdutil.ServerFromCmd(cmd), false)
+			client, err := api.NewTypedClient(cmdutil.ServerFromCmd(cmd), false)
 			if err != nil {
 				return err
 			}
@@ -198,7 +189,13 @@ func newCmdGet() *cobra.Command {
 	}
 }
 
-func fetchGet(client *api.Client, id string) (any, error) {
-	resp, err := client.DoRaw(api.Ctx(), http.MethodGet, "/api/publications/"+url.PathEscape(id), nil, nil, "", nil)
-	return api.ParseResponseRaw(resp, err)
+func fetchGet(client *api.TypedClient, id string) (any, error) {
+	return api.ParseResponse[openapi.PublicPublicationDetailSchema](client.GetApiPublicationsId(api.Ctx(), id))
+}
+
+func positiveInt(value int) *int {
+	if value <= 0 {
+		return nil
+	}
+	return &value
 }

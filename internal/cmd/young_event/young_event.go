@@ -3,7 +3,7 @@ package young_event
 import (
 	"context"
 	"fmt"
-	"net/http"
+	"github.com/Life-USTC/CLI/internal/openapi"
 	"net/url"
 	"strings"
 	"time"
@@ -95,13 +95,13 @@ func runList(cmd *cobra.Command, opts listOpts) error {
 	if err != nil {
 		return err
 	}
-	client, err := api.NewClient(cmdutil.ServerFromCmd(cmd), false)
+	client, err := api.NewTypedClient(cmdutil.ServerFromCmd(cmd), false)
 	if err != nil {
 		return err
 	}
 	data, err := youngutil.FetchAllIfUnpaged(
 		cmd.Context(),
-		client,
+		func(ctx context.Context, query url.Values) (any, error) { return fetchList(ctx, client, query) },
 		youngutil.EventsPath,
 		params,
 		"data",
@@ -122,8 +122,43 @@ func runList(cmd *cobra.Command, opts listOpts) error {
 	}, list.Total, list.Page)
 }
 
-func fetchList(ctx context.Context, client *api.Client, params url.Values) (any, error) {
-	return client.DoJSON(ctx, http.MethodGet, youngutil.EventsPath, params, nil)
+func fetchList(ctx context.Context, client *api.TypedClient, query url.Values) (any, error) {
+	var paramDateUnknown *openapi.GetApiCatalogYoungEventsParamsDateUnknown
+	if value := query.Get("dateUnknown"); value != "" {
+		converted := openapi.GetApiCatalogYoungEventsParamsDateUnknown(value)
+		paramDateUnknown = &converted
+	}
+	var paramActive *openapi.GetApiCatalogYoungEventsParamsActive
+	if value := query.Get("active"); value != "" {
+		converted := openapi.GetApiCatalogYoungEventsParamsActive(value)
+		paramActive = &converted
+	}
+	var paramTimeBasis *openapi.GetApiCatalogYoungEventsParamsTimeBasis
+	if value := query.Get("timeBasis"); value != "" {
+		converted := openapi.GetApiCatalogYoungEventsParamsTimeBasis(value)
+		paramTimeBasis = &converted
+	}
+	paramPage, err := cmdutil.Int64PtrIfSet(query.Get("page"))
+	if err != nil {
+		return nil, err
+	}
+	paramPageSize, err := cmdutil.Int64PtrIfSet(query.Get("pageSize"))
+	if err != nil {
+		return nil, err
+	}
+	params := openapi.GetApiCatalogYoungEventsParams{DateUnknown: paramDateUnknown,
+		Active:        paramActive,
+		Category:      cmdutil.StringPtrIfSet(query.Get("category")),
+		Module:        cmdutil.StringPtrIfSet(query.Get("module")),
+		ActivityLevel: cmdutil.StringPtrIfSet(query.Get("activityLevel")),
+		Search:        cmdutil.StringPtrIfSet(query.Get("search")),
+		OrganizerId:   cmdutil.StringPtrIfSet(query.Get("organizerId")),
+		DateFrom:      cmdutil.StringPtrIfSet(query.Get("dateFrom")),
+		DateTo:        cmdutil.StringPtrIfSet(query.Get("dateTo")),
+		TimeBasis:     paramTimeBasis,
+		Page:          paramPage,
+		PageSize:      paramPageSize}
+	return api.ParseResponse[openapi.PaginatedYoungEventResponseSchema](client.GetApiCatalogYoungEvents(ctx, &params))
 }
 
 func buildListParams(opts listOpts) (url.Values, error) {
@@ -200,17 +235,11 @@ func newCmdGet() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			client, err := api.NewClient(cmdutil.ServerFromCmd(cmd), false)
+			client, err := api.NewTypedClient(cmdutil.ServerFromCmd(cmd), false)
 			if err != nil {
 				return err
 			}
-			data, err := client.DoJSON(
-				cmd.Context(),
-				http.MethodGet,
-				youngutil.PathID(youngutil.EventsPath, youngID),
-				nil,
-				nil,
-			)
+			data, err := api.ParseResponse[openapi.YoungEventDetailSchema](client.GetApiCatalogYoungEventsYoungId(cmd.Context(), youngID))
 			if err != nil {
 				return err
 			}
@@ -335,7 +364,7 @@ func runDateView(cmd *cobra.Command, view youngutil.DateView, anchor string, opt
 	if err != nil {
 		return err
 	}
-	client, err := api.NewClient(cmdutil.ServerFromCmd(cmd), false)
+	client, err := api.NewTypedClient(cmdutil.ServerFromCmd(cmd), false)
 	if err != nil {
 		return err
 	}
@@ -344,7 +373,7 @@ func runDateView(cmd *cobra.Command, view youngutil.DateView, anchor string, opt
 		return err
 	}
 	if !output.IsJSON() {
-		meta := cmdutil.AsMap(data)
+		meta := cmdutil.AsMap(cmdutil.AsMap(data)["meta"])
 		output.KVWithTitle([]output.KVPair{
 			{Key: "Source", Value: output.Resolve(meta, "source.status")},
 			{Key: "Last synced", Value: output.Resolve(meta, "source.lastSyncedAt")},
@@ -377,10 +406,10 @@ func dateEndKey(timeBasis string) string {
 	return "endAt"
 }
 
-func fetchDateEvents(ctx context.Context, client *api.Client, query url.Values) (any, error) {
+func fetchDateEvents(ctx context.Context, client *api.TypedClient, query url.Values) (any, error) {
 	return youngutil.FetchAllPages(
 		ctx,
-		client,
+		func(ctx context.Context, query url.Values) (any, error) { return fetchList(ctx, client, query) },
 		youngutil.EventsPath,
 		query,
 		"data",

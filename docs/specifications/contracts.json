@@ -117,6 +117,104 @@
           "name": "TestSpecExamSemesterDisplay/exam.cli-semester-display"
         }
       }
+    },
+    {
+      "id": "openapi.cli-generated-business-client",
+      "scope": "all",
+      "rule": "Covered CLI business operations call the generated OpenAPI client with generated request parameters and bodies, and decode the operation’s declared response model before rendering. The explicit raw API command and external school/OAuth transports have separate responsibilities.",
+      "acceptance": {
+        "given": "The generated OpenAPI operations and every production CLI command, plus valid and malformed HTTP publication responses.",
+        "when": "Inspect every business call against its generated response model and execute the real publication command with typed filters.",
+        "then": [
+          "No business command constructs raw HTTP or uses the untyped API bypass.",
+          "Every generated call decodes its own declared response type; malformed fields fail before output.",
+          "Generated query parameters reach HTTP and valid response fields survive presentation."
+        ],
+        "test": {
+          "file": "internal/cmd/root/generated_contract_test.go",
+          "name": "TestSpecGeneratedBusinessClients/openapi.cli-generated-business-client"
+        }
+      }
+    },
+    {
+      "id": "cli.admin-session-boundary",
+      "scope": "private",
+      "rule": "CLI OAuth authorization does not support administrator governance; those operations are available only through browser-session Web administration.",
+      "acceptance": {
+        "given": "The production root command tree.",
+        "when": "Inspect supported commands and invoke the removed admin command.",
+        "then": [
+          "Administration is absent from supported commands and invocation fails."
+        ],
+        "test": {
+          "file": "internal/cmd/root/transport_contract_test.go",
+          "name": "TestSpecAdminSessionBoundary/cli.admin-session-boundary"
+        }
+      }
+    },
+    {
+      "id": "cli.bus-preference-partial-update",
+      "scope": "private",
+      "rule": "Changing one bus preference flag preserves unspecified saved preferences. Failure to read existing preferences aborts the update.",
+      "acceptance": {
+        "given": "An owner has saved origin, destination and departed-trip visibility.",
+        "when": "Change only destination through the real root command, then retry with the initial read denied.",
+        "then": [
+          "The generated POST preserves origin and visibility; a failed GET sends no POST."
+        ],
+        "test": {
+          "file": "internal/cmd/root/transport_contract_test.go",
+          "name": "TestSpecBusPreferencePartialUpdate/cli.bus-preference-partial-update"
+        }
+      }
+    },
+    {
+      "id": "cli.bus-preference-json-input",
+      "scope": "private",
+      "rule": "Bus preference raw JSON accepts exactly one generated request object and rejects null, unknown fields, wrong types and trailing input before mutation.",
+      "acceptance": {
+        "given": "An authenticated owner and a recording preference endpoint.",
+        "when": "Invoke the real set command with invalid JSON variants and a valid object.",
+        "then": [
+          "Invalid JSON sends no request; one valid object sends the generated POST."
+        ],
+        "test": {
+          "file": "internal/cmd/root/transport_contract_test.go",
+          "name": "TestSpecBusPreferenceJSONInput/cli.bus-preference-json-input"
+        }
+      }
+    },
+    {
+      "id": "exam.cli-monitor-identity",
+      "scope": "private",
+      "rule": "Exam JSON output preserves monitor campus identifiers and names so clients can associate invigilators and distinguish identical names.",
+      "acceptance": {
+        "given": "A subscribed exam response includes monitors with jwId and localized names.",
+        "when": "Read exams through the real root command using JSON output.",
+        "then": [
+          "The monitor campus ID and both names survive generated decoding and rendering."
+        ],
+        "test": {
+          "file": "internal/cmd/root/transport_contract_test.go",
+          "name": "TestSpecExamMonitorIdentityOutput/exam.cli-monitor-identity"
+        }
+      }
+    },
+    {
+      "id": "young.cli-participation-fields",
+      "scope": "public",
+      "rule": "Public Young detail JSON preserves participation metadata, contacts, upstream identifiers and raw detail so users can check eligibility, prepare materials and contact organizers.",
+      "acceptance": {
+        "given": "A public Young detail response includes contact and meeting details, signup restrictions, attachment types, upstream IDs, false and zero values, and rawJson.",
+        "when": "Read that activity through the real root command using JSON output.",
+        "then": [
+          "Every provided participation field survives generated decoding and rendering without authentication."
+        ],
+        "test": {
+          "file": "internal/cmd/root/transport_contract_test.go",
+          "name": "TestSpecYoungParticipationOutput/young.cli-participation-fields"
+        }
+      }
     }
   ]
 }

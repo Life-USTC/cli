@@ -1,8 +1,8 @@
 package workspace
 
 import (
+	"context"
 	"fmt"
-	"net/http"
 	"net/url"
 	"strings"
 
@@ -61,30 +61,11 @@ func runCalendarEvents(cmd *cobra.Command, opts calendarEventOpts) error {
 	if err != nil {
 		return err
 	}
-	client, err := api.NewClient(cmdutil.ServerFromCmd(cmd), true)
+	client, err := api.NewTypedClient(cmdutil.ServerFromCmd(cmd), true)
 	if err != nil {
 		return err
 	}
-	var data any
-	if opts.page == 0 && opts.pageSize == 0 {
-		data, err = youngutil.FetchAllPages(
-			cmd.Context(),
-			client,
-			youngutil.PersonalCalendarEventsPath,
-			params,
-			"data",
-			100,
-			"id",
-		)
-	} else {
-		data, err = client.DoJSON(
-			cmd.Context(),
-			http.MethodGet,
-			youngutil.PersonalCalendarEventsPath,
-			params,
-			nil,
-		)
-	}
+	data, err := youngutil.FetchAllIfUnpaged(cmd.Context(), func(ctx context.Context, query url.Values) (any, error) { return fetchCalendarPage(ctx, client, query) }, youngutil.PersonalCalendarEventsPath, params, "data", 100, "id")
 	if err != nil {
 		return err
 	}
@@ -183,7 +164,23 @@ func getOverview(cmd *cobra.Command) (any, error) {
 	if err != nil {
 		return nil, err
 	}
-	return api.ParseResponseRaw(
+	return api.ParseResponse[openapi.CompactOverviewResponseSchema](
 		c.WorkspaceOverviewGet(api.Ctx(), &openapi.WorkspaceOverviewGetParams{}),
 	)
+}
+
+func fetchCalendarPage(ctx context.Context, client *api.TypedClient, query url.Values) (any, error) {
+	paramPage, err := cmdutil.Int64PtrIfSet(query.Get("page"))
+	if err != nil {
+		return nil, err
+	}
+	paramPageSize, err := cmdutil.Int64PtrIfSet(query.Get("pageSize"))
+	if err != nil {
+		return nil, err
+	}
+	params := openapi.GetApiWorkspaceCalendarEventsParams{Page: paramPage,
+		PageSize: paramPageSize,
+		DateFrom: cmdutil.StringPtrIfSet(query.Get("dateFrom")),
+		DateTo:   cmdutil.StringPtrIfSet(query.Get("dateTo"))}
+	return api.ParseResponse[openapi.PersonalCalendarPageSchema](client.GetApiWorkspaceCalendarEvents(ctx, &params))
 }

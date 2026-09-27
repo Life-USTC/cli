@@ -2,6 +2,7 @@ package community
 
 import (
 	"fmt"
+	"github.com/Life-USTC/CLI/internal/openapi"
 	"strings"
 
 	"github.com/spf13/cobra"
@@ -47,11 +48,9 @@ func newCmdUser() *cobra.Command {
 				{Key: "user.username", Label: "Username", SkipEmpty: true},
 				{Key: "user.name", Label: "Name", SkipEmpty: true},
 				{Key: "user.createdAt", Label: "Joined"},
-				{Key: "sectionCount", Label: "Sections"},
 				{Key: "totalContributions", Label: "Contributions"},
 				{Key: "user._count.comments", Label: "Comments"},
 				{Key: "user._count.homeworksCreated", Label: "Homeworks created"},
-				{Key: "user._count.subscribedSections", Label: "Subscribed sections"},
 				{Key: "user._count.uploads", Label: "Uploads"},
 			}, "Community user"); err != nil {
 				return err
@@ -81,5 +80,5 @@ func newCmdUser() *cobra.Command {
 }
 
 func fetchUser(client *api.TypedClient, identifier string) (any, error) {
-	return api.ParseResponseRaw(client.CommunityUserGet(api.Ctx(), identifier))
+	return api.ParseResponse[openapi.PublicUserProfileResponseSchema](client.CommunityUserGet(api.Ctx(), identifier))
 }

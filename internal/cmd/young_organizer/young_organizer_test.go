@@ -43,7 +43,7 @@ func TestOrganizerListUsesPublicEndpoint(t *testing.T) {
 		_, _ = io.WriteString(w, `{"data":[],"pagination":{"page":1,"pageSize":20,"total":0,"totalPages":1}}`)
 	}))
 	defer server.Close()
-	client, err := api.NewClient(server.URL, false)
+	client, err := api.NewTypedClient(server.URL, false)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -51,7 +51,7 @@ func TestOrganizerListUsesPublicEndpoint(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if _, err := client.DoJSON(t.Context(), http.MethodGet, "/api/catalog/young-organizers", params, nil); err != nil {
+	if _, err := fetchOrganizerPage(t.Context(), client, params); err != nil {
 		t.Fatal(err)
 	}
 }

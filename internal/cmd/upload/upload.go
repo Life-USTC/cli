@@ -39,7 +39,7 @@ func runUploadList(cmd *cobra.Command) error {
 	if err != nil {
 		return err
 	}
-	data, err := api.ParseResponseRaw(c.ListUploads(api.Ctx(), nil))
+	data, err := api.ParseResponse[openapi.UploadsListResponseSchema](c.ListUploads(api.Ctx(), nil))
 	if err != nil {
 		return err
 	}
@@ -48,8 +48,8 @@ func runUploadList(cmd *cobra.Command) error {
 	if !output.IsJSON() {
 		m := cmdutil.AsMap(data)
 		if m != nil {
-			used, _ := m["usedBytes"].(float64)
-			quota, _ := m["quotaBytes"].(float64)
+			used, _ := cmdutil.AsMap(m["meta"])["usedBytes"].(float64)
+			quota, _ := cmdutil.AsMap(m["meta"])["quotaBytes"].(float64)
 			if quota > 0 {
 				output.Dim(fmt.Sprintf("  Usage: %s / %s", humanSize(int64(used)), humanSize(int64(quota))))
 			}
@@ -113,7 +113,7 @@ func newCmdFile() *cobra.Command {
 			if contentType != "" {
 				reqBody.ContentType = &contentType
 			}
-			createResp, err := api.ParseResponseRaw(c.CreateUpload(api.Ctx(), reqBody))
+			createResp, err := api.ParseResponse[openapi.UploadCreateResponseSchema](c.CreateUpload(api.Ctx(), reqBody))
 			if err != nil {
 				return err
 			}
@@ -125,7 +125,7 @@ func newCmdFile() *cobra.Command {
 			}
 
 			// Step 2: PUT through the authenticated object upload endpoint.
-			resp, err := c.PutApiUploadsObjectWithBody(
+			_, err = api.ParseResponse[openapi.SuccessResponseSchema](c.PutApiUploadsObjectWithBody(
 				api.Ctx(),
 				&openapi.PutApiUploadsObjectParams{Key: uploadKey},
 				contentType,
@@ -134,13 +134,9 @@ func newCmdFile() *cobra.Command {
 					req.ContentLength = stat.Size()
 					return nil
 				},
-			)
+			))
 			if err != nil {
 				return err
-			}
-			_ = resp.Body.Close()
-			if resp.StatusCode >= 400 {
-				return fmt.Errorf("object upload failed with status %d", resp.StatusCode)
 			}
 
 			// Step 3: Complete
@@ -151,7 +147,7 @@ func newCmdFile() *cobra.Command {
 			if contentType != "" {
 				completeBody.ContentType = &contentType
 			}
-			_, err = api.ParseResponseRaw(c.CompleteUpload(api.Ctx(), completeBody))
+			_, err = api.ParseResponse[openapi.UploadCompleteResponseSchema](c.CompleteUpload(api.Ctx(), completeBody))
 			if err != nil {
 				return err
 			}
@@ -176,7 +172,7 @@ func newCmdRename() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			_, err = api.ParseResponseRaw(c.UpdateUpload(api.Ctx(), args[0], openapi.UpdateUploadJSONRequestBody{Filename: filename}))
+			_, err = api.ParseResponse[openapi.UploadRenameResponseSchema](c.UpdateUpload(api.Ctx(), args[0], openapi.UpdateUploadJSONRequestBody{Filename: filename}))
 			if err != nil {
 				return err
 			}
@@ -227,7 +223,7 @@ func newCmdDelete() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			_, err = api.ParseResponseRaw(c.DeleteUpload(api.Ctx(), id))
+			_, err = api.ParseResponse[openapi.UploadDeleteResponseSchema](c.DeleteUpload(api.Ctx(), id))
 			if err != nil {
 				return err
 			}
@@ -285,7 +281,7 @@ func promptUploadPick(cmd *cobra.Command, prompt string) (map[string]any, error)
 	if err != nil {
 		return nil, err
 	}
-	data, err := api.ParseResponseRaw(c.ListUploads(api.Ctx(), nil))
+	data, err := api.ParseResponse[openapi.UploadsListResponseSchema](c.ListUploads(api.Ctx(), nil))
 	if err != nil {
 		return nil, err
 	}

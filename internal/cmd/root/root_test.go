@@ -144,7 +144,7 @@ func TestBashCompletionIncludesDescriptionPatch(t *testing.T) {
 func TestAllExpectedCommandsPresent(t *testing.T) {
 	cmd := NewCmdRoot()
 	for _, name := range []string{
-		"catalog", "workspace", "community", "account", "admin",
+		"catalog", "workspace", "community", "account",
 		"config", "completion", "api",
 	} {
 		if findCommand(cmd, name) == nil {
@@ -161,7 +161,6 @@ func TestCommandGroupAssignments(t *testing.T) {
 		"workspace":  groupMain,
 		"community":  groupMain,
 		"account":    groupMain,
-		"admin":      groupMain,
 		"config":     groupPlumbing,
 		"completion": groupPlumbing,
 		"api":        groupPlumbing,

@@ -403,8 +403,8 @@ func newCmdSchoolHomeworkSync() *cobra.Command {
 			var lifeSemesterRaw any
 			if err := withDebugStep("Life@USTC list semesters", func() error {
 				var err error
-				lifeSemesterRaw, err = api.ParseResponseRaw(apiClient.ListSemesters(cmd.Context(), &openapi.ListSemestersParams{
-					Limit: int64Ptr(200),
+				lifeSemesterRaw, err = api.ParseResponse[openapi.PaginatedSemesterResponseSchema](apiClient.ListSemesters(cmd.Context(), &openapi.ListSemestersParams{
+					PageSize: int64Ptr(200),
 				}))
 				return err
 			}); err != nil {
@@ -487,8 +487,8 @@ func newCmdSchoolSync() *cobra.Command {
 				return err
 			}
 
-			lifeSemesterRaw, err := api.ParseResponseRaw(apiClient.ListSemesters(cmd.Context(), &openapi.ListSemestersParams{
-				Limit: int64Ptr(200),
+			lifeSemesterRaw, err := api.ParseResponse[openapi.PaginatedSemesterResponseSchema](apiClient.ListSemesters(cmd.Context(), &openapi.ListSemestersParams{
+				PageSize: int64Ptr(200),
 			}))
 			if err != nil {
 				return err
@@ -517,7 +517,7 @@ func newCmdSchoolSync() *cobra.Command {
 					continue
 				}
 
-				matchRaw, err := api.ParseResponseRaw(apiClient.MatchSectionCodes(cmd.Context(), newMatchSectionCodesBody(codes, lifeSemesterID)))
+				matchRaw, err := api.ParseResponse[openapi.MatchSectionCodesResponseSchema](apiClient.MatchSectionCodes(cmd.Context(), newMatchSectionCodesBody(codes, lifeSemesterID)))
 				if err != nil {
 					return err
 				}
@@ -572,7 +572,7 @@ func newCmdSchoolSync() *cobra.Command {
 					if len(semesterSectionIDs) == 0 {
 						continue
 					}
-					subscribeRaw, err := api.ParseResponseRaw(apiClient.BatchUpdateCalendarSubscription(cmd.Context(), newSemesterScopedSubscriptionAddBody(semesterSectionIDs, lifeSemesterID)))
+					subscribeRaw, err := api.ParseResponse[openapi.CalendarSubscriptionBatchResponseSchema](apiClient.BatchUpdateCalendarSubscription(cmd.Context(), newSemesterScopedSubscriptionAddBody(semesterSectionIDs, lifeSemesterID)))
 					if err != nil {
 						return err
 					}
@@ -1051,7 +1051,7 @@ func homeworkSectionsByCode(cmd *cobra.Command, apiClient *api.TypedClient, life
 	out := map[string]map[string]any{}
 	for lifeSemesterID, codes := range codesByLifeSemester {
 		codes = uniqueStrings(codes)
-		matchRaw, err := api.ParseResponseRaw(apiClient.MatchSectionCodes(cmd.Context(), newMatchSectionCodesBody(codes, lifeSemesterID)))
+		matchRaw, err := api.ParseResponse[openapi.MatchSectionCodesResponseSchema](apiClient.MatchSectionCodes(cmd.Context(), newMatchSectionCodesBody(codes, lifeSemesterID)))
 		if err != nil {
 			return nil, err
 		}
@@ -1141,7 +1141,7 @@ func homeworkSectionsByCourse(cmd *cobra.Command, apiClient *api.TypedClient, so
 		if firstLifeSemester == nil {
 			firstLifeSemester = lifeSemester
 		}
-		matchRaw, err := api.ParseResponseRaw(apiClient.MatchSectionCodes(cmd.Context(), newMatchSectionCodesBody(codes, lifeSemesterID)))
+		matchRaw, err := api.ParseResponse[openapi.MatchSectionCodesResponseSchema](apiClient.MatchSectionCodes(cmd.Context(), newMatchSectionCodesBody(codes, lifeSemesterID)))
 		if err != nil {
 			return ustcschool.Semester{}, nil, nil, err
 		}
@@ -1246,7 +1246,7 @@ func fetchLifeHomeworksForSection(cmd *cobra.Command, apiClient *api.TypedClient
 	if err != nil {
 		return nil, err
 	}
-	raw, err := api.ParseResponseRaw(
+	raw, err := api.ParseResponse[openapi.HomeworksListResponseSchema](
 		apiClient.CommunitySectionHomeworkList(
 			cmd.Context(),
 			&openapi.CommunitySectionHomeworkListParams{
@@ -1280,7 +1280,7 @@ func createLifeHomework(cmd *cobra.Command, apiClient *api.TypedClient, sectionI
 	}
 	body := openapi.CommunitySectionHomeworkCreateJSONRequestBody{}
 	_ = body.FromHomeworkCreateRequestSchema0(schemaBody)
-	raw, err := api.ParseResponseRaw(
+	raw, err := api.ParseResponse[openapi.HomeworkCreateResponseSchema](
 		apiClient.CommunitySectionHomeworkCreate(cmd.Context(), body),
 	)
 	if err != nil {
@@ -1290,7 +1290,7 @@ func createLifeHomework(cmd *cobra.Command, apiClient *api.TypedClient, sectionI
 }
 
 func setLifeHomeworkCompletion(cmd *cobra.Command, apiClient *api.TypedClient, homeworkID string, completed bool) error {
-	_, err := api.ParseResponseRaw(apiClient.SetHomeworkCompletion(cmd.Context(), homeworkID, openapi.SetHomeworkCompletionJSONRequestBody{
+	_, err := api.ParseResponse[openapi.HomeworkCompletionResponseSchema](apiClient.SetHomeworkCompletion(cmd.Context(), homeworkID, openapi.SetHomeworkCompletionJSONRequestBody{
 		Completed: completed,
 	}))
 	return err

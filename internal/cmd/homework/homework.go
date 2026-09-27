@@ -69,7 +69,7 @@ func newCmdSectionList() *cobra.Command {
 				SectionId:      sectionID,
 				IncludeDeleted: &inclDel,
 			}
-			data, err := api.ParseResponseRaw(
+			data, err := api.ParseResponse[openapi.HomeworksListResponseSchema](
 				c.CommunitySectionHomeworkList(api.Ctx(), params),
 			)
 			if err != nil {
@@ -169,7 +169,7 @@ func newCmdSectionCreate() *cobra.Command {
 			}
 			body := openapi.CommunitySectionHomeworkCreateJSONRequestBody{}
 			_ = body.FromHomeworkCreateRequestSchema0(schemaBody)
-			data, err := api.ParseResponseRaw(
+			data, err := api.ParseResponse[openapi.HomeworkCreateResponseSchema](
 				c.CommunitySectionHomeworkCreate(api.Ctx(), body),
 			)
 			if err != nil {
@@ -225,7 +225,7 @@ func loadSubscribedSections(cmd *cobra.Command) ([]map[string]any, error) {
 	if err != nil {
 		return nil, err
 	}
-	data, err := api.ParseResponseRaw(c.GetCurrentCalendarSubscription(api.Ctx()))
+	data, err := api.ParseResponse[openapi.CurrentCalendarSubscriptionResponseSchema](c.GetCurrentCalendarSubscription(api.Ctx()))
 	if err == nil {
 		m := cmdutil.AsMap(data)
 		sub, _ := m["subscription"].(map[string]any)
@@ -237,7 +237,7 @@ func loadSubscribedSections(cmd *cobra.Command) ([]map[string]any, error) {
 		}
 	}
 
-	data, err = api.ParseResponseRaw(c.GetSubscribedHomeworks(api.Ctx(), nil))
+	data, err = api.ParseResponse[openapi.SubscribedHomeworksResponseSchema](c.GetSubscribedHomeworks(api.Ctx(), nil))
 	if err != nil {
 		return nil, fmt.Errorf("could not load subscribed sections: %w", err)
 	}
@@ -378,7 +378,7 @@ func runMyHomeworkList(cmd *cobra.Command, opts myHomeworkListOpts) error {
 		params := &openapi.CommunitySectionHomeworkListParams{
 			SectionId: sectionID,
 		}
-		data, err = api.ParseResponseRaw(
+		data, err = api.ParseResponse[openapi.HomeworksListResponseSchema](
 			c.CommunitySectionHomeworkList(api.Ctx(), params),
 		)
 		if err != nil {
@@ -386,7 +386,7 @@ func runMyHomeworkList(cmd *cobra.Command, opts myHomeworkListOpts) error {
 		}
 	} else {
 		// All subscribed sections — use the combined endpoint
-		data, err = api.ParseResponseRaw(c.GetSubscribedHomeworks(api.Ctx(), nil))
+		data, err = api.ParseResponse[openapi.SubscribedHomeworksResponseSchema](c.GetSubscribedHomeworks(api.Ctx(), nil))
 		if err != nil {
 			return err
 		}
@@ -577,7 +577,7 @@ func fetchHomeworkPickList(cmd *cobra.Command, opts myHomeworkListOpts) ([]map[s
 	if err != nil {
 		return nil, err
 	}
-	data, err := api.ParseResponseRaw(c.GetSubscribedHomeworks(api.Ctx(), nil))
+	data, err := api.ParseResponse[openapi.SubscribedHomeworksResponseSchema](c.GetSubscribedHomeworks(api.Ctx(), nil))
 	if err != nil {
 		return nil, err
 	}
@@ -708,7 +708,7 @@ func newCmdUpdate() *cobra.Command {
 			if !hasUpdate {
 				return fmt.Errorf("nothing to update — specify at least one flag")
 			}
-			_, err = api.ParseResponseRaw(
+			_, err = api.ParseResponse[openapi.HomeworkUpdateResponseSchema](
 				c.CommunitySectionHomeworkUpdate(api.Ctx(), id, body),
 			)
 			if err != nil {
@@ -765,7 +765,7 @@ func newCmdDelete() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			_, err = api.ParseResponseRaw(
+			_, err = api.ParseResponse[openapi.SuccessResponseSchema](
 				c.CommunitySectionHomeworkDelete(api.Ctx(), id),
 			)
 			if err != nil {
@@ -840,7 +840,7 @@ func setHomeworksCompleted(cmd *cobra.Command, ids []string, rows []map[string]a
 		items[i].HomeworkId = id
 	}
 	body := openapi.PutApiHomeworksCompletionsJSONRequestBody{Items: items}
-	data, err := api.ParseResponseRaw(c.PutApiHomeworksCompletions(api.Ctx(), body))
+	data, err := api.ParseResponse[openapi.HomeworkCompletionBatchResponseSchema](c.PutApiHomeworksCompletions(api.Ctx(), body))
 	if err != nil {
 		return err
 	}

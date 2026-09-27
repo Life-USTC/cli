@@ -22,7 +22,7 @@ func NewCmdCatalogLink() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			data, err := api.ParseResponseRaw(client.CatalogLinkList(api.Ctx()))
+			data, err := api.ParseResponse[openapi.CatalogLinkListResponseSchema](client.CatalogLinkList(api.Ctx()))
 			if err != nil {
 				return err
 			}
@@ -57,7 +57,7 @@ func newCmdListPins() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			data, err := api.ParseResponseRaw(
+			data, err := api.ParseResponse[openapi.WorkspaceLinkPinResponseSchema](
 				client.WorkspaceLinkPinList(api.Ctx()),
 			)
 			if err != nil {
@@ -82,7 +82,7 @@ func newCmdSetPin(action string) *cobra.Command {
 				return err
 			}
 			value := openapi.WorkspaceLinkPinRequestSchemaAction(action)
-			data, err := api.ParseResponseRaw(
+			data, err := api.ParseResponse[openapi.WorkspaceLinkPinResponseSchema](
 				client.WorkspaceLinkPinSetWithFormdataBody(
 					api.Ctx(),
 					openapi.WorkspaceLinkPinSetFormdataRequestBody{

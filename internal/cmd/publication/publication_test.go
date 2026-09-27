@@ -25,11 +25,11 @@ func TestFetchListMapsCanonicalFiltersAndKeepsJSON(t *testing.T) {
 			}
 		}
 		w.Header().Set("Content-Type", "application/json")
-		_, _ = io.WriteString(w, `{"data":[{"id":"p1","publicationType":"notice","revision":{"title":"Scholarship","bodyText":"full text"}}],"pagination":{"page":2,"pageSize":20,"total":1,"totalPages":1}}`)
+		_, _ = io.WriteString(w, `{"data":[{"id":"p1","publicationType":"notice","revision":{"title":"Scholarship","summary":"list summary"}}],"pagination":{"page":2,"pageSize":20,"total":1,"totalPages":1}}`)
 	}))
 	defer server.Close()
 
-	client, err := api.NewClient(server.URL, false)
+	client, err := api.NewTypedClient(server.URL, false)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -59,7 +59,7 @@ func TestFetchListMapsCanonicalFiltersAndKeepsJSON(t *testing.T) {
 	if !ok || row["id"] != "p1" {
 		t.Fatalf("decoded row = %#v", rows[0])
 	}
-	if body := row["revision"].(map[string]any)["bodyText"]; body != "full text" {
+	if body := row["revision"].(map[string]any)["summary"]; body != "list summary" {
 		t.Fatalf("full JSON field = %#v", body)
 	}
 }
@@ -76,7 +76,7 @@ func TestFetchGetEscapesIdentifierAndReportsHTTPError(t *testing.T) {
 	}))
 	defer server.Close()
 
-	client, err := api.NewClient(server.URL, false)
+	client, err := api.NewTypedClient(server.URL, false)
 	if err != nil {
 		t.Fatal(err)
 	}

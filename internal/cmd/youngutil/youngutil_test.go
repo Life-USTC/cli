@@ -1,6 +1,7 @@
 package youngutil
 
 import (
+	"context"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -69,7 +70,14 @@ func TestFetchAllPagesTraversesCompleteResponse(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	data, err := FetchAllPages(t.Context(), client, "/events", url.Values{"dateFrom": []string{"2026-09-01"}}, "data", 2, "youngId")
+	data, err := FetchAllPages(t.Context(), func(ctx context.Context, params url.Values) (any, error) {
+		resp, err := client.DoRaw(ctx, http.MethodGet, "/events", params, nil, "", nil)
+		body, ct, err := api.ReadResponse(resp, err)
+		if err != nil {
+			return nil, err
+		}
+		return api.DecodeResponseBody(body, ct, false)
+	}, "/events", url.Values{"dateFrom": []string{"2026-09-01"}}, "data", 2, "youngId")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -93,7 +101,14 @@ func TestFetchAllPagesRejectsIncompleteResponse(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if _, err := FetchAllPages(t.Context(), client, "/events", nil, "data", 2, "youngId"); err == nil {
+	if _, err := FetchAllPages(t.Context(), func(ctx context.Context, params url.Values) (any, error) {
+		resp, err := client.DoRaw(ctx, http.MethodGet, "/events", params, nil, "", nil)
+		body, ct, err := api.ReadResponse(resp, err)
+		if err != nil {
+			return nil, err
+		}
+		return api.DecodeResponseBody(body, ct, false)
+	}, "/events", nil, "data", 2, "youngId"); err == nil {
 		t.Fatal("FetchAllPages accepted an incomplete response")
 	}
 }
