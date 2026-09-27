@@ -364,6 +364,40 @@
           "name": "TestSpecUploadPicker/upload.cli-picker-complete-input"
         }
       }
+    },
+    {
+      "id": "description.cli-content-output",
+      "scope": "public",
+      "rule": "Description reads display nested description.content, show the empty state only for empty content, and preserve the nested response in JSON.",
+      "acceptance": {
+        "given": "Populated and empty public descriptions.",
+        "when": "Execute the real community description get command in text and JSON modes.",
+        "then": [
+          "The public GET uses targetType and targetId without authentication.",
+          "Text shows content or the appropriate empty state; JSON retains the nested content and ID."
+        ],
+        "test": {
+          "file": "internal/cmd/root/description_contract_test.go",
+          "name": "TestSpecDescriptionContentOutput/description.cli-content-output"
+        }
+      }
+    },
+    {
+      "id": "description.cli-history-output",
+      "scope": "public",
+      "rule": "Description history displays each revision ID, createdAt timestamp and editor name; absent editors remain readable.",
+      "acceptance": {
+        "given": "Two description revisions, one with a named editor and one with no editor.",
+        "when": "Execute the real community description get command and render its history.",
+        "then": [
+          "Both revision IDs and timestamps are displayed along with the present editor name.",
+          "A missing editor does not prevent readable output."
+        ],
+        "test": {
+          "file": "internal/cmd/root/description_contract_test.go",
+          "name": "TestSpecDescriptionHistoryOutput/description.cli-history-output"
+        }
+      }
     }
   ]
 }
