@@ -60,7 +60,7 @@ func runCalendarGet(cmd *cobra.Command) error {
 	if err != nil {
 		return err
 	}
-	data, err := api.ParseResponseRaw(c.GetCurrentCalendarSubscription(api.Ctx()))
+	data, err := api.ParseResponse[openapi.CurrentCalendarSubscriptionResponseSchema](c.GetCurrentCalendarSubscription(api.Ctx()))
 	if err != nil {
 		return err
 	}
@@ -129,7 +129,7 @@ func newCmdKind() *cobra.Command {
 }
 
 func setSubscriptionKind(client *api.TypedClient, jwID int64, kind openapi.SubscriptionKindUpdateRequestSchemaKind) (any, error) {
-	return api.ParseResponseRaw(client.PatchApiWorkspaceSubscriptionsJwId(
+	return api.ParseResponse[openapi.SubscriptionKindUpdateResponseSchema](client.PatchApiWorkspaceSubscriptionsJwId(
 		api.Ctx(), jwID,
 		openapi.PatchApiWorkspaceSubscriptionsJwIdJSONRequestBody{Kind: kind},
 	))
@@ -212,7 +212,7 @@ func newCmdQuery() *cobra.Command {
 				_ = semester.FromCalendarSubscriptionQueryRequestSchemaSemesterId0(semesterID)
 				body.SemesterId = &semester
 			}
-			data, err := api.ParseResponseRaw(c.QueryCalendarSubscriptionSections(api.Ctx(), body))
+			data, err := api.ParseResponse[openapi.CalendarSubscriptionQueryResponseSchema](c.QueryCalendarSubscriptionSections(api.Ctx(), body))
 			if err != nil {
 				return err
 			}
@@ -261,7 +261,7 @@ func runCalendarBatch(cmd *cobra.Command, args []string, action openapi.Calendar
 		_ = semester.FromCalendarSubscriptionBatchRequestSchemaSemesterId0(semesterID)
 		body.SemesterId = &semester
 	}
-	data, err := api.ParseResponseRaw(c.BatchUpdateCalendarSubscription(api.Ctx(), body))
+	data, err := api.ParseResponse[openapi.CalendarSubscriptionBatchResponseSchema](c.BatchUpdateCalendarSubscription(api.Ctx(), body))
 	if err != nil {
 		return err
 	}

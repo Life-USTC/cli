@@ -112,8 +112,8 @@ func fetchCourseList(c *api.TypedClient, opts courseListOpts) (cmdutil.ListResul
 		return cmdutil.ListResult{}, err
 	}
 	params.Page = cmdutil.Int64PtrIfPositive(opts.page)
-	params.Limit = cmdutil.Int64PtrIfPositive(opts.limit)
-	data, err := api.ParseResponseRaw(c.ListCourses(api.Ctx(), &params))
+	params.PageSize = cmdutil.Int64PtrIfPositive(opts.limit)
+	data, err := api.ParseResponse[openapi.PaginatedCourseResponseSchema](c.ListCourses(api.Ctx(), &params))
 	if err != nil {
 		return cmdutil.ListResult{}, err
 	}
@@ -174,7 +174,7 @@ func runCourseView(cmd *cobra.Command, id string) error {
 	if err != nil {
 		return err
 	}
-	data, err := api.ParseResponseRaw(c.GetCourse(api.Ctx(), *jwID, nil))
+	data, err := api.ParseResponse[openapi.CourseDetailSchema](c.GetCourse(api.Ctx(), *jwID, nil))
 	if err != nil {
 		return err
 	}

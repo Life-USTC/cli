@@ -105,8 +105,8 @@ func fetchTeacherList(c *api.TypedClient, opts teacherListOpts) (cmdutil.ListRes
 	}
 	params.Search = cmdutil.StringPtrIfSet(opts.search)
 	params.Page = cmdutil.Int64PtrIfPositive(opts.page)
-	params.Limit = cmdutil.Int64PtrIfPositive(opts.limit)
-	data, err := api.ParseResponseRaw(c.ListTeachers(api.Ctx(), &params))
+	params.PageSize = cmdutil.Int64PtrIfPositive(opts.limit)
+	data, err := api.ParseResponse[openapi.PaginatedTeacherResponseSchema](c.ListTeachers(api.Ctx(), &params))
 	if err != nil {
 		return cmdutil.ListResult{}, err
 	}
@@ -165,7 +165,7 @@ func runTeacherView(cmd *cobra.Command, id string) error {
 	if err != nil {
 		return fmt.Errorf("invalid teacher id %q: %w", id, err)
 	}
-	data, err := api.ParseResponseRaw(c.GetTeacher(api.Ctx(), teacherID, nil))
+	data, err := api.ParseResponse[openapi.TeacherDetailSchema](c.GetTeacher(api.Ctx(), teacherID, nil))
 	if err != nil {
 		return err
 	}

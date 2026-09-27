@@ -1,10 +1,8 @@
 package comment
 
 import (
-	"bytes"
-	"encoding/json"
+	"context"
 	"fmt"
-	"net/http"
 	"net/url"
 	"strings"
 
@@ -109,13 +107,13 @@ func runCommentList(cmd *cobra.Command, target commentTarget) error {
 	if err != nil {
 		return err
 	}
-	client, err := api.NewClient(cmdutil.ServerFromCmd(cmd), false)
+	client, err := api.NewTypedClient(cmdutil.ServerFromCmd(cmd), false)
 	if err != nil {
 		return err
 	}
 	data, err := youngutil.FetchAllIfUnpaged(
 		cmd.Context(),
-		client,
+		func(ctx context.Context, query url.Values) (any, error) { return fetchCommentPage(ctx, client, query) },
 		commentsPath,
 		params,
 		"data",
@@ -175,27 +173,7 @@ func runCommentCreate(cmd *cobra.Command, target commentTarget, body, visibility
 	if err := validateTarget(target, true); err != nil {
 		return err
 	}
-	if target.targetType == "young-event" {
-		client, err := api.NewClient(cmdutil.ServerFromCmd(cmd), true)
-		if err != nil {
-			return err
-		}
-		request := map[string]any{
-			"targetType":  "young-event",
-			"youngId":     target.youngID,
-			"body":        body,
-			"visibility":  visibility,
-			"isAnonymous": anonymous,
-		}
-		if parentID != "" {
-			request["parentId"] = parentID
-		}
-		data, err := client.DoJSON(cmd.Context(), http.MethodPost, commentsPath, nil, request)
-		if err != nil {
-			return err
-		}
-		return reportCommentCreated(data)
-	}
+
 	c, err := api.NewTypedClient(cmdutil.ServerFromCmd(cmd), true)
 	if err != nil {
 		return err
@@ -207,7 +185,7 @@ func runCommentCreate(cmd *cobra.Command, target commentTarget, body, visibility
 		Visibility:  &vis,
 		IsAnonymous: &anonymous,
 	}
-	if target.targetID != "" {
+	if target.targetID != "" && target.targetType != "young-event" {
 		targetId := openapi.CommentCreateRequestSchema_TargetId{}
 		_ = targetId.FromCommentCreateRequestSchemaTargetId0(target.targetID)
 		reqBody.TargetId = &targetId
@@ -222,11 +200,14 @@ func runCommentCreate(cmd *cobra.Command, target commentTarget, body, visibility
 		_ = teacherId.FromCommentCreateRequestSchemaTeacherId0(target.teacherID)
 		reqBody.TeacherId = &teacherId
 	}
+	if target.youngID != "" {
+		reqBody.YoungId = &target.youngID
+	}
 	if parentID != "" {
 		reqBody.ParentId = &parentID
 	}
 
-	data, err := api.ParseResponseRaw(c.CreateComment(api.Ctx(), reqBody))
+	data, err := api.ParseResponse[openapi.IdResponseSchema](c.CreateComment(api.Ctx(), reqBody))
 	if err != nil {
 		return err
 	}
@@ -382,7 +363,7 @@ func newCmdView() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			data, err := api.ParseResponseRaw(c.GetComment(api.Ctx(), commentID))
+			data, err := api.ParseResponse[openapi.CommentThreadResponseSchema](c.GetComment(api.Ctx(), commentID))
 			if err != nil {
 				return err
 			}
@@ -506,21 +487,12 @@ func newCmdUpdate() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			payload := map[string]any{}
-			if body != "" {
-				payload["body"] = body
-			}
+			reqBody := openapi.UpdateCommentJSONRequestBody{Body: body}
 			if visibility != "" {
-				payload["visibility"] = visibility
+				value := openapi.CommentUpdateRequestSchemaVisibility(visibility)
+				reqBody.Visibility = &value
 			}
-			if len(payload) == 0 {
-				return fmt.Errorf("nothing to update — specify at least one flag")
-			}
-			jsonBytes, err := json.Marshal(payload)
-			if err != nil {
-				return err
-			}
-			data, err := api.ParseResponseRaw(c.UpdateCommentWithBody(api.Ctx(), id, "application/json", bytes.NewReader(jsonBytes)))
+			data, err := api.ParseResponse[openapi.CommentUpdateResponseSchema](c.UpdateComment(api.Ctx(), id, reqBody))
 			if err != nil {
 				return err
 			}
@@ -598,7 +570,7 @@ func deleteComments(cmd *cobra.Command, ids []string, rows []map[string]any) err
 		return err
 	}
 	body := openapi.DeleteApiCommentsBatchJSONRequestBody{Ids: ids}
-	data, err := api.ParseResponseRaw(c.DeleteApiCommentsBatch(api.Ctx(), body))
+	data, err := api.ParseResponse[openapi.CommentBatchDeleteResponseSchema](c.DeleteApiCommentsBatch(api.Ctx(), body))
 	if err != nil {
 		return err
 	}
@@ -673,7 +645,7 @@ func newCmdReact() *cobra.Command {
 				params := &openapi.RemoveCommentReactionParams{
 					Type: openapi.RemoveCommentReactionParamsType(reactionType),
 				}
-				data, err := api.ParseResponseRaw(c.RemoveCommentReaction(api.Ctx(), commentID, params))
+				data, err := api.ParseResponse[openapi.SuccessResponseSchema](c.RemoveCommentReaction(api.Ctx(), commentID, params))
 				if err != nil {
 					return err
 				}
@@ -682,7 +654,7 @@ func newCmdReact() *cobra.Command {
 				body := openapi.AddCommentReactionJSONRequestBody{
 					Type: openapi.CommentReactionRequestSchemaType(reactionType),
 				}
-				data, err := api.ParseResponseRaw(c.AddCommentReaction(api.Ctx(), commentID, body))
+				data, err := api.ParseResponse[openapi.SuccessResponseSchema](c.AddCommentReaction(api.Ctx(), commentID, body))
 				if err != nil {
 					return err
 				}
@@ -712,7 +684,7 @@ func promptCommentPick(cmd *cobra.Command, prompt string) (map[string]any, error
 	}
 	// Fetch the user's own comments — use a general list with a limit
 	params := &openapi.ListCommentsParams{}
-	data, err := api.ParseResponseRaw(c.ListComments(api.Ctx(), params))
+	data, err := api.ParseResponse[openapi.CommentsListResponseSchema](c.ListComments(api.Ctx(), params))
 	if err != nil {
 		return nil, err
 	}
@@ -749,7 +721,7 @@ func flattenComments(roots []map[string]any) []map[string]any {
 	var rows []map[string]any
 	var visit func(map[string]any, string)
 	visit = func(node map[string]any, parent string) {
-		row := make(map[string]any, len(node)+1)
+		row := make(map[string]any, len(node))
 		for key, value := range node {
 			row[key] = value
 		}
@@ -781,15 +753,12 @@ func newCmdReplies() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			client, err := api.NewClient(cmdutil.ServerFromCmd(cmd), false)
+			client, err := api.NewTypedClient(cmdutil.ServerFromCmd(cmd), false)
 			if err != nil {
 				return err
 			}
-			params := url.Values{"pageSize": {"20"}}
-			if cursor != "" {
-				params.Set("cursor", cursor)
-			}
-			data, err := client.DoJSON(cmd.Context(), http.MethodGet, commentsPath+"/"+url.PathEscape(id)+"/replies", params, nil)
+			params := openapi.GetApiCommunityCommentsIdRepliesParams{PageSize: cmdutil.Int64PtrIfPositive(20), Cursor: cmdutil.StringPtrIfSet(cursor)}
+			data, err := api.ParseResponse[openapi.CommentRepliesResponseSchema](client.GetApiCommunityCommentsIdReplies(cmd.Context(), id, &params))
 			if err != nil {
 				return err
 			}
@@ -805,4 +774,47 @@ func newCmdReplies() *cobra.Command {
 	}
 	cmd.Flags().StringVar(&cursor, "cursor", "", "Reply pagination cursor")
 	return cmd
+}
+
+func fetchCommentPage(ctx context.Context, client *api.TypedClient, query url.Values) (any, error) {
+	paramSectionId, err := cmdutil.Int64PtrIfSet(query.Get("sectionId"))
+	if err != nil {
+		return nil, err
+	}
+	paramSectionJwId, err := cmdutil.Int64PtrIfSet(query.Get("sectionJwId"))
+	if err != nil {
+		return nil, err
+	}
+	paramCourseJwId, err := cmdutil.Int64PtrIfSet(query.Get("courseJwId"))
+	if err != nil {
+		return nil, err
+	}
+	paramTeacherId, err := cmdutil.Int64PtrIfSet(query.Get("teacherId"))
+	if err != nil {
+		return nil, err
+	}
+	paramSectionTeacherId, err := cmdutil.Int64PtrIfSet(query.Get("sectionTeacherId"))
+	if err != nil {
+		return nil, err
+	}
+	paramPage, err := cmdutil.Int64PtrIfSet(query.Get("page"))
+	if err != nil {
+		return nil, err
+	}
+	paramPageSize, err := cmdutil.Int64PtrIfSet(query.Get("pageSize"))
+	if err != nil {
+		return nil, err
+	}
+	params := openapi.ListCommentsParams{TargetType: openapi.ListCommentsParamsTargetType(query.Get("targetType")),
+		TargetId:         cmdutil.StringPtrIfSet(query.Get("targetId")),
+		YoungId:          cmdutil.StringPtrIfSet(query.Get("youngId")),
+		SectionId:        paramSectionId,
+		SectionJwId:      paramSectionJwId,
+		CourseJwId:       paramCourseJwId,
+		TeacherId:        paramTeacherId,
+		HomeworkId:       cmdutil.StringPtrIfSet(query.Get("homeworkId")),
+		SectionTeacherId: paramSectionTeacherId,
+		Page:             paramPage,
+		PageSize:         paramPageSize}
+	return api.ParseResponse[openapi.CommentsListResponseSchema](client.ListComments(ctx, &params))
 }

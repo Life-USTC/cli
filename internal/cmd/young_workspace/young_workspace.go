@@ -1,8 +1,9 @@
 package young_workspace
 
 import (
+	"context"
 	"fmt"
-	"net/http"
+	"github.com/Life-USTC/CLI/internal/openapi"
 	"net/url"
 	"strconv"
 	"strings"
@@ -39,13 +40,15 @@ func newEventSubscriptionList() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			client, err := api.NewClient(cmdutil.ServerFromCmd(cmd), true)
+			client, err := api.NewTypedClient(cmdutil.ServerFromCmd(cmd), true)
 			if err != nil {
 				return err
 			}
 			data, err := youngutil.FetchAllIfUnpaged(
 				cmd.Context(),
-				client,
+				func(ctx context.Context, query url.Values) (any, error) {
+					return fetchEventSubscriptionPage(ctx, client, query)
+				},
 				youngutil.YoungEventSubscriptionsPath,
 				params,
 				"data",
@@ -82,17 +85,11 @@ func newEventSubscriptionGet() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			client, err := api.NewClient(cmdutil.ServerFromCmd(cmd), true)
+			client, err := api.NewTypedClient(cmdutil.ServerFromCmd(cmd), true)
 			if err != nil {
 				return err
 			}
-			data, err := client.DoJSON(
-				cmd.Context(),
-				http.MethodGet,
-				youngutil.PathID(youngutil.YoungEventSubscriptionsPath, youngID),
-				nil,
-				nil,
-			)
+			data, err := api.ParseResponse[openapi.YoungEventSubscriptionStateSchema](client.GetApiWorkspaceYoungEventSubscriptionsYoungId(cmd.Context(), youngID))
 			if err != nil {
 				return err
 			}
@@ -119,39 +116,33 @@ func newEventSubscriptionSet() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			body := map[string]any{"subscribed": subscribedValue}
+			body := openapi.PutApiWorkspaceYoungEventSubscriptionsYoungIdJSONRequestBody{Subscribed: subscribedValue}
 			if cmd.Flags().Changed("remind-signup") {
 				value, err := parseBoolValue("--remind-signup", remindSignup)
 				if err != nil {
 					return err
 				}
-				body["remindSignup"] = value
+				body.RemindSignup = &value
 			}
 			if cmd.Flags().Changed("remind-deadline") {
 				value, err := parseBoolValue("--remind-deadline", remindDeadline)
 				if err != nil {
 					return err
 				}
-				body["remindDeadline"] = value
+				body.RemindDeadline = &value
 			}
 			if cmd.Flags().Changed("remind-start") {
 				value, err := parseBoolValue("--remind-start", remindStart)
 				if err != nil {
 					return err
 				}
-				body["remindStart"] = value
+				body.RemindStart = &value
 			}
-			client, err := api.NewClient(cmdutil.ServerFromCmd(cmd), true)
+			client, err := api.NewTypedClient(cmdutil.ServerFromCmd(cmd), true)
 			if err != nil {
 				return err
 			}
-			data, err := client.DoJSON(
-				cmd.Context(),
-				http.MethodPut,
-				youngutil.PathID(youngutil.YoungEventSubscriptionsPath, youngID),
-				nil,
-				body,
-			)
+			data, err := api.ParseResponse[openapi.YoungEventSubscriptionStateSchema](client.PutApiWorkspaceYoungEventSubscriptionsYoungId(cmd.Context(), youngID, body))
 			if err != nil {
 				return err
 			}
@@ -199,13 +190,15 @@ func newOrganizerSubscriptionList() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			client, err := api.NewClient(cmdutil.ServerFromCmd(cmd), true)
+			client, err := api.NewTypedClient(cmdutil.ServerFromCmd(cmd), true)
 			if err != nil {
 				return err
 			}
 			data, err := youngutil.FetchAllIfUnpaged(
 				cmd.Context(),
-				client,
+				func(ctx context.Context, query url.Values) (any, error) {
+					return fetchOrganizerSubscriptionPage(ctx, client, query)
+				},
 				youngutil.YoungOrganizerSubscriptionsPath,
 				params,
 				"data",
@@ -239,17 +232,11 @@ func newOrganizerSubscriptionGet() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			client, err := api.NewClient(cmdutil.ServerFromCmd(cmd), true)
+			client, err := api.NewTypedClient(cmdutil.ServerFromCmd(cmd), true)
 			if err != nil {
 				return err
 			}
-			data, err := client.DoJSON(
-				cmd.Context(),
-				http.MethodGet,
-				youngutil.PathID(youngutil.YoungOrganizerSubscriptionsPath, organizerID),
-				nil,
-				nil,
-			)
+			data, err := api.ParseResponse[openapi.YoungOrganizerSubscriptionStateSchema](client.GetApiWorkspaceYoungOrganizerSubscriptionsOrganizerId(cmd.Context(), organizerID))
 			if err != nil {
 				return err
 			}
@@ -276,17 +263,11 @@ func newOrganizerSubscriptionSet() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			client, err := api.NewClient(cmdutil.ServerFromCmd(cmd), true)
+			client, err := api.NewTypedClient(cmdutil.ServerFromCmd(cmd), true)
 			if err != nil {
 				return err
 			}
-			data, err := client.DoJSON(
-				cmd.Context(),
-				http.MethodPut,
-				youngutil.PathID(youngutil.YoungOrganizerSubscriptionsPath, organizerID),
-				nil,
-				map[string]any{"subscribed": subscribedValue},
-			)
+			data, err := api.ParseResponse[openapi.YoungOrganizerSubscriptionStateSchema](client.PutApiWorkspaceYoungOrganizerSubscriptionsOrganizerId(cmd.Context(), organizerID, openapi.PutApiWorkspaceYoungOrganizerSubscriptionsOrganizerIdJSONRequestBody{Subscribed: subscribedValue}))
 			if err != nil {
 				return err
 			}
@@ -332,13 +313,15 @@ func newNotificationList() *cobra.Command {
 			if cmd.Flags().Changed("unread") {
 				params.Set("unread", strconv.FormatBool(unread))
 			}
-			client, err := api.NewClient(cmdutil.ServerFromCmd(cmd), true)
+			client, err := api.NewTypedClient(cmdutil.ServerFromCmd(cmd), true)
 			if err != nil {
 				return err
 			}
 			data, err := youngutil.FetchAllIfUnpaged(
 				cmd.Context(),
-				client,
+				func(ctx context.Context, query url.Values) (any, error) {
+					return fetchNotificationPage(ctx, client, query)
+				},
 				youngutil.YoungNotificationsPath,
 				params,
 				"data",
@@ -375,17 +358,11 @@ func newNotificationRead() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			client, err := api.NewClient(cmdutil.ServerFromCmd(cmd), true)
+			client, err := api.NewTypedClient(cmdutil.ServerFromCmd(cmd), true)
 			if err != nil {
 				return err
 			}
-			data, err := client.DoJSON(
-				cmd.Context(),
-				http.MethodPost,
-				youngutil.PathID(youngutil.YoungNotificationsPath, notificationID)+"/read",
-				nil,
-				nil,
-			)
+			data, err := api.ParseResponse[openapi.YoungNotificationReadSchema](client.PostApiWorkspaceYoungNotificationsIdRead(cmd.Context(), notificationID))
 			if err != nil {
 				return err
 			}
@@ -407,4 +384,64 @@ func parseBoolValue(flag, value string) (bool, error) {
 		return false, fmt.Errorf("%s must be true or false", flag)
 	}
 	return value == "true", nil
+}
+
+func fetchEventSubscriptionPage(ctx context.Context, client *api.TypedClient, query url.Values) (any, error) {
+	paramPage, err := cmdutil.Int64PtrIfSet(query.Get("page"))
+	if err != nil {
+		return nil, err
+	}
+	paramPageSize, err := cmdutil.Int64PtrIfSet(query.Get("pageSize"))
+	if err != nil {
+		return nil, err
+	}
+	var paramUnread *openapi.GetApiWorkspaceYoungEventSubscriptionsParamsUnread
+	if value := query.Get("unread"); value != "" {
+		converted := openapi.GetApiWorkspaceYoungEventSubscriptionsParamsUnread(value)
+		paramUnread = &converted
+	}
+	params := openapi.GetApiWorkspaceYoungEventSubscriptionsParams{Page: paramPage,
+		PageSize: paramPageSize,
+		Unread:   paramUnread}
+	return api.ParseResponse[openapi.YoungEventSubscriptionListSchema](client.GetApiWorkspaceYoungEventSubscriptions(ctx, &params))
+}
+
+func fetchOrganizerSubscriptionPage(ctx context.Context, client *api.TypedClient, query url.Values) (any, error) {
+	paramPage, err := cmdutil.Int64PtrIfSet(query.Get("page"))
+	if err != nil {
+		return nil, err
+	}
+	paramPageSize, err := cmdutil.Int64PtrIfSet(query.Get("pageSize"))
+	if err != nil {
+		return nil, err
+	}
+	var paramUnread *openapi.GetApiWorkspaceYoungOrganizerSubscriptionsParamsUnread
+	if value := query.Get("unread"); value != "" {
+		converted := openapi.GetApiWorkspaceYoungOrganizerSubscriptionsParamsUnread(value)
+		paramUnread = &converted
+	}
+	params := openapi.GetApiWorkspaceYoungOrganizerSubscriptionsParams{Page: paramPage,
+		PageSize: paramPageSize,
+		Unread:   paramUnread}
+	return api.ParseResponse[openapi.YoungOrganizerSubscriptionListSchema](client.GetApiWorkspaceYoungOrganizerSubscriptions(ctx, &params))
+}
+
+func fetchNotificationPage(ctx context.Context, client *api.TypedClient, query url.Values) (any, error) {
+	paramPage, err := cmdutil.Int64PtrIfSet(query.Get("page"))
+	if err != nil {
+		return nil, err
+	}
+	paramPageSize, err := cmdutil.Int64PtrIfSet(query.Get("pageSize"))
+	if err != nil {
+		return nil, err
+	}
+	var paramUnread *openapi.GetApiWorkspaceYoungNotificationsParamsUnread
+	if value := query.Get("unread"); value != "" {
+		converted := openapi.GetApiWorkspaceYoungNotificationsParamsUnread(value)
+		paramUnread = &converted
+	}
+	params := openapi.GetApiWorkspaceYoungNotificationsParams{Page: paramPage,
+		PageSize: paramPageSize,
+		Unread:   paramUnread}
+	return api.ParseResponse[openapi.YoungNotificationListSchema](client.GetApiWorkspaceYoungNotifications(ctx, &params))
 }

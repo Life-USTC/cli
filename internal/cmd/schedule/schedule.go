@@ -58,7 +58,7 @@ func NewCmdWorkspaceSchedule() *cobra.Command {
 				Weekday:  cmdutil.Int64PtrIfPositive(weekday),
 				Limit:    cmdutil.Int64PtrIfPositive(limit),
 			}
-			data, err := api.ParseResponseRaw(
+			data, err := api.ParseResponse[openapi.SubscribedSchedulesResponseSchema](
 				c.WorkspaceScheduleList(api.Ctx(), params),
 			)
 			if err != nil {
@@ -129,8 +129,8 @@ func runScheduleList(cmd *cobra.Command, opts scheduleListOpts) error {
 		params.Weekday = cmdutil.Int64PtrIfPositive(opts.weekday)
 	}
 	params.Page = cmdutil.Int64PtrIfPositive(opts.page)
-	params.Limit = cmdutil.Int64PtrIfPositive(opts.limit)
-	data, err := api.ParseResponseRaw(c.ListSchedules(api.Ctx(), &params))
+	params.PageSize = cmdutil.Int64PtrIfPositive(opts.limit)
+	data, err := api.ParseResponse[openapi.PaginatedScheduleResponseSchema](c.ListSchedules(api.Ctx(), &params))
 	if err != nil {
 		return err
 	}

@@ -1,6 +1,7 @@
 package me
 
 import (
+	"github.com/Life-USTC/CLI/internal/openapi"
 	"github.com/spf13/cobra"
 
 	"github.com/Life-USTC/CLI/internal/api"
@@ -25,7 +26,7 @@ func NewCmdProfile() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			data, err := api.ParseResponseRaw(c.AccountProfileGet(api.Ctx()))
+			data, err := api.ParseResponse[openapi.MeResponseSchema](c.AccountProfileGet(api.Ctx()))
 			if err != nil {
 				return err
 			}

@@ -1,9 +1,9 @@
 package bus
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
+	"io"
 	"strconv"
 	"strings"
 	"time"
@@ -77,7 +77,7 @@ func runBusQuery(cmd *cobra.Command, origin, destination, dayType, now string, s
 		return err
 	}
 	params := &openapi.CatalogBusTimetableGetParams{}
-	data, err := api.ParseResponseRaw(c.CatalogBusTimetableGet(api.Ctx(), params))
+	data, err := api.ParseResponse[openapi.BusQueryResponseSchema](c.CatalogBusTimetableGet(api.Ctx(), params))
 	if err != nil {
 		return err
 	}
@@ -431,7 +431,7 @@ func newCmdPreferences() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			rawData, err := api.ParseResponseRaw(
+			rawData, err := api.ParseResponse[openapi.BusPreferenceResponseSchema](
 				c.WorkspaceBusPreferencesGet(api.Ctx()),
 			)
 			if err != nil {
@@ -445,8 +445,6 @@ func newCmdPreferences() *cobra.Command {
 			return output.OutputDetail(data, []output.FieldDef{
 				{Key: "preferredOriginCampusId", Label: "Preferred origin"},
 				{Key: "preferredDestinationCampusId", Label: "Preferred destination"},
-				{Key: "favoriteCampusIds", Label: "Favorite campuses"},
-				{Key: "favoriteRouteIds", Label: "Favorite routes"},
 				{Key: "showDepartedTrips", Label: "Show departed"},
 			}, "Bus preferences")
 		},
@@ -475,37 +473,44 @@ func newCmdSetPreferences() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			var body map[string]any
+			var body openapi.WorkspaceBusPreferencesSetJSONRequestBody
 			if rawJSON != "" {
-				if err := json.Unmarshal([]byte(rawJSON), &body); err != nil {
+				decoder := json.NewDecoder(strings.NewReader(rawJSON))
+				decoder.DisallowUnknownFields()
+				var parsed *openapi.WorkspaceBusPreferencesSetJSONRequestBody
+				if err := decoder.Decode(&parsed); err != nil {
 					return fmt.Errorf("invalid JSON: %w", err)
 				}
+				if parsed == nil {
+					return fmt.Errorf("bus preferences must be a JSON object")
+				}
+				if err := decoder.Decode(new(any)); err != io.EOF {
+					return fmt.Errorf("bus preferences must contain exactly one JSON object")
+				}
+				body = *parsed
 			} else {
-				body = map[string]any{}
-				if cmd.Flags().Changed("origin") {
-					body["preferredOriginCampusId"] = origin
-				}
-				if cmd.Flags().Changed("destination") {
-					body["preferredDestinationCampusId"] = destination
-				}
-				if cmd.Flags().Changed("show-departed") {
-					body["showDepartedTrips"] = showDeparted
-				}
-				if len(body) == 0 {
+				if !cmd.Flags().Changed("origin") && !cmd.Flags().Changed("destination") && !cmd.Flags().Changed("show-departed") {
 					return fmt.Errorf("specify at least one flag (--origin, --destination, --show-departed) or use --raw-json")
 				}
+				existing, err := api.ReadTypedResponse[openapi.BusPreferenceResponseSchema](c.WorkspaceBusPreferencesGet(api.Ctx()))
+				if err != nil {
+					return err
+				}
+
+				body.PreferredOriginCampusId = existing.Preference.PreferredOriginCampusId
+				body.PreferredDestinationCampusId = existing.Preference.PreferredDestinationCampusId
+				body.ShowDepartedTrips = existing.Preference.ShowDepartedTrips
+				if cmd.Flags().Changed("origin") {
+					body.PreferredOriginCampusId = &origin
+				}
+				if cmd.Flags().Changed("destination") {
+					body.PreferredDestinationCampusId = &destination
+				}
+				if cmd.Flags().Changed("show-departed") {
+					body.ShowDepartedTrips = showDeparted
+				}
 			}
-			bodyBytes, err := json.Marshal(body)
-			if err != nil {
-				return fmt.Errorf("failed to encode body: %w", err)
-			}
-			_, err = api.ParseResponseRaw(
-				c.WorkspaceBusPreferencesSetWithBody(
-					api.Ctx(),
-					"application/json",
-					bytes.NewReader(bodyBytes),
-				),
-			)
+			_, err = api.ParseResponse[openapi.BusPreferenceResponseSchema](c.WorkspaceBusPreferencesSet(api.Ctx(), body))
 			if err != nil {
 				return err
 			}

@@ -2,15 +2,10 @@
 package apicmd
 
 var generatedAPIPaths = []string{
-	"/.well-known/oauth-authorization-server",
 	"/.well-known/oauth-authorization-server/api/auth",
-	"/.well-known/oauth-authorization-server/api/mcp",
-	"/.well-known/oauth-protected-resource",
 	"/.well-known/oauth-protected-resource/api/graphql",
 	"/.well-known/oauth-protected-resource/api/mcp",
-	"/.well-known/openid-configuration",
 	"/.well-known/openid-configuration/api/auth",
-	"/.well-known/openid-configuration/api/mcp",
 	"/api/account/client-activity",
 	"/api/account/preferences",
 	"/api/account/profile",
@@ -71,8 +66,6 @@ var generatedAPIPaths = []string{
 	"/api/ingestion/publications/objects/plan",
 	"/api/ingestion/publications/objects/{batchId}/{kind}/{sha256}",
 	"/api/mcp",
-	"/api/mcp/.well-known/oauth-authorization-server",
-	"/api/mcp/.well-known/openid-configuration",
 	"/api/openapi",
 	"/api/publications",
 	"/api/publications/images/{hash}",

@@ -107,7 +107,7 @@ func runTodoList(cmd *cobra.Command, opts todoListOpts) error {
 		params.DueAfter = &s
 	}
 
-	data, err := api.ParseResponseRaw(c.ListTodos(api.Ctx(), params))
+	data, err := api.ParseResponse[openapi.TodosListResponseSchema](c.ListTodos(api.Ctx(), params))
 	if err != nil {
 		return err
 	}
@@ -301,7 +301,7 @@ func fetchTodoPickList(cmd *cobra.Command, opts todoListOpts) ([]map[string]any,
 		v := openapi.ListTodosParamsCompleted("false")
 		params.Completed = &v
 	}
-	data, err := api.ParseResponseRaw(c.ListTodos(api.Ctx(), params))
+	data, err := api.ParseResponse[openapi.TodosListResponseSchema](c.ListTodos(api.Ctx(), params))
 	if err != nil {
 		return nil, err
 	}
@@ -411,7 +411,7 @@ func newCmdCreate() *cobra.Command {
 				_ = dueAt.FromTodoCreateRequestSchemaDueAt1(openapi.TodoCreateRequestSchemaDueAt1(due))
 				body.DueAt = &dueAt
 			}
-			data, err := api.ParseResponseRaw(c.CreateTodo(api.Ctx(), body))
+			data, err := api.ParseResponse[openapi.IdResponseSchema](c.CreateTodo(api.Ctx(), body))
 			if err != nil {
 				return err
 			}
@@ -489,7 +489,7 @@ func setTodosCompleted(cmd *cobra.Command, ids []string, rows []map[string]any, 
 		items[i].TodoId = id
 	}
 	body := openapi.PatchApiTodosBatchJSONRequestBody{Items: items}
-	data, err := api.ParseResponseRaw(c.PatchApiTodosBatch(api.Ctx(), body))
+	data, err := api.ParseResponse[openapi.TodoCompletionBatchResponseSchema](c.PatchApiTodosBatch(api.Ctx(), body))
 	if err != nil {
 		return err
 	}
@@ -618,7 +618,7 @@ func newCmdUpdate() *cobra.Command {
 			if !hasUpdate {
 				return fmt.Errorf("nothing to update — specify at least one flag (e.g. --title, --completed)")
 			}
-			_, err = api.ParseResponseRaw(c.UpdateTodo(api.Ctx(), id, body))
+			_, err = api.ParseResponse[openapi.TodoUpdateResponseSchema](c.UpdateTodo(api.Ctx(), id, body))
 			if err != nil {
 				return err
 			}
@@ -673,7 +673,7 @@ func newCmdDelete() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			_, err = api.ParseResponseRaw(c.DeleteTodo(api.Ctx(), id))
+			_, err = api.ParseResponse[openapi.SuccessResponseSchema](c.DeleteTodo(api.Ctx(), id))
 			if err != nil {
 				return err
 			}

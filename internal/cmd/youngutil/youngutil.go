@@ -5,13 +5,11 @@ package youngutil
 import (
 	"context"
 	"fmt"
-	"net/http"
 	"net/url"
 	"strconv"
 	"strings"
 	"time"
 
-	"github.com/Life-USTC/CLI/internal/api"
 	"github.com/Life-USTC/CLI/internal/cmd/cmdutil"
 )
 
@@ -55,7 +53,7 @@ func PageParams(page, limit int) (url.Values, error) {
 // listings.
 func FetchAllIfUnpaged(
 	ctx context.Context,
-	client *api.Client,
+	fetch func(context.Context, url.Values) (any, error),
 	path string,
 	params url.Values,
 	key string,
@@ -63,9 +61,9 @@ func FetchAllIfUnpaged(
 	identityKey string,
 ) (any, error) {
 	if params.Get("page") == "" && params.Get("pageSize") == "" {
-		return FetchAllPages(ctx, client, path, params, key, pageSize, identityKey)
+		return FetchAllPages(ctx, fetch, path, params, key, pageSize, identityKey)
 	}
-	return client.DoJSON(ctx, http.MethodGet, path, params, nil)
+	return fetch(ctx, params)
 }
 
 // RequireID trims a positional or path identifier and rejects an empty value.
@@ -91,7 +89,7 @@ func cloneValues(values url.Values) url.Values {
 // jq output all describe the same result.
 func FetchAllPages(
 	ctx context.Context,
-	client *api.Client,
+	fetch func(context.Context, url.Values) (any, error),
 	path string,
 	params url.Values,
 	key string,
@@ -105,7 +103,7 @@ func FetchAllPages(
 	firstParams := cloneValues(params)
 	firstParams.Set("page", "1")
 	firstParams.Set("pageSize", strconv.Itoa(pageSize))
-	first, err := client.DoJSON(ctx, "GET", path, firstParams, nil)
+	first, err := fetch(ctx, firstParams)
 	if err != nil {
 		return nil, err
 	}
@@ -140,7 +138,7 @@ func FetchAllPages(
 			pageParams := cloneValues(params)
 			pageParams.Set("page", strconv.Itoa(page))
 			pageParams.Set("pageSize", strconv.Itoa(pageSize))
-			payload, fetchErr := client.DoJSON(ctx, "GET", path, pageParams, nil)
+			payload, fetchErr := fetch(ctx, pageParams)
 			if fetchErr != nil {
 				return nil, fetchErr
 			}

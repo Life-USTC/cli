@@ -8,7 +8,6 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/Life-USTC/CLI/internal/cmd/account"
-	"github.com/Life-USTC/CLI/internal/cmd/admin"
 	"github.com/Life-USTC/CLI/internal/cmd/apicmd"
 	"github.com/Life-USTC/CLI/internal/cmd/catalog"
 	"github.com/Life-USTC/CLI/internal/cmd/cmdutil"
@@ -110,7 +109,6 @@ endpoint access.`,
 		grouped(groupMain, workspace.NewCmdWorkspace()),
 		grouped(groupMain, community.NewCmdCommunity()),
 		grouped(groupMain, account.NewCmdAccount()),
-		grouped(groupMain, admin.NewCmdAdmin()),
 
 		grouped(groupPlumbing, configcmd.NewCmdConfig()),
 		grouped(groupPlumbing, newCmdCompletion()),

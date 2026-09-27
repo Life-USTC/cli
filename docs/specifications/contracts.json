@@ -117,6 +117,287 @@
           "name": "TestSpecExamSemesterDisplay/exam.cli-semester-display"
         }
       }
+    },
+    {
+      "id": "openapi.cli-generated-business-client",
+      "scope": "all",
+      "rule": "Covered CLI business operations call the generated OpenAPI client with generated request parameters and bodies, and decode the operation’s declared response model before rendering. The explicit raw API command and external school/OAuth transports have separate responsibilities.",
+      "acceptance": {
+        "given": "The generated OpenAPI operations and every production CLI command, plus valid and malformed HTTP publication responses.",
+        "when": "Inspect every business call against its generated response model and execute the real publication command with typed filters.",
+        "then": [
+          "No business command constructs raw HTTP or uses the untyped API bypass.",
+          "Every generated call decodes its own declared response type; malformed fields fail before output.",
+          "Generated query parameters reach HTTP and valid response fields survive presentation."
+        ],
+        "test": {
+          "file": "internal/cmd/root/generated_contract_test.go",
+          "name": "TestSpecGeneratedBusinessClients/openapi.cli-generated-business-client"
+        }
+      }
+    },
+    {
+      "id": "cli.admin-session-boundary",
+      "scope": "private",
+      "rule": "CLI OAuth authorization does not support administrator governance; those operations are available only through browser-session Web administration.",
+      "acceptance": {
+        "given": "The production root command tree.",
+        "when": "Inspect supported commands and invoke the removed admin command.",
+        "then": [
+          "Administration is absent from supported commands and invocation fails."
+        ],
+        "test": {
+          "file": "internal/cmd/root/transport_contract_test.go",
+          "name": "TestSpecAdminSessionBoundary/cli.admin-session-boundary"
+        }
+      }
+    },
+    {
+      "id": "cli.bus-preference-partial-update",
+      "scope": "private",
+      "rule": "Changing one bus preference flag preserves unspecified saved preferences. Failure to read existing preferences aborts the update.",
+      "acceptance": {
+        "given": "An owner has saved origin, destination and departed-trip visibility.",
+        "when": "Change only destination through the real root command, then retry with the initial read denied.",
+        "then": [
+          "The generated POST preserves origin and visibility; a failed GET sends no POST."
+        ],
+        "test": {
+          "file": "internal/cmd/root/transport_contract_test.go",
+          "name": "TestSpecBusPreferencePartialUpdate/cli.bus-preference-partial-update"
+        }
+      }
+    },
+    {
+      "id": "cli.bus-preference-json-input",
+      "scope": "private",
+      "rule": "Bus preference raw JSON accepts exactly one generated request object and rejects null, unknown fields, wrong types and trailing input before mutation.",
+      "acceptance": {
+        "given": "An authenticated owner and a recording preference endpoint.",
+        "when": "Invoke the real set command with invalid JSON variants and a valid object.",
+        "then": [
+          "Invalid JSON sends no request; one valid object sends the generated POST."
+        ],
+        "test": {
+          "file": "internal/cmd/root/transport_contract_test.go",
+          "name": "TestSpecBusPreferenceJSONInput/cli.bus-preference-json-input"
+        }
+      }
+    },
+    {
+      "id": "exam.cli-monitor-identity",
+      "scope": "private",
+      "rule": "Exam JSON output preserves monitor campus identifiers and names so clients can associate invigilators and distinguish identical names.",
+      "acceptance": {
+        "given": "A subscribed exam response includes monitors with jwId and localized names.",
+        "when": "Read exams through the real root command using JSON output.",
+        "then": [
+          "The monitor campus ID and both names survive generated decoding and rendering."
+        ],
+        "test": {
+          "file": "internal/cmd/root/transport_contract_test.go",
+          "name": "TestSpecExamMonitorIdentityOutput/exam.cli-monitor-identity"
+        }
+      }
+    },
+    {
+      "id": "young.cli-participation-fields",
+      "scope": "public",
+      "rule": "Public Young detail JSON preserves participation metadata, contacts, upstream identifiers and raw detail so users can check eligibility, prepare materials and contact organizers.",
+      "acceptance": {
+        "given": "A public Young detail response includes contact and meeting details, signup restrictions, attachment types, upstream IDs, false and zero values, and rawJson.",
+        "when": "Read that activity through the real root command using JSON output.",
+        "then": [
+          "Every provided participation field survives generated decoding and rendering without authentication."
+        ],
+        "test": {
+          "file": "internal/cmd/root/transport_contract_test.go",
+          "name": "TestSpecYoungParticipationOutput/young.cli-participation-fields"
+        }
+      }
+    },
+    {
+      "id": "school.cli-complete-semesters",
+      "scope": "private",
+      "rule": "School lesson and homework sync read every catalog semester using lawful page sizes before matching historical work; a failed later page aborts the read.",
+      "acceptance": {
+        "given": "101 catalog semesters across two pages, with a server enforcing pageSize at most 100.",
+        "when": "Run the shared production semester reader used by both sync commands and map a semester found only on the last page.",
+        "then": [
+          "Both pages are read with valid pagination and semester 101 is mapped.",
+          "A denied second page returns an error and no partial collection."
+        ],
+        "test": {
+          "file": "internal/cmd/school/contracts_test.go",
+          "name": "TestSpecSchoolCompleteSemesters/school.cli-complete-semesters"
+        }
+      }
+    },
+    {
+      "id": "school.cli-existing-homework",
+      "scope": "private",
+      "rule": "School homework sync matches existing assignments across all server pages before creating work, and updates the matched homework completion.",
+      "acceptance": {
+        "given": "101 existing section homeworks, with the matching submitted assignment on page two.",
+        "when": "Use the production homework collection reader and synchronization operation.",
+        "then": [
+          "No duplicate homework is created; the existing final-page ID receives completed=true.",
+          "A failed later page returns no partial collection."
+        ],
+        "test": {
+          "file": "internal/cmd/school/contracts_test.go",
+          "name": "TestSpecSchoolExistingHomework/school.cli-existing-homework"
+        }
+      }
+    },
+    {
+      "id": "homework.cli-section-pagination",
+      "scope": "public",
+      "rule": "Section homework list uses the full data collection before applying its local page and limit flags.",
+      "acceptance": {
+        "given": "101 section assignments across two server pages.",
+        "when": "Execute the section homework list command with page 2, limit 100 and include-deleted.",
+        "then": [
+          "The final assignment is shown once with total 101 and page 2."
+        ],
+        "test": {
+          "file": "internal/cmd/homework/contracts_test.go",
+          "name": "TestSpecHomeworkSectionList/homework.cli-section-pagination"
+        }
+      }
+    },
+    {
+      "id": "homework.cli-filter-after-pages",
+      "scope": "private",
+      "rule": "Workspace homework filters and local pagination apply after all subscribed or explicitly selected section pages have loaded.",
+      "acceptance": {
+        "given": "100 completed assignments followed by one pending assignment on a second server page.",
+        "when": "Execute workspace homework with pending and limit 1, for subscribed and explicit-section modes, including a failed-page variant.",
+        "then": [
+          "The pending final-page assignment is shown and the filtered total is 1.",
+          "A later-page failure prints no partial result."
+        ],
+        "test": {
+          "file": "internal/cmd/homework/contracts_test.go",
+          "name": "TestSpecHomeworkFilteredList/homework.cli-filter-after-pages"
+        }
+      }
+    },
+    {
+      "id": "homework.cli-picker-complete-input",
+      "scope": "private",
+      "rule": "Interactive homework picking filters the complete subscribed homework collection before limiting the available choices.",
+      "acceptance": {
+        "given": "100 completed assignments and a pending assignment on the next page.",
+        "when": "Load the production pending-homework picker with a limit of 20.",
+        "then": [
+          "The final-page pending assignment is available for selection."
+        ],
+        "test": {
+          "file": "internal/cmd/homework/contracts_test.go",
+          "name": "TestSpecHomeworkPicker/homework.cli-picker-complete-input"
+        }
+      }
+    },
+    {
+      "id": "homework.cli-subscription-fallback",
+      "scope": "private",
+      "rule": "When a current calendar subscription has no sections, the homework creation picker derives distinct sections from all subscribed homework pages.",
+      "acceptance": {
+        "given": "No current calendar subscription and homework pages containing repeated section 7 and later section 8.",
+        "when": "Run the production subscribed-section loader.",
+        "then": [
+          "Both unique sections are returned, including the section present only on the later page."
+        ],
+        "test": {
+          "file": "internal/cmd/homework/contracts_test.go",
+          "name": "TestSpecHomeworkSubscribedSections/homework.cli-subscription-fallback"
+        }
+      }
+    },
+    {
+      "id": "homework.cli-created-identity",
+      "scope": "private",
+      "rule": "The homework creation success message identifies the created record from the generated response envelope.",
+      "acceptance": {
+        "given": "A successful create endpoint returns homework.id.",
+        "when": "Execute the real section-homework create command.",
+        "then": [
+          "The success message includes the returned homework ID."
+        ],
+        "test": {
+          "file": "internal/cmd/homework/contracts_test.go",
+          "name": "TestSpecHomeworkCreatedIdentity/homework.cli-created-identity"
+        }
+      }
+    },
+    {
+      "id": "upload.cli-complete-list",
+      "scope": "private",
+      "rule": "Upload listing reads every server page, preserves quota metadata, and presents only fields declared by the upload contract.",
+      "acceptance": {
+        "given": "101 uploads across two pages and populated usage metadata.",
+        "when": "Execute the upload list command in JSON and table modes, including a failed-page variant.",
+        "then": [
+          "Every upload and the complete total survive JSON output along with usage metadata.",
+          "The table shows the final upload and quota usage without an unsupported content-type column.",
+          "A failed later page prints no partial result."
+        ],
+        "test": {
+          "file": "internal/cmd/upload/contracts_test.go",
+          "name": "TestSpecUploadCompleteList/upload.cli-complete-list"
+        }
+      }
+    },
+    {
+      "id": "upload.cli-picker-complete-input",
+      "scope": "private",
+      "rule": "The upload deletion picker includes every upload across all server pages.",
+      "acceptance": {
+        "given": "101 uploads and a selection of item 101.",
+        "when": "Run the production upload picker against the real HTTP fixture and supply the selection.",
+        "then": [
+          "The picker displays and returns the final-page upload with its filename and ID."
+        ],
+        "test": {
+          "file": "internal/cmd/upload/contracts_test.go",
+          "name": "TestSpecUploadPicker/upload.cli-picker-complete-input"
+        }
+      }
+    },
+    {
+      "id": "description.cli-content-output",
+      "scope": "public",
+      "rule": "Description reads display nested description.content, show the empty state only for empty content, and preserve the nested response in JSON.",
+      "acceptance": {
+        "given": "Populated and empty public descriptions.",
+        "when": "Execute the real community description get command in text and JSON modes.",
+        "then": [
+          "The public GET uses targetType and targetId without authentication.",
+          "Text shows content or the appropriate empty state; JSON retains the nested content and ID."
+        ],
+        "test": {
+          "file": "internal/cmd/root/description_contract_test.go",
+          "name": "TestSpecDescriptionContentOutput/description.cli-content-output"
+        }
+      }
+    },
+    {
+      "id": "description.cli-history-output",
+      "scope": "public",
+      "rule": "Description history displays each revision ID, createdAt timestamp and editor name; absent editors remain readable.",
+      "acceptance": {
+        "given": "Two description revisions, one with a named editor and one with no editor.",
+        "when": "Execute the real community description get command and render its history.",
+        "then": [
+          "Both revision IDs and timestamps are displayed along with the present editor name.",
+          "A missing editor does not prevent readable output."
+        ],
+        "test": {
+          "file": "internal/cmd/root/description_contract_test.go",
+          "name": "TestSpecDescriptionHistoryOutput/description.cli-history-output"
+        }
+      }
     }
   ]
 }

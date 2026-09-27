@@ -1,7 +1,8 @@
 package young_organizer
 
 import (
-	"net/http"
+	"context"
+	"github.com/Life-USTC/CLI/internal/openapi"
 	"net/url"
 	"strings"
 
@@ -83,13 +84,15 @@ func runList(cmd *cobra.Command, opts listOpts) error {
 	if err != nil {
 		return err
 	}
-	client, err := api.NewClient(cmdutil.ServerFromCmd(cmd), false)
+	client, err := api.NewTypedClient(cmdutil.ServerFromCmd(cmd), false)
 	if err != nil {
 		return err
 	}
 	data, err := youngutil.FetchAllIfUnpaged(
 		cmd.Context(),
-		client,
+		func(ctx context.Context, query url.Values) (any, error) {
+			return fetchOrganizerPage(ctx, client, query)
+		},
 		youngutil.OrganizersPath,
 		params,
 		"data",
@@ -127,17 +130,11 @@ func newCmdGet() *cobra.Command {
 }
 
 func runGet(cmd *cobra.Command, organizerID string) error {
-	client, err := api.NewClient(cmdutil.ServerFromCmd(cmd), false)
+	client, err := api.NewTypedClient(cmdutil.ServerFromCmd(cmd), false)
 	if err != nil {
 		return err
 	}
-	data, err := client.DoJSON(
-		cmd.Context(),
-		http.MethodGet,
-		youngutil.PathID(youngutil.OrganizersPath, organizerID),
-		nil,
-		nil,
-	)
+	data, err := api.ParseResponse[openapi.YoungOrganizerSummarySchema](client.GetApiCatalogYoungOrganizersOrganizerId(cmd.Context(), organizerID))
 	if err != nil {
 		return err
 	}
@@ -151,4 +148,19 @@ func runGet(cmd *cobra.Command, organizerID string) error {
 		{Key: "upcomingCount", Label: "Upcoming events"},
 		{Key: "historyCount", Label: "Historical events"},
 	}, "Young organizer")
+}
+
+func fetchOrganizerPage(ctx context.Context, client *api.TypedClient, query url.Values) (any, error) {
+	paramPage, err := cmdutil.Int64PtrIfSet(query.Get("page"))
+	if err != nil {
+		return nil, err
+	}
+	paramPageSize, err := cmdutil.Int64PtrIfSet(query.Get("pageSize"))
+	if err != nil {
+		return nil, err
+	}
+	params := openapi.GetApiCatalogYoungOrganizersParams{Search: cmdutil.StringPtrIfSet(query.Get("search")),
+		Page:     paramPage,
+		PageSize: paramPageSize}
+	return api.ParseResponse[openapi.PaginatedYoungOrganizerResponseSchema](client.GetApiCatalogYoungOrganizers(ctx, &params))
 }

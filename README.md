@@ -20,7 +20,6 @@
 | `workspace school` | 直连校方站点：本科/研究生学期、课表、考试、成绩、作业，并可 `sync` 回 Life@USTC 订阅 |
 | `community` | 评论（含反应）、描述、教学班作业、公开用户资料 |
 | `account` | 登录 / 登出、session、token、资料、语言、当前客户端活动 |
-| `admin` | 用户、封禁、评论 / 描述 / 作业治理 |
 | `api` | 对任意 REST 路径的逃生舱（适合脚本） |
 | `config` / `completion` | 默认 server、教务程序偏好、shell 补全 |
 
@@ -83,3 +82,7 @@ go install github.com/Life-USTC/CLI/cmd/life-ustc@latest
 ```
 
 子命令细节以 `life-ustc <cmd> --help` 为准。License: MIT。
+
+管理功能仅支持站点管理员浏览器会话，请在 Web 管理页面操作。CLI 的 OAuth 授权不授予管理接口访问权。
+
+公开考试数据中的 `monitors.jwId` 是监考人员的校方标识，用于关联和区分同名人员；CLI JSON 输出保留该标识。Young 活动详情保留报名范围、附件要求、联系人、线上会议信息和上游标识，供参与者判断报名条件、准备材料和联系主办方；`rawJson` 保留上游详情，供核对来源。使用 `--json` 或 `--jq` 可读取这些完整字段。

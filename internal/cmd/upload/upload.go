@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 	"os"
 	"path/filepath"
 	"strings"
@@ -13,6 +14,7 @@ import (
 
 	"github.com/Life-USTC/CLI/internal/api"
 	"github.com/Life-USTC/CLI/internal/cmd/cmdutil"
+	"github.com/Life-USTC/CLI/internal/cmd/youngutil"
 	openapi "github.com/Life-USTC/CLI/internal/openapi"
 	"github.com/Life-USTC/CLI/internal/output"
 )
@@ -39,17 +41,17 @@ func runUploadList(cmd *cobra.Command) error {
 	if err != nil {
 		return err
 	}
-	data, err := api.ParseResponseRaw(c.ListUploads(api.Ctx(), nil))
+	data, err := fetchAllUploads(cmd.Context(), c)
 	if err != nil {
 		return err
 	}
-	list := cmdutil.NewListResult(data, "uploads").FinalizeServerSide(0)
+	list := cmdutil.NewListResult(data, "data").FinalizeServerSide(0)
 
 	if !output.IsJSON() {
 		m := cmdutil.AsMap(data)
 		if m != nil {
-			used, _ := m["usedBytes"].(float64)
-			quota, _ := m["quotaBytes"].(float64)
+			used, _ := cmdutil.AsMap(m["meta"])["usedBytes"].(float64)
+			quota, _ := cmdutil.AsMap(m["meta"])["quotaBytes"].(float64)
 			if quota > 0 {
 				output.Dim(fmt.Sprintf("  Usage: %s / %s", humanSize(int64(used)), humanSize(int64(quota))))
 			}
@@ -59,7 +61,6 @@ func runUploadList(cmd *cobra.Command) error {
 	return output.OutputList(list.Raw, list.Rows, []output.Column{
 		{Header: "ID", Key: "id"},
 		{Header: "Filename", Key: "filename"},
-		{Header: "Type", Key: "contentType"},
 		{Header: "Size", Key: "size"},
 	}, list.Total, list.Page)
 }
@@ -113,7 +114,7 @@ func newCmdFile() *cobra.Command {
 			if contentType != "" {
 				reqBody.ContentType = &contentType
 			}
-			createResp, err := api.ParseResponseRaw(c.CreateUpload(api.Ctx(), reqBody))
+			createResp, err := api.ParseResponse[openapi.UploadCreateResponseSchema](c.CreateUpload(api.Ctx(), reqBody))
 			if err != nil {
 				return err
 			}
@@ -125,7 +126,7 @@ func newCmdFile() *cobra.Command {
 			}
 
 			// Step 2: PUT through the authenticated object upload endpoint.
-			resp, err := c.PutApiUploadsObjectWithBody(
+			_, err = api.ParseResponse[openapi.SuccessResponseSchema](c.PutApiUploadsObjectWithBody(
 				api.Ctx(),
 				&openapi.PutApiUploadsObjectParams{Key: uploadKey},
 				contentType,
@@ -134,13 +135,9 @@ func newCmdFile() *cobra.Command {
 					req.ContentLength = stat.Size()
 					return nil
 				},
-			)
+			))
 			if err != nil {
 				return err
-			}
-			_ = resp.Body.Close()
-			if resp.StatusCode >= 400 {
-				return fmt.Errorf("object upload failed with status %d", resp.StatusCode)
 			}
 
 			// Step 3: Complete
@@ -151,7 +148,7 @@ func newCmdFile() *cobra.Command {
 			if contentType != "" {
 				completeBody.ContentType = &contentType
 			}
-			_, err = api.ParseResponseRaw(c.CompleteUpload(api.Ctx(), completeBody))
+			_, err = api.ParseResponse[openapi.UploadCompleteResponseSchema](c.CompleteUpload(api.Ctx(), completeBody))
 			if err != nil {
 				return err
 			}
@@ -176,7 +173,7 @@ func newCmdRename() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			_, err = api.ParseResponseRaw(c.UpdateUpload(api.Ctx(), args[0], openapi.UpdateUploadJSONRequestBody{Filename: filename}))
+			_, err = api.ParseResponse[openapi.UploadRenameResponseSchema](c.UpdateUpload(api.Ctx(), args[0], openapi.UpdateUploadJSONRequestBody{Filename: filename}))
 			if err != nil {
 				return err
 			}
@@ -227,7 +224,7 @@ func newCmdDelete() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			_, err = api.ParseResponseRaw(c.DeleteUpload(api.Ctx(), id))
+			_, err = api.ParseResponse[openapi.UploadDeleteResponseSchema](c.DeleteUpload(api.Ctx(), id))
 			if err != nil {
 				return err
 			}
@@ -285,11 +282,11 @@ func promptUploadPick(cmd *cobra.Command, prompt string) (map[string]any, error)
 	if err != nil {
 		return nil, err
 	}
-	data, err := api.ParseResponseRaw(c.ListUploads(api.Ctx(), nil))
+	data, err := fetchAllUploads(cmd.Context(), c)
 	if err != nil {
 		return nil, err
 	}
-	_, rows, _, _ := cmdutil.ExtractList(data, "uploads")
+	_, rows, _, _ := cmdutil.ExtractList(data, "data")
 	if len(rows) == 0 {
 		output.Dim("  No uploads found.")
 		return nil, nil
@@ -350,4 +347,18 @@ func guessContentType(path string) string {
 	default:
 		return "application/octet-stream"
 	}
+}
+
+func fetchAllUploads(ctx context.Context, client *api.TypedClient) (any, error) {
+	return youngutil.FetchAllPages(ctx, func(ctx context.Context, query url.Values) (any, error) {
+		page, err := cmdutil.Int64PtrIfSet(query.Get("page"))
+		if err != nil {
+			return nil, err
+		}
+		pageSize, err := cmdutil.Int64PtrIfSet(query.Get("pageSize"))
+		if err != nil {
+			return nil, err
+		}
+		return api.ParseResponse[openapi.UploadsListResponseSchema](client.ListUploads(ctx, &openapi.ListUploadsParams{Page: page, PageSize: pageSize}))
+	}, "/api/workspace/uploads", url.Values{}, "data", 100, "id")
 }

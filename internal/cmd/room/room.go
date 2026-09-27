@@ -2,6 +2,7 @@ package room
 
 import (
 	"fmt"
+	"github.com/Life-USTC/CLI/internal/openapi"
 	"strings"
 
 	"github.com/spf13/cobra"
@@ -57,7 +58,7 @@ func newCmdMap() *cobra.Command {
 }
 
 func fetchRoomMap(client *api.TypedClient, code string) (any, error) {
-	return api.ParseResponseRaw(client.CatalogRoomsMap(api.Ctx(), code))
+	return api.ParseResponse[openapi.RoomMapResponseSchema](client.CatalogRoomsMap(api.Ctx(), code))
 }
 
 func normalizeRoomCode(value string) (string, error) {

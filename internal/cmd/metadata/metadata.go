@@ -2,6 +2,7 @@ package metadata
 
 import (
 	"fmt"
+	"github.com/Life-USTC/CLI/internal/openapi"
 
 	"github.com/spf13/cobra"
 
@@ -48,7 +49,7 @@ commands.`,
 			if err != nil {
 				return err
 			}
-			data, err := api.ParseResponseRaw(c.GetMetadata(api.Ctx()))
+			data, err := api.ParseResponse[openapi.MetadataResponseSchema](c.GetMetadata(api.Ctx()))
 			if err != nil {
 				return err
 			}

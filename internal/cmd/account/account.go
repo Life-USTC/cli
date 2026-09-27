@@ -49,7 +49,7 @@ func newCmdLocale() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			if _, err := api.ParseResponseRaw(c.SetLocale(api.Ctx(), openapi.LocaleUpdateRequestSchema{Locale: locale})); err != nil {
+			if _, err := api.ParseResponse[openapi.SuccessResponseSchema](c.SetLocale(api.Ctx(), openapi.LocaleUpdateRequestSchema{Locale: locale})); err != nil {
 				return err
 			}
 			output.Success("Locale updated.")

@@ -25,12 +25,7 @@ func renderDescription(data any, includeHistoryID bool) error {
 		return output.JSON(data)
 	}
 	m := cmdutil.AsMap(data)
-	content := ""
-	if c, ok := m["content"].(string); ok {
-		content = c
-	} else if c, ok := m["description"].(string); ok {
-		content = c
-	}
+	content, _ := cmdutil.AsMap(m["description"])["content"].(string)
 	if content != "" {
 		fmt.Println()
 		fmt.Println(content)
@@ -43,8 +38,8 @@ func renderDescription(data any, includeHistoryID bool) error {
 		output.Bold("  History")
 		rows := cmdutil.RowsFromAny(history)
 		cols := []output.Column{
-			{Header: "Updated", Key: "updatedAt"},
-			{Header: "By", Key: "updatedBy.name"},
+			{Header: "Updated", Key: "createdAt"},
+			{Header: "By", Key: "editor.name"},
 		}
 		if includeHistoryID {
 			cols = append([]output.Column{{Header: "ID", Key: "id"}}, cols...)
@@ -66,7 +61,7 @@ func runDescriptionGet(cmd *cobra.Command, targetType, targetID string, includeH
 		TargetType: openapi.GetDescriptionParamsTargetType(targetType),
 		TargetId:   &targetID,
 	}
-	data, err := api.ParseResponseRaw(c.GetDescription(api.Ctx(), params))
+	data, err := api.ParseResponse[openapi.DescriptionsResponseSchema](c.GetDescription(api.Ctx(), params))
 	if err != nil {
 		return err
 	}
@@ -88,7 +83,7 @@ func runDescriptionSet(cmd *cobra.Command, targetType, targetID, content string)
 		TargetId:   &targetIdUnion,
 		Content:    content,
 	}
-	data, err := api.ParseResponseRaw(c.UpsertDescription(api.Ctx(), reqBody))
+	data, err := api.ParseResponse[openapi.DescriptionUpsertResponseSchema](c.UpsertDescription(api.Ctx(), reqBody))
 	if err != nil {
 		return err
 	}

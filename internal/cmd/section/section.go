@@ -139,8 +139,8 @@ func fetchSectionList(c *api.TypedClient, opts sectionListOpts) (cmdutil.ListRes
 	params.Search = cmdutil.StringPtrIfSet(opts.search)
 	params.Ids = cmdutil.StringPtrIfSet(opts.ids)
 	params.Page = cmdutil.Int64PtrIfPositive(opts.page)
-	params.Limit = cmdutil.Int64PtrIfPositive(opts.limit)
-	data, err := api.ParseResponseRaw(c.ListSections(api.Ctx(), &params))
+	params.PageSize = cmdutil.Int64PtrIfPositive(opts.limit)
+	data, err := api.ParseResponse[openapi.PaginatedSectionResponseSchema](c.ListSections(api.Ctx(), &params))
 	if err != nil {
 		return cmdutil.ListResult{}, err
 	}
@@ -205,7 +205,7 @@ func runSectionView(cmd *cobra.Command, id string) error {
 	if err != nil {
 		return err
 	}
-	data, err := api.ParseResponseRaw(c.GetSection(api.Ctx(), *jwID, nil))
+	data, err := api.ParseResponse[openapi.SectionDetailSchema](c.GetSection(api.Ctx(), *jwID, nil))
 	if err != nil {
 		return err
 	}
@@ -265,7 +265,7 @@ func newCmdSchedules() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			data, err := api.ParseResponseRaw(c.GetSectionSchedules(api.Ctx(), *jwID, &openapi.GetSectionSchedulesParams{}))
+			data, err := api.ParseResponse[openapi.SectionSchedulesResponseSchema](c.GetSectionSchedules(api.Ctx(), *jwID, &openapi.GetSectionSchedulesParams{}))
 			if err != nil {
 				return err
 			}
@@ -342,7 +342,7 @@ func newCmdMatchCodes() *cobra.Command {
 				_ = semesterIDUnion.FromMatchSectionCodesRequestSchemaSemesterId0(semesterID)
 				body.SemesterId = &semesterIDUnion
 			}
-			data, err := api.ParseResponseRaw(c.MatchSectionCodes(api.Ctx(), body))
+			data, err := api.ParseResponse[openapi.MatchSectionCodesResponseSchema](c.MatchSectionCodes(api.Ctx(), body))
 			if err != nil {
 				return err
 			}

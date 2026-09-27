@@ -79,5 +79,5 @@ func fetchActivity(client *api.TypedClient, cursor string, limit int) (any, erro
 		Cursor: cmdutil.StringPtrIfSet(cursor),
 		Limit:  cmdutil.Int64PtrIfPositive(limit),
 	}
-	return api.ParseResponseRaw(client.AccountClientActivityList(api.Ctx(), params))
+	return api.ParseResponse[openapi.AccountClientActivityResponseSchema](client.AccountClientActivityList(api.Ctx(), params))
 }
