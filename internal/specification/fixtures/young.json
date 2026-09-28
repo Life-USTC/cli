@@ -1,0 +1,73 @@
+{
+  "youngId": "event-1",
+  "name": "Campus event",
+  "category": null,
+  "department": null,
+  "organizer": null,
+  "organizerId": null,
+  "status": null,
+  "activityStatusCode": null,
+  "signupStatusCode": null,
+  "requiresSignup": null,
+  "categoryCode": null,
+  "moduleCode": null,
+  "formCode": null,
+  "activityLevelCode": null,
+  "departmentId": null,
+  "upstreamOrganizerIds": [
+    "org-1"
+  ],
+  "upstreamSponsorIds": [
+    "sponsor-1"
+  ],
+  "tagIds": [
+    "tag-1"
+  ],
+  "signupScopeCode": "department",
+  "signupDepartmentIds": [
+    "dept-1"
+  ],
+  "requiresSignupInfo": false,
+  "allowedAttachmentTypes": [
+    "pdf"
+  ],
+  "isOnline": true,
+  "onlineMeetingInfo": "Meeting 123",
+  "externalSponsor": null,
+  "location": null,
+  "imageUrl": null,
+  "hours": null,
+  "capacity": null,
+  "appliedCount": 0,
+  "startAt": null,
+  "endAt": null,
+  "applyStartAt": null,
+  "applyEndAt": null,
+  "isActive": false,
+  "sourceMissing": false,
+  "lastSeenAt": null,
+  "createdAt": null,
+  "activityLevel": null,
+  "module": null,
+  "form": null,
+  "grades": null,
+  "sponsor": null,
+  "contactName": "Organizer",
+  "contactTel": "0551-12345678",
+  "duration": null,
+  "serviceHour": null,
+  "sumHours": null,
+  "sumPersons": null,
+  "partakeNum": null,
+  "favCount": null,
+  "limitNum": null,
+  "createdAtUpstream": null,
+  "auditedAt": null,
+  "updatedAtUpstream": null,
+  "places": null,
+  "description": null,
+  "participationNotes": "Bring student card",
+  "rawJson": {
+    "sourceDetail": "retained"
+  }
+}

@@ -13,7 +13,7 @@ clean:
 	rm -rf dist/
 
 test: test-scripts
-	go test -race ./...
+	go run ./internal/specification/cmd/evidence $(SPEC_EVIDENCE_ARGS)
 
 test-scripts:
 	./scripts/openapi-contract.test.sh

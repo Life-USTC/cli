@@ -73,6 +73,37 @@ make generate
 CI 会核对固定的 server 提交，不再猜测同名分支。定时同步工作流也会在
 server 契约发生变化时创建更新 PR。
 
+## 可执行需求与测试证据
+
+`docs/specifications/contracts.json` 是 CLI 需求的结构化入口；
+`contracts.schema.json` 使用 JSON Schema 2020-12 校验封闭的场景与期望结构。
+每条需求绑定一个唯一的原生 Go canonical 测试，测试下的场景由需求文档驱动。
+新增或删除需求、场景时，需要同时更新 schema 的完整清单和对应执行适配器。
+`rationale` 解释需求原因；可执行约束放在带类型的 `expectations` 中。
+
+场景引用固定 OpenAPI 的 `operationId`；真实请求、成功及失败响应的 fixture
+均对该来源校验。字段保留使用标准 JSON Pointer。适配器只执行生产代码并返回
+观察结果，公共检查器逐项消费输入和期望，未消费字段直接失败。
+`outputEmpty` 表示既没有标准输出，也没有适配器返回的数据。
+
+运行完整验收：
+
+```sh
+make test
+# 提交后，使用 CI 相同的干净工作区要求：
+make test SPEC_EVIDENCE_ARGS=--require-clean
+```
+
+该命令运行未缓存的 `go test -race -count=1 -json ./...`，将原生通过事件与
+每个场景的消费回执交叉核对。缺失、跳过、重复、未知场景、遗漏字段或过期来源
+均无法通过。`artifacts/specifications/native-go.jsonl` 保存原始事件，
+`coverage.json` 保存逐场景回执及本次运行 ID、代码提交、需求/schema/OpenAPI
+哈希和上游提交。CI 上传这两个文件，并要求工作区干净；本地未提交验证会明确
+记录 `workingTreeClean: false`，不能替代提交后的 CI 证据。
+
+JSON Schema 校验使用 `santhosh-tekuri/jsonschema/v6`；OpenAPI 校验复用
+`kin-openapi`，JSON Pointer 复用 `go-openapi/jsonpointer`。
+
 ## 安装
 
 发布包：[GitHub Releases](https://github.com/Life-USTC/CLI/releases)。或：

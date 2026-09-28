@@ -1,0 +1,7 @@
+{
+  "preference": {
+    "preferredOriginCampusId": 1,
+    "preferredDestinationCampusId": 2,
+    "showDepartedTrips": true
+  }
+}

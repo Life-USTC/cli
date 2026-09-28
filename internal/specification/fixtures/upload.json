@@ -1,0 +1,22 @@
+{
+  "data": [
+    {
+      "id": "u1",
+      "key": "key1",
+      "filename": "File-1.txt",
+      "size": 1,
+      "createdAt": "2026-09-01T00:00:00Z"
+    }
+  ],
+  "pagination": {
+    "page": 1,
+    "pageSize": 100,
+    "total": 1,
+    "totalPages": 1
+  },
+  "meta": {
+    "maxFileSizeBytes": 999,
+    "quotaBytes": 10000,
+    "usedBytes": 5151
+  }
+}

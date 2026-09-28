@@ -1,0 +1,41 @@
+{
+  "description": {
+    "id": "description-1",
+    "content": "Second revision",
+    "updatedAt": null,
+    "lastEditedAt": null,
+    "renderedHtml": "fixture",
+    "lastEditedBy": null
+  },
+  "history": [
+    {
+      "id": "revision-1",
+      "createdAt": "2026-01-01T00:15:00Z",
+      "editor": {
+        "id": "editor-1",
+        "name": "Editor Alice",
+        "username": null,
+        "image": null
+      },
+      "nextContent": "First revision",
+      "previousContent": null
+    },
+    {
+      "id": "revision-2",
+      "createdAt": "2026-01-02T00:30:00Z",
+      "editor": null,
+      "nextContent": "Second revision",
+      "previousContent": "First revision"
+    }
+  ],
+  "viewer": {
+    "userId": null,
+    "name": null,
+    "image": null,
+    "isAdmin": false,
+    "isAuthenticated": false,
+    "isSuspended": false,
+    "suspensionReason": null,
+    "suspensionExpiresAt": null
+  }
+}

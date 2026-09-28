@@ -1224,7 +1224,7 @@ func fetchLifeHomeworksForSection(cmd *cobra.Command, apiClient *api.TypedClient
 		return api.ParseResponse[openapi.HomeworksListResponseSchema](apiClient.CommunitySectionHomeworkList(ctx, &openapi.CommunitySectionHomeworkListParams{
 			SectionId: parsedSectionID, IncludeDeleted: &includeDeleted, Page: page, PageSize: pageSize,
 		}))
-	}, "/api/community/section-homeworks", url.Values{}, "data", 100, "id")
+	}, "/api/community/section-homeworks", url.Values{}, "data", 50, "id")
 	if err != nil {
 		return nil, err
 	}
