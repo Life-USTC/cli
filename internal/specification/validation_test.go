@@ -8,6 +8,7 @@ import (
 	"net/http/httptest"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 	"testing"
 )
@@ -104,6 +105,7 @@ func nativeEvidence(repo *Repository, runID string) []NativeEvent {
 	events := []NativeEvent{}
 	for _, r := range repo.Document.Requirements {
 		pkg := "github.com/Life-USTC/CLI/" + filepath.ToSlash(filepath.Dir(r.Test.File))
+		events = append(events, NativeEvent{Action: "run", Package: pkg, Test: r.Test.Name})
 		for _, c := range r.Expectations.Cases {
 			name := r.Test.Name + "/" + c.ID
 			receipt := Receipt{r.ID, c.ID, name, runID, repo.Provenance, CaseFields(c)}
@@ -135,35 +137,62 @@ func TestEvidenceRequiresNativePassAndCompleteConsumption(t *testing.T) {
 	if err != nil || !report.GatePassed {
 		t.Fatalf("valid evidence: %+v %v", report, err)
 	}
+	canonicalRun := slices.IndexFunc(valid, func(e NativeEvent) bool {
+		return e.Action == "run" && e.Test == repo.Document.Requirements[0].Test.Name
+	})
+	caseRun := slices.IndexFunc(valid, func(e NativeEvent) bool {
+		return e.Action == "run" && e.Test != repo.Document.Requirements[0].Test.Name
+	})
+	receiptIndex := slices.IndexFunc(valid, func(e NativeEvent) bool { return e.Action == "output" })
+	casePass := slices.IndexFunc(valid, func(e NativeEvent) bool { return e.Action == "pass" })
 	for name, mutation := range map[string]func([]NativeEvent) []NativeEvent{
-		"missing native pass":   func(es []NativeEvent) []NativeEvent { return append(es[:2], es[3:]...) },
-		"skipped":               func(es []NativeEvent) []NativeEvent { es[2].Action = "skip"; return es },
-		"duplicate native pass": func(es []NativeEvent) []NativeEvent { return append(es, es[2]) },
-		"missing receipt":       func(es []NativeEvent) []NativeEvent { return append(es[:1], es[2:]...) },
-		"duplicate receipt":     func(es []NativeEvent) []NativeEvent { return append(es, es[1]) },
-		"unknown native case":   func(es []NativeEvent) []NativeEvent { es[0].Test += "-unknown"; return es },
+		"missing canonical run":   func(es []NativeEvent) []NativeEvent { return slices.Delete(es, canonicalRun, canonicalRun+1) },
+		"duplicate canonical run": func(es []NativeEvent) []NativeEvent { return append(es, es[canonicalRun]) },
+		"missing case run":        func(es []NativeEvent) []NativeEvent { return slices.Delete(es, caseRun, caseRun+1) },
+		"duplicate case run":      func(es []NativeEvent) []NativeEvent { return append(es, es[caseRun]) },
+		"missing native pass":     func(es []NativeEvent) []NativeEvent { return slices.Delete(es, casePass, casePass+1) },
+		"skipped":                 func(es []NativeEvent) []NativeEvent { es[casePass].Action = "skip"; return es },
+		"duplicate native pass":   func(es []NativeEvent) []NativeEvent { return append(es, es[casePass]) },
+		"missing receipt":         func(es []NativeEvent) []NativeEvent { return slices.Delete(es, receiptIndex, receiptIndex+1) },
+		"duplicate receipt":       func(es []NativeEvent) []NativeEvent { return append(es, es[receiptIndex]) },
+		"unknown native run": func(es []NativeEvent) []NativeEvent {
+			extra := es[caseRun]
+			extra.Test += "-unknown"
+			return append(es, extra)
+		},
+		"unknown native pass": func(es []NativeEvent) []NativeEvent {
+			extra := es[casePass]
+			extra.Test += "-unknown"
+			return append(es, extra)
+		},
+		"unknown native output": func(es []NativeEvent) []NativeEvent {
+			extra := es[receiptIndex]
+			extra.Test += "-unknown"
+			extra.Output = "ordinary output\n"
+			return append(es, extra)
+		},
 		"stale run": func(es []NativeEvent) []NativeEvent {
-			es[1].Output = strings.ReplaceAll(es[1].Output, "run-1", "old-run")
+			es[receiptIndex].Output = strings.ReplaceAll(es[receiptIndex].Output, "run-1", "old-run")
 			return es
 		},
 		"stale source": func(es []NativeEvent) []NativeEvent {
-			es[1].Output = strings.ReplaceAll(es[1].Output, repo.Provenance.SourceSHA256, strings.Repeat("0", 64))
+			es[receiptIndex].Output = strings.ReplaceAll(es[receiptIndex].Output, repo.Provenance.SourceSHA256, strings.Repeat("0", 64))
 			return es
 		},
 		"stale spec": func(es []NativeEvent) []NativeEvent {
-			es[1].Output = strings.ReplaceAll(es[1].Output, repo.Provenance.SpecSHA256, strings.Repeat("0", 64))
+			es[receiptIndex].Output = strings.ReplaceAll(es[receiptIndex].Output, repo.Provenance.SpecSHA256, strings.Repeat("0", 64))
 			return es
 		},
 		"stale commit": func(es []NativeEvent) []NativeEvent {
-			es[1].Output = strings.ReplaceAll(es[1].Output, repo.Provenance.Commit, strings.Repeat("0", 40))
+			es[receiptIndex].Output = strings.ReplaceAll(es[receiptIndex].Output, repo.Provenance.Commit, strings.Repeat("0", 40))
 			return es
 		},
 		"missing consumed field": func(es []NativeEvent) []NativeEvent {
 			var receipt Receipt
-			_ = json.Unmarshal([]byte(strings.TrimPrefix(es[1].Output, "SPEC_EVIDENCE ")), &receipt)
+			_ = json.Unmarshal([]byte(strings.TrimPrefix(es[receiptIndex].Output, "SPEC_EVIDENCE ")), &receipt)
 			receipt.Consumed = receipt.Consumed[1:]
 			raw, _ := json.Marshal(receipt)
-			es[1].Output = "SPEC_EVIDENCE " + string(raw) + "\n"
+			es[receiptIndex].Output = "SPEC_EVIDENCE " + string(raw) + "\n"
 			return es
 		},
 	} {
@@ -307,18 +336,18 @@ func TestEvidenceReassemblesSplitNativeOutput(t *testing.T) {
 	if _, err := Collect(repo, eventStream(split), runID); err != nil {
 		t.Fatalf("split receipt: %v", err)
 	}
-	first, second := events[1], events[4]
+	first, second := events[2], events[5]
 	firstRest, secondRest := first, second
 	first.Output, firstRest.Output = first.Output[:1024], first.Output[1024:]
 	second.Output, secondRest.Output = second.Output[:1024], second.Output[1024:]
-	interleaved := []NativeEvent{events[0], events[3], first, second, firstRest, secondRest, events[2], events[5]}
-	interleaved = append(interleaved, events[6:]...)
+	interleaved := []NativeEvent{events[0], events[1], events[4], first, second, firstRest, secondRest, events[3], events[6]}
+	interleaved = append(interleaved, events[7:]...)
 	if _, err := Collect(repo, eventStream(interleaved), runID); err != nil {
 		t.Fatalf("interleaved 1024-byte receipt fragments: %v", err)
 	}
 	for name, mutate := range map[string]func([]NativeEvent){
-		"truncated JSON":        func(es []NativeEvent) { es[1].Output = es[1].Output[:len(es[1].Output)-3] },
-		"missing final newline": func(es []NativeEvent) { es[1].Output = strings.TrimSuffix(es[1].Output, "\n") },
+		"truncated JSON":        func(es []NativeEvent) { es[2].Output = es[2].Output[:len(es[2].Output)-3] },
+		"missing final newline": func(es []NativeEvent) { es[2].Output = strings.TrimSuffix(es[2].Output, "\n") },
 	} {
 		t.Run(name, func(t *testing.T) {
 			altered := append([]NativeEvent(nil), events...)

@@ -52,6 +52,8 @@ func Collect(repo *Repository, reader io.Reader, runID string) (Coverage, error)
 		}
 	}
 	passes := map[string]int{}
+	caseRuns := map[string]int{}
+	canonicalRuns := map[string]int{}
 	receipts := map[string]Receipt{}
 	outputLines := map[string]string{}
 	consumeLine := func(key, line string) error {
@@ -92,10 +94,18 @@ func Collect(repo *Repository, reader io.Reader, runID string) (Coverage, error)
 		if event.Action == "fail" {
 			return report, fmt.Errorf("native test failure: %s", key)
 		}
-		if _, known := canonical[key]; known && event.Action == "pass" {
-			canonical[key]++
+		if _, known := canonical[key]; known {
+			if event.Action == "pass" {
+				canonical[key]++
+			}
+			if event.Action == "run" {
+				canonicalRuns[key]++
+			}
 		}
 		if _, known := expected[key]; known {
+			if event.Action == "run" {
+				caseRuns[key]++
+			}
 			if event.Action == "skip" {
 				return report, fmt.Errorf("mandatory case skipped: %s", key)
 			}
@@ -103,12 +113,10 @@ func Collect(repo *Repository, reader io.Reader, runID string) (Coverage, error)
 				passes[key]++
 			}
 		}
-		if event.Action == "run" {
-			for parent := range canonical {
-				if strings.HasPrefix(key, parent+"/") {
-					if _, known := expected[key]; !known {
-						return report, fmt.Errorf("undeclared native case: %s", key)
-					}
+		for parent := range canonical {
+			if strings.HasPrefix(key, parent+"/") {
+				if _, known := expected[key]; !known {
+					return report, fmt.Errorf("undeclared native case: %s", key)
 				}
 			}
 		}
@@ -136,6 +144,9 @@ func Collect(repo *Repository, reader io.Reader, runID string) (Coverage, error)
 		}
 	}
 	for name, count := range canonical {
+		if canonicalRuns[name] != 1 {
+			return report, fmt.Errorf("canonical needs exactly one native run (%d): %s", canonicalRuns[name], name)
+		}
 		if count != 1 {
 			return report, fmt.Errorf("canonical needs exactly one native pass (%d): %s", count, name)
 		}
@@ -146,6 +157,9 @@ func Collect(repo *Repository, reader io.Reader, runID string) (Coverage, error)
 	}
 	slices.Sort(keys)
 	for _, name := range keys {
+		if caseRuns[name] != 1 {
+			return report, fmt.Errorf("case needs exactly one native run (%d): %s", caseRuns[name], name)
+		}
 		if passes[name] != 1 {
 			return report, fmt.Errorf("case needs exactly one native pass (%d): %s", passes[name], name)
 		}
