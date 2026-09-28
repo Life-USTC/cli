@@ -1,0 +1,41 @@
+{
+  "data": [
+    {
+      "id": "h1",
+      "title": "Assignment 1",
+      "isMajor": false,
+      "requiresTeam": false,
+      "completionRequired": true,
+      "publishedAt": null,
+      "submissionStartAt": null,
+      "submissionDueAt": "2030-09-30T00:00:00Z",
+      "createdAt": "2026-09-01T00:00:00Z",
+      "updatedAt": "2026-09-01T00:00:00Z",
+      "deletedAt": null,
+      "sectionId": 7,
+      "createdById": null,
+      "updatedById": null,
+      "deletedById": null,
+      "completion": null,
+      "commentCount": 1
+    }
+  ],
+  "pagination": {
+    "page": 1,
+    "pageSize": 100,
+    "total": 1,
+    "totalPages": 1
+  },
+  "meta": {
+    "viewer": {
+      "userId": null,
+      "name": null,
+      "image": null,
+      "isAdmin": false,
+      "isAuthenticated": false,
+      "isSuspended": false,
+      "suspensionReason": null,
+      "suspensionExpiresAt": null
+    }
+  }
+}

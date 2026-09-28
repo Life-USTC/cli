@@ -1,402 +1,1777 @@
 {
-  "version": 1,
+  "$schema": "./contracts.schema.json",
+  "version": 2,
   "owner": "CLI",
+  "source": {
+    "openapi": "api/openapi.json",
+    "provenance": "api/openapi.provenance.json"
+  },
   "requirements": [
     {
       "id": "exam.cli-complete-list",
       "scope": "private",
-      "rule": "Without an explicit page or limit, the exam command exhausts all server pages and preserves the total.",
-      "acceptance": {
-        "given": "A signed-in user has 104 exams across two REST pages.",
-        "when": "The real exam command prints JSON without pagination flags.",
-        "then": [
-          "All 104 exams, including the last page, are printed once.",
-          "The combined total and page size are 104."
-        ],
-        "test": {
-          "file": "internal/cmd/workspace/exam_test.go",
-          "name": "TestSpecExamReadsEveryPageAndPreservesTotal/exam.cli-complete-list"
-        }
+      "rationale": "Without an explicit page or limit, the exam command exhausts all server pages and preserves the total.",
+      "test": {
+        "file": "internal/cmd/workspace/exam_test.go",
+        "name": "TestSpecExamReadsEveryPageAndPreservesTotal/exam.cli-complete-list"
+      },
+      "expectations": {
+        "kind": "collection",
+        "cases": [
+          {
+            "id": "empty",
+            "action": "exam",
+            "operation": "workspace_exam_list",
+            "arguments": [],
+            "format": "json",
+            "fixture": "exam",
+            "count": 0,
+            "failurePage": 0,
+            "want": {
+              "error": false,
+              "requests": 1,
+              "outputEmpty": false,
+              "rowCount": 0,
+              "total": 0,
+              "identities": []
+            }
+          },
+          {
+            "id": "single-page",
+            "action": "exam",
+            "operation": "workspace_exam_list",
+            "arguments": [],
+            "format": "json",
+            "fixture": "exam",
+            "count": 1,
+            "failurePage": 0,
+            "want": {
+              "error": false,
+              "requests": 1,
+              "outputEmpty": false,
+              "rowCount": 1,
+              "total": 1,
+              "identities": [
+                "1"
+              ]
+            }
+          },
+          {
+            "id": "multiple-pages",
+            "action": "exam",
+            "operation": "workspace_exam_list",
+            "arguments": [],
+            "format": "json",
+            "fixture": "exam",
+            "count": 104,
+            "failurePage": 0,
+            "want": {
+              "error": false,
+              "requests": 2,
+              "outputEmpty": false,
+              "rowCount": 104,
+              "total": 104,
+              "identities": [
+                "1",
+                "2",
+                "3",
+                "4",
+                "5",
+                "6",
+                "7",
+                "8",
+                "9",
+                "10",
+                "11",
+                "12",
+                "13",
+                "14",
+                "15",
+                "16",
+                "17",
+                "18",
+                "19",
+                "20",
+                "21",
+                "22",
+                "23",
+                "24",
+                "25",
+                "26",
+                "27",
+                "28",
+                "29",
+                "30",
+                "31",
+                "32",
+                "33",
+                "34",
+                "35",
+                "36",
+                "37",
+                "38",
+                "39",
+                "40",
+                "41",
+                "42",
+                "43",
+                "44",
+                "45",
+                "46",
+                "47",
+                "48",
+                "49",
+                "50",
+                "51",
+                "52",
+                "53",
+                "54",
+                "55",
+                "56",
+                "57",
+                "58",
+                "59",
+                "60",
+                "61",
+                "62",
+                "63",
+                "64",
+                "65",
+                "66",
+                "67",
+                "68",
+                "69",
+                "70",
+                "71",
+                "72",
+                "73",
+                "74",
+                "75",
+                "76",
+                "77",
+                "78",
+                "79",
+                "80",
+                "81",
+                "82",
+                "83",
+                "84",
+                "85",
+                "86",
+                "87",
+                "88",
+                "89",
+                "90",
+                "91",
+                "92",
+                "93",
+                "94",
+                "95",
+                "96",
+                "97",
+                "98",
+                "99",
+                "100",
+                "101",
+                "102",
+                "103",
+                "104"
+              ]
+            }
+          }
+        ]
       }
     },
     {
       "id": "exam.cli-explicit-pagination",
       "scope": "private",
-      "rule": "Explicit page or limit flags select one REST page without auto-fetching further pages.",
-      "acceptance": {
-        "given": "An exam command includes page and/or limit plus date and semester filters.",
-        "when": "The real command requests its list and prints a table.",
-        "then": [
-          "Exactly one request uses the selected page and pageSize."
-        ],
-        "test": {
-          "file": "internal/cmd/workspace/exam_test.go",
-          "name": "TestSpecExamExplicitPaginationAndFilters/exam.cli-explicit-pagination"
-        }
+      "rationale": "Explicit page or limit flags select one REST page without auto-fetching further pages.",
+      "test": {
+        "file": "internal/cmd/workspace/exam_test.go",
+        "name": "TestSpecExamExplicitPaginationAndFilters/exam.cli-explicit-pagination"
+      },
+      "expectations": {
+        "kind": "collection",
+        "cases": [
+          {
+            "id": "page-only",
+            "action": "exam",
+            "operation": "workspace_exam_list",
+            "arguments": [
+              "--page",
+              "2",
+              "--semester-id",
+              "7",
+              "--date-from",
+              "2026-09-01",
+              "--date-to",
+              "2026-09-30",
+              "--include-date-unknown=false"
+            ],
+            "format": "json",
+            "fixture": "exam",
+            "count": 24,
+            "failurePage": 0,
+            "want": {
+              "error": false,
+              "requests": 1,
+              "outputEmpty": false,
+              "rowCount": 4,
+              "total": 24,
+              "identities": [
+                "21",
+                "22",
+                "23",
+                "24"
+              ]
+            }
+          },
+          {
+            "id": "limit-only",
+            "action": "exam",
+            "operation": "workspace_exam_list",
+            "arguments": [
+              "--limit",
+              "2"
+            ],
+            "format": "json",
+            "fixture": "exam",
+            "count": 4,
+            "failurePage": 0,
+            "want": {
+              "error": false,
+              "requests": 1,
+              "outputEmpty": false,
+              "rowCount": 2,
+              "total": 4,
+              "identities": [
+                "1",
+                "2"
+              ]
+            }
+          },
+          {
+            "id": "page-and-limit",
+            "action": "exam",
+            "operation": "workspace_exam_list",
+            "arguments": [
+              "--page",
+              "2",
+              "--limit",
+              "2"
+            ],
+            "format": "json",
+            "fixture": "exam",
+            "count": 4,
+            "failurePage": 0,
+            "want": {
+              "error": false,
+              "requests": 1,
+              "outputEmpty": false,
+              "rowCount": 2,
+              "total": 4,
+              "identities": [
+                "3",
+                "4"
+              ]
+            }
+          }
+        ]
       }
     },
     {
       "id": "exam.cli-page-failure",
       "scope": "private",
-      "rule": "A failed later exam page fails the command without printing partial results.",
-      "acceptance": {
-        "given": "The first exam page succeeds and the second returns forbidden.",
-        "when": "The command tries to read the complete exam list.",
-        "then": [
-          "The command returns an error.",
-          "No partial success is printed."
-        ],
-        "test": {
-          "file": "internal/cmd/workspace/exam_test.go",
-          "name": "TestSpecExamLaterPageFailureDoesNotPrintPartialSuccess/exam.cli-page-failure"
-        }
+      "rationale": "A failed later exam page fails the command without printing partial results.",
+      "test": {
+        "file": "internal/cmd/workspace/exam_test.go",
+        "name": "TestSpecExamLaterPageFailureDoesNotPrintPartialSuccess/exam.cli-page-failure"
+      },
+      "expectations": {
+        "kind": "collection",
+        "cases": [
+          {
+            "id": "second-page-denied",
+            "action": "exam",
+            "operation": "workspace_exam_list",
+            "arguments": [],
+            "format": "json",
+            "fixture": "exam",
+            "count": 104,
+            "failurePage": 2,
+            "want": {
+              "error": true,
+              "requests": 2,
+              "outputEmpty": true
+            },
+            "failureStatus": 403
+          }
+        ]
       }
     },
     {
       "id": "exam.cli-positive-input",
       "scope": "private",
-      "rule": "Explicit page, limit and semester identifiers must be positive; limit is at most 100.",
-      "acceptance": {
-        "given": "Exam flags contain zero, negative values or limit 101.",
-        "when": "The command validates explicit flags.",
-        "then": [
-          "Invalid input fails before reading exams."
-        ],
-        "test": {
-          "file": "internal/cmd/workspace/exam_test.go",
-          "name": "TestSpecExamRejectsInvalidExplicitPaginationAndSemester/exam.cli-positive-input"
-        }
+      "rationale": "Explicit page, limit and semester identifiers must be positive; limit is at most 100.",
+      "test": {
+        "file": "internal/cmd/workspace/exam_test.go",
+        "name": "TestSpecExamRejectsInvalidExplicitPaginationAndSemester/exam.cli-positive-input"
+      },
+      "expectations": {
+        "kind": "input",
+        "cases": [
+          {
+            "id": "zero-page",
+            "action": "exam",
+            "operation": "workspace_exam_list",
+            "arguments": [
+              "--page",
+              "0"
+            ],
+            "format": "json",
+            "want": {
+              "error": true,
+              "requests": 0,
+              "outputEmpty": true
+            }
+          },
+          {
+            "id": "zero-limit",
+            "action": "exam",
+            "operation": "workspace_exam_list",
+            "arguments": [
+              "--limit",
+              "0"
+            ],
+            "format": "json",
+            "want": {
+              "error": true,
+              "requests": 0,
+              "outputEmpty": true
+            }
+          },
+          {
+            "id": "zero-semester",
+            "action": "exam",
+            "operation": "workspace_exam_list",
+            "arguments": [
+              "--semester-id",
+              "0"
+            ],
+            "format": "json",
+            "want": {
+              "error": true,
+              "requests": 0,
+              "outputEmpty": true
+            }
+          },
+          {
+            "id": "negative-page",
+            "action": "exam",
+            "operation": "workspace_exam_list",
+            "arguments": [
+              "--page",
+              "-1"
+            ],
+            "format": "json",
+            "want": {
+              "error": true,
+              "requests": 0,
+              "outputEmpty": true
+            }
+          },
+          {
+            "id": "too-large-limit",
+            "action": "exam",
+            "operation": "workspace_exam_list",
+            "arguments": [
+              "--limit",
+              "101"
+            ],
+            "format": "json",
+            "want": {
+              "error": true,
+              "requests": 0,
+              "outputEmpty": true
+            }
+          },
+          {
+            "id": "negative-semester",
+            "action": "exam",
+            "operation": "workspace_exam_list",
+            "arguments": [
+              "--semester-id",
+              "-1"
+            ],
+            "format": "json",
+            "want": {
+              "error": true,
+              "requests": 0,
+              "outputEmpty": true
+            }
+          }
+        ]
       }
     },
     {
       "id": "room-map.cli-request",
       "scope": "public",
-      "rule": "Room-map lookup uses the catalog room code route and preserves the returned room code.",
-      "acceptance": {
-        "given": "The server provides a highlighted map for B001.",
-        "when": "The production CLI room-map client requests B001.",
-        "then": [
-          "GET /api/catalog/rooms/B001/map is used.",
-          "The returned code is B001."
-        ],
-        "test": {
-          "file": "internal/cmd/room/room_http_test.go",
-          "name": "TestSpecFetchRoomMapUsesRoomCodePath/room-map.cli-request"
-        }
+      "rationale": "Room-map lookup uses the catalog room code route and preserves the returned room code.",
+      "test": {
+        "file": "internal/cmd/room/room_http_test.go",
+        "name": "TestSpecFetchRoomMapUsesRoomCodePath/room-map.cli-request"
+      },
+      "expectations": {
+        "kind": "projection",
+        "cases": [
+          {
+            "id": "room-code",
+            "action": "room",
+            "operation": "catalog_rooms_map",
+            "format": "json",
+            "fixture": "room",
+            "want": {
+              "error": false,
+              "requests": 1,
+              "preserve": [
+                "/code"
+              ]
+            }
+          }
+        ]
       }
     },
     {
       "id": "room-map.cli-input",
       "scope": "public",
-      "rule": "Room codes are trimmed and empty codes are rejected.",
-      "acceptance": {
-        "given": "Room input has surrounding whitespace or only whitespace.",
-        "when": "The command normalizes the code.",
-        "then": [
-          "Nonempty codes preserve their content after trimming.",
-          "Whitespace-only input fails."
-        ],
-        "test": {
-          "file": "internal/cmd/room/room_test.go",
-          "name": "TestSpecNormalizeRoomCodeTrimsAndRejectsEmpty/room-map.cli-input"
-        }
+      "rationale": "Room codes are trimmed and empty codes are rejected.",
+      "test": {
+        "file": "internal/cmd/room/room_test.go",
+        "name": "TestSpecNormalizeRoomCodeTrimsAndRejectsEmpty/room-map.cli-input"
+      },
+      "expectations": {
+        "kind": "normalization",
+        "cases": [
+          {
+            "id": "trim",
+            "action": "normalize",
+            "want": {
+              "error": false,
+              "value": "西区"
+            },
+            "value": "  西区  "
+          },
+          {
+            "id": "empty",
+            "action": "normalize",
+            "want": {
+              "error": true,
+              "value": ""
+            },
+            "value": "   "
+          }
+        ]
       }
     },
     {
       "id": "exam.cli-semester-display",
       "scope": "private",
-      "rule": "Each exam row in the table identifies its semester.",
-      "acceptance": {
-        "given": "A returned exam belongs to 2026 Fall.",
-        "when": "The actual exam command prints its table.",
-        "then": [
-          "The table includes the exam semester."
-        ],
-        "test": {
-          "file": "internal/cmd/workspace/exam_test.go",
-          "name": "TestSpecExamSemesterDisplay/exam.cli-semester-display"
-        }
+      "rationale": "Each exam row in the table identifies its semester.",
+      "test": {
+        "file": "internal/cmd/workspace/exam_test.go",
+        "name": "TestSpecExamSemesterDisplay/exam.cli-semester-display"
+      },
+      "expectations": {
+        "kind": "projection",
+        "cases": [
+          {
+            "id": "semester-label",
+            "action": "exam",
+            "operation": "workspace_exam_list",
+            "arguments": [
+              "--page",
+              "1"
+            ],
+            "format": "table",
+            "fixture": "exam",
+            "count": 1,
+            "want": {
+              "error": false,
+              "requests": 1,
+              "preserve": [
+                "/data/0/section/semester/nameCn"
+              ]
+            }
+          }
+        ]
       }
     },
     {
       "id": "openapi.cli-generated-business-client",
       "scope": "all",
-      "rule": "Covered CLI business operations call the generated OpenAPI client with generated request parameters and bodies, and decode the operation’s declared response model before rendering. The explicit raw API command and external school/OAuth transports have separate responsibilities.",
-      "acceptance": {
-        "given": "The generated OpenAPI operations and every production CLI command, plus valid and malformed HTTP publication responses.",
-        "when": "Inspect every business call against its generated response model and execute the real publication command with typed filters.",
-        "then": [
-          "No business command constructs raw HTTP or uses the untyped API bypass.",
-          "Every generated call decodes its own declared response type; malformed fields fail before output.",
-          "Generated query parameters reach HTTP and valid response fields survive presentation."
-        ],
-        "test": {
-          "file": "internal/cmd/root/generated_contract_test.go",
-          "name": "TestSpecGeneratedBusinessClients/openapi.cli-generated-business-client"
-        }
+      "rationale": "Covered CLI business operations call the generated OpenAPI client with generated request parameters and bodies, and decode the operation’s declared response model before rendering. The explicit raw API command and external school/OAuth transports have separate responsibilities.",
+      "test": {
+        "file": "internal/cmd/root/semantic_contract_test.go",
+        "name": "TestSpecGeneratedBusinessClients/openapi.cli-generated-business-client"
+      },
+      "expectations": {
+        "kind": "architecture",
+        "cases": [
+          {
+            "id": "generated-calls",
+            "action": "architecture",
+            "want": {
+              "violations": 0,
+              "minimumCalls": 1
+            }
+          },
+          {
+            "id": "valid-response",
+            "action": "publication",
+            "operation": "get-api-publications",
+            "arguments": [
+              "--type",
+              "notice",
+              "--limit",
+              "2"
+            ],
+            "format": "json",
+            "fixture": "publication",
+            "want": {
+              "error": false,
+              "requests": 1,
+              "outputEmpty": false,
+              "preserve": [
+                "/data/0/id",
+                "/data/0/revision/summary"
+              ]
+            }
+          },
+          {
+            "id": "invalid-response",
+            "action": "publication",
+            "operation": "get-api-publications",
+            "arguments": [
+              "--type",
+              "notice",
+              "--limit",
+              "2"
+            ],
+            "format": "json",
+            "fixture": "publication",
+            "want": {
+              "error": true,
+              "requests": 1,
+              "outputEmpty": true
+            },
+            "malformed": true
+          }
+        ]
       }
     },
     {
       "id": "cli.admin-session-boundary",
       "scope": "private",
-      "rule": "CLI OAuth authorization does not support administrator governance; those operations are available only through browser-session Web administration.",
-      "acceptance": {
-        "given": "The production root command tree.",
-        "when": "Inspect supported commands and invoke the removed admin command.",
-        "then": [
-          "Administration is absent from supported commands and invocation fails."
-        ],
-        "test": {
-          "file": "internal/cmd/root/transport_contract_test.go",
-          "name": "TestSpecAdminSessionBoundary/cli.admin-session-boundary"
-        }
+      "rationale": "CLI OAuth authorization does not support administrator governance; those operations are available only through browser-session Web administration.",
+      "test": {
+        "file": "internal/cmd/root/semantic_contract_test.go",
+        "name": "TestSpecAdminSessionBoundary/cli.admin-session-boundary"
+      },
+      "expectations": {
+        "kind": "availability",
+        "cases": [
+          {
+            "id": "admin-removed",
+            "action": "admin",
+            "arguments": [
+              "admin",
+              "user",
+              "list"
+            ],
+            "want": {
+              "error": true,
+              "absent": [
+                "admin"
+              ]
+            }
+          }
+        ]
       }
     },
     {
       "id": "cli.bus-preference-partial-update",
       "scope": "private",
-      "rule": "Changing one bus preference flag preserves unspecified saved preferences. Failure to read existing preferences aborts the update.",
-      "acceptance": {
-        "given": "An owner has saved origin, destination and departed-trip visibility.",
-        "when": "Change only destination through the real root command, then retry with the initial read denied.",
-        "then": [
-          "The generated POST preserves origin and visibility; a failed GET sends no POST."
-        ],
-        "test": {
-          "file": "internal/cmd/root/transport_contract_test.go",
-          "name": "TestSpecBusPreferencePartialUpdate/cli.bus-preference-partial-update"
-        }
+      "rationale": "Changing one bus preference flag preserves unspecified saved preferences. Failure to read existing preferences aborts the update.",
+      "test": {
+        "file": "internal/cmd/root/semantic_contract_test.go",
+        "name": "TestSpecBusPreferencePartialUpdate/cli.bus-preference-partial-update"
+      },
+      "expectations": {
+        "kind": "mutation",
+        "cases": [
+          {
+            "id": "preserve-unspecified",
+            "action": "bus-partial",
+            "operation": "workspace_bus_preferences_get",
+            "arguments": [
+              "--destination",
+              "3"
+            ],
+            "format": "json",
+            "fixture": "busget",
+            "failurePage": 0,
+            "want": {
+              "error": false,
+              "requests": 2,
+              "writes": 1,
+              "preserve": [
+                "/preferredOriginCampusId",
+                "/showDepartedTrips"
+              ],
+              "changed": {
+                "preferredDestinationCampusId": 3
+              }
+            }
+          },
+          {
+            "id": "failed-read",
+            "action": "bus-partial",
+            "operation": "workspace_bus_preferences_get",
+            "arguments": [
+              "--destination",
+              "3"
+            ],
+            "format": "json",
+            "fixture": "busget",
+            "failurePage": 1,
+            "want": {
+              "error": true,
+              "requests": 1,
+              "writes": 0,
+              "preserve": [],
+              "changed": {}
+            },
+            "failureStatus": 401
+          }
+        ]
       }
     },
     {
       "id": "cli.bus-preference-json-input",
       "scope": "private",
-      "rule": "Bus preference raw JSON accepts exactly one generated request object and rejects null, unknown fields, wrong types and trailing input before mutation.",
-      "acceptance": {
-        "given": "An authenticated owner and a recording preference endpoint.",
-        "when": "Invoke the real set command with invalid JSON variants and a valid object.",
-        "then": [
-          "Invalid JSON sends no request; one valid object sends the generated POST."
-        ],
-        "test": {
-          "file": "internal/cmd/root/transport_contract_test.go",
-          "name": "TestSpecBusPreferenceJSONInput/cli.bus-preference-json-input"
-        }
+      "rationale": "Bus preference raw JSON accepts exactly one generated request object and rejects null, unknown fields, wrong types and trailing input before mutation.",
+      "test": {
+        "file": "internal/cmd/root/semantic_contract_test.go",
+        "name": "TestSpecBusPreferenceJSONInput/cli.bus-preference-json-input"
+      },
+      "expectations": {
+        "kind": "input",
+        "cases": [
+          {
+            "id": "null",
+            "action": "bus-json",
+            "operation": "workspace_bus_preferences_set",
+            "arguments": [
+              "--raw-json",
+              "null"
+            ],
+            "format": "json",
+            "want": {
+              "error": true,
+              "requests": 0,
+              "outputEmpty": true
+            }
+          },
+          {
+            "id": "array",
+            "action": "bus-json",
+            "operation": "workspace_bus_preferences_set",
+            "arguments": [
+              "--raw-json",
+              "[]"
+            ],
+            "format": "json",
+            "want": {
+              "error": true,
+              "requests": 0,
+              "outputEmpty": true
+            }
+          },
+          {
+            "id": "unknown-field",
+            "action": "bus-json",
+            "operation": "workspace_bus_preferences_set",
+            "arguments": [
+              "--raw-json",
+              "{\"unknown\":true}"
+            ],
+            "format": "json",
+            "want": {
+              "error": true,
+              "requests": 0,
+              "outputEmpty": true
+            }
+          },
+          {
+            "id": "wrong-type",
+            "action": "bus-json",
+            "operation": "workspace_bus_preferences_set",
+            "arguments": [
+              "--raw-json",
+              "{\"showDepartedTrips\":\"true\"}"
+            ],
+            "format": "json",
+            "want": {
+              "error": true,
+              "requests": 0,
+              "outputEmpty": true
+            }
+          },
+          {
+            "id": "second-value",
+            "action": "bus-json",
+            "operation": "workspace_bus_preferences_set",
+            "arguments": [
+              "--raw-json",
+              "{\"showDepartedTrips\":true} {}"
+            ],
+            "format": "json",
+            "want": {
+              "error": true,
+              "requests": 0,
+              "outputEmpty": true
+            }
+          },
+          {
+            "id": "trailing-data",
+            "action": "bus-json",
+            "operation": "workspace_bus_preferences_set",
+            "arguments": [
+              "--raw-json",
+              "{\"showDepartedTrips\":true} trailing"
+            ],
+            "format": "json",
+            "want": {
+              "error": true,
+              "requests": 0,
+              "outputEmpty": true
+            }
+          },
+          {
+            "id": "valid",
+            "action": "bus-json",
+            "operation": "workspace_bus_preferences_set",
+            "arguments": [
+              "--raw-json",
+              "{\"preferredOriginCampusId\":1,\"preferredDestinationCampusId\":null,\"showDepartedTrips\":true}"
+            ],
+            "format": "table",
+            "fixture": "busset",
+            "want": {
+              "error": false,
+              "requests": 1,
+              "outputEmpty": false
+            }
+          }
+        ]
       }
     },
     {
       "id": "exam.cli-monitor-identity",
       "scope": "private",
-      "rule": "Exam JSON output preserves monitor campus identifiers and names so clients can associate invigilators and distinguish identical names.",
-      "acceptance": {
-        "given": "A subscribed exam response includes monitors with jwId and localized names.",
-        "when": "Read exams through the real root command using JSON output.",
-        "then": [
-          "The monitor campus ID and both names survive generated decoding and rendering."
-        ],
-        "test": {
-          "file": "internal/cmd/root/transport_contract_test.go",
-          "name": "TestSpecExamMonitorIdentityOutput/exam.cli-monitor-identity"
-        }
+      "rationale": "Exam JSON output preserves monitor campus identifiers and names so clients can associate invigilators and distinguish identical names.",
+      "test": {
+        "file": "internal/cmd/root/semantic_contract_test.go",
+        "name": "TestSpecExamMonitorIdentityOutput/exam.cli-monitor-identity"
+      },
+      "expectations": {
+        "kind": "projection",
+        "cases": [
+          {
+            "id": "monitor-fields",
+            "action": "exam",
+            "operation": "workspace_exam_list",
+            "arguments": [],
+            "format": "json",
+            "fixture": "exam",
+            "count": 1,
+            "want": {
+              "error": false,
+              "requests": 1,
+              "preserve": [
+                "/data/0/monitors/0/jwId",
+                "/data/0/monitors/0/nameCn",
+                "/data/0/monitors/0/nameEn"
+              ]
+            }
+          }
+        ]
       }
     },
     {
       "id": "young.cli-participation-fields",
       "scope": "public",
-      "rule": "Public Young detail JSON preserves participation metadata, contacts, upstream identifiers and raw detail so users can check eligibility, prepare materials and contact organizers.",
-      "acceptance": {
-        "given": "A public Young detail response includes contact and meeting details, signup restrictions, attachment types, upstream IDs, false and zero values, and rawJson.",
-        "when": "Read that activity through the real root command using JSON output.",
-        "then": [
-          "Every provided participation field survives generated decoding and rendering without authentication."
-        ],
-        "test": {
-          "file": "internal/cmd/root/transport_contract_test.go",
-          "name": "TestSpecYoungParticipationOutput/young.cli-participation-fields"
-        }
+      "rationale": "Public Young detail JSON preserves participation metadata, contacts, upstream identifiers and raw detail so users can check eligibility, prepare materials and contact organizers.",
+      "test": {
+        "file": "internal/cmd/root/semantic_contract_test.go",
+        "name": "TestSpecYoungParticipationOutput/young.cli-participation-fields"
+      },
+      "expectations": {
+        "kind": "projection",
+        "cases": [
+          {
+            "id": "public-participation",
+            "action": "young",
+            "operation": "get-api-catalog-young-events-youngId",
+            "format": "json",
+            "fixture": "young",
+            "want": {
+              "error": false,
+              "requests": 1,
+              "preserve": [
+                "/youngId",
+                "/name",
+                "/contactName",
+                "/contactTel",
+                "/onlineMeetingInfo",
+                "/isOnline",
+                "/requiresSignupInfo",
+                "/allowedAttachmentTypes",
+                "/signupScopeCode",
+                "/signupDepartmentIds",
+                "/upstreamOrganizerIds",
+                "/upstreamSponsorIds",
+                "/tagIds",
+                "/appliedCount",
+                "/participationNotes",
+                "/rawJson"
+              ]
+            }
+          }
+        ]
       }
     },
     {
       "id": "school.cli-complete-semesters",
       "scope": "private",
-      "rule": "School lesson and homework sync read every catalog semester using lawful page sizes before matching historical work; a failed later page aborts the read.",
-      "acceptance": {
-        "given": "101 catalog semesters across two pages, with a server enforcing pageSize at most 100.",
-        "when": "Run the shared production semester reader used by both sync commands and map a semester found only on the last page.",
-        "then": [
-          "Both pages are read with valid pagination and semester 101 is mapped.",
-          "A denied second page returns an error and no partial collection."
-        ],
-        "test": {
-          "file": "internal/cmd/school/contracts_test.go",
-          "name": "TestSpecSchoolCompleteSemesters/school.cli-complete-semesters"
-        }
+      "rationale": "School lesson and homework sync read every catalog semester using lawful page sizes before matching historical work; a failed later page aborts the read.",
+      "test": {
+        "file": "internal/cmd/school/contracts_test.go",
+        "name": "TestSpecSchoolCompleteSemesters/school.cli-complete-semesters"
+      },
+      "expectations": {
+        "kind": "collection",
+        "cases": [
+          {
+            "id": "all-semesters",
+            "action": "school-semesters",
+            "operation": "listSemesters",
+            "format": "json",
+            "fixture": "semester",
+            "count": 101,
+            "failurePage": 0,
+            "want": {
+              "error": false,
+              "requests": 2,
+              "outputEmpty": false,
+              "rowCount": 101,
+              "total": 101,
+              "identities": [
+                "1",
+                "2",
+                "3",
+                "4",
+                "5",
+                "6",
+                "7",
+                "8",
+                "9",
+                "10",
+                "11",
+                "12",
+                "13",
+                "14",
+                "15",
+                "16",
+                "17",
+                "18",
+                "19",
+                "20",
+                "21",
+                "22",
+                "23",
+                "24",
+                "25",
+                "26",
+                "27",
+                "28",
+                "29",
+                "30",
+                "31",
+                "32",
+                "33",
+                "34",
+                "35",
+                "36",
+                "37",
+                "38",
+                "39",
+                "40",
+                "41",
+                "42",
+                "43",
+                "44",
+                "45",
+                "46",
+                "47",
+                "48",
+                "49",
+                "50",
+                "51",
+                "52",
+                "53",
+                "54",
+                "55",
+                "56",
+                "57",
+                "58",
+                "59",
+                "60",
+                "61",
+                "62",
+                "63",
+                "64",
+                "65",
+                "66",
+                "67",
+                "68",
+                "69",
+                "70",
+                "71",
+                "72",
+                "73",
+                "74",
+                "75",
+                "76",
+                "77",
+                "78",
+                "79",
+                "80",
+                "81",
+                "82",
+                "83",
+                "84",
+                "85",
+                "86",
+                "87",
+                "88",
+                "89",
+                "90",
+                "91",
+                "92",
+                "93",
+                "94",
+                "95",
+                "96",
+                "97",
+                "98",
+                "99",
+                "100",
+                "101"
+              ],
+              "resolved": "101"
+            },
+            "value": "101"
+          },
+          {
+            "id": "later-page-denied",
+            "action": "school-semesters",
+            "operation": "listSemesters",
+            "format": "json",
+            "fixture": "semester",
+            "count": 101,
+            "failurePage": 2,
+            "want": {
+              "error": true,
+              "requests": 2,
+              "outputEmpty": true
+            },
+            "value": "101",
+            "failureStatus": 400
+          }
+        ]
       }
     },
     {
       "id": "school.cli-existing-homework",
       "scope": "private",
-      "rule": "School homework sync matches existing assignments across all server pages before creating work, and updates the matched homework completion.",
-      "acceptance": {
-        "given": "101 existing section homeworks, with the matching submitted assignment on page two.",
-        "when": "Use the production homework collection reader and synchronization operation.",
-        "then": [
-          "No duplicate homework is created; the existing final-page ID receives completed=true.",
-          "A failed later page returns no partial collection."
-        ],
-        "test": {
-          "file": "internal/cmd/school/contracts_test.go",
-          "name": "TestSpecSchoolExistingHomework/school.cli-existing-homework"
-        }
+      "rationale": "School homework sync matches existing assignments across all server pages before creating work, and updates the matched homework completion.",
+      "test": {
+        "file": "internal/cmd/school/contracts_test.go",
+        "name": "TestSpecSchoolExistingHomework/school.cli-existing-homework"
+      },
+      "expectations": {
+        "kind": "mutation",
+        "cases": [
+          {
+            "id": "reuse-final-page",
+            "action": "school-homework",
+            "operation": "community_section_homework_list",
+            "format": "json",
+            "fixture": "homework",
+            "count": 101,
+            "failurePage": 0,
+            "want": {
+              "error": false,
+              "requests": 4,
+              "writes": 1,
+              "completed": true,
+              "identity": "h101",
+              "completionAction": "updated"
+            },
+            "value": "101"
+          },
+          {
+            "id": "later-page-denied",
+            "action": "school-homework",
+            "operation": "community_section_homework_list",
+            "format": "json",
+            "fixture": "homework",
+            "count": 101,
+            "failurePage": 2,
+            "want": {
+              "error": true,
+              "requests": 2,
+              "writes": 0,
+              "completed": false,
+              "identity": "",
+              "outputEmpty": true
+            },
+            "value": "101",
+            "failureStatus": 404
+          }
+        ]
       }
     },
     {
       "id": "homework.cli-section-pagination",
       "scope": "public",
-      "rule": "Section homework list uses the full data collection before applying its local page and limit flags.",
-      "acceptance": {
-        "given": "101 section assignments across two server pages.",
-        "when": "Execute the section homework list command with page 2, limit 100 and include-deleted.",
-        "then": [
-          "The final assignment is shown once with total 101 and page 2."
-        ],
-        "test": {
-          "file": "internal/cmd/homework/contracts_test.go",
-          "name": "TestSpecHomeworkSectionList/homework.cli-section-pagination"
-        }
+      "rationale": "Section homework list uses the full data collection before applying its local page and limit flags.",
+      "test": {
+        "file": "internal/cmd/homework/contracts_test.go",
+        "name": "TestSpecHomeworkSectionList/homework.cli-section-pagination"
+      },
+      "expectations": {
+        "kind": "collection",
+        "cases": [
+          {
+            "id": "second-local-page",
+            "action": "homework-section",
+            "operation": "community_section_homework_list",
+            "arguments": [
+              "list",
+              "7",
+              "--page",
+              "2",
+              "--limit",
+              "100",
+              "--include-deleted"
+            ],
+            "format": "json",
+            "fixture": "homework",
+            "count": 101,
+            "failurePage": 0,
+            "want": {
+              "error": false,
+              "requests": 3,
+              "outputEmpty": false,
+              "rowCount": 1,
+              "total": 101,
+              "identities": [
+                "h101"
+              ],
+              "page": 2
+            }
+          }
+        ]
       }
     },
     {
       "id": "homework.cli-filter-after-pages",
       "scope": "private",
-      "rule": "Workspace homework filters and local pagination apply after all subscribed or explicitly selected section pages have loaded.",
-      "acceptance": {
-        "given": "100 completed assignments followed by one pending assignment on a second server page.",
-        "when": "Execute workspace homework with pending and limit 1, for subscribed and explicit-section modes, including a failed-page variant.",
-        "then": [
-          "The pending final-page assignment is shown and the filtered total is 1.",
-          "A later-page failure prints no partial result."
-        ],
-        "test": {
-          "file": "internal/cmd/homework/contracts_test.go",
-          "name": "TestSpecHomeworkFilteredList/homework.cli-filter-after-pages"
-        }
+      "rationale": "Workspace homework filters and local pagination apply after all subscribed or explicitly selected section pages have loaded.",
+      "test": {
+        "file": "internal/cmd/homework/contracts_test.go",
+        "name": "TestSpecHomeworkFilteredList/homework.cli-filter-after-pages"
+      },
+      "expectations": {
+        "kind": "collection",
+        "cases": [
+          {
+            "id": "subscribed-success",
+            "action": "homework-list",
+            "operation": "getSubscribedHomeworks",
+            "arguments": [
+              "--pending",
+              "--limit",
+              "1"
+            ],
+            "format": "json",
+            "fixture": "subscribed",
+            "count": 101,
+            "failurePage": 0,
+            "want": {
+              "error": false,
+              "requests": 3,
+              "outputEmpty": false,
+              "rowCount": 1,
+              "total": 1,
+              "identities": [
+                "h101"
+              ]
+            }
+          },
+          {
+            "id": "subscribed-denied",
+            "action": "homework-list",
+            "operation": "getSubscribedHomeworks",
+            "arguments": [
+              "--pending",
+              "--limit",
+              "1"
+            ],
+            "format": "json",
+            "fixture": "subscribed",
+            "count": 101,
+            "failurePage": 2,
+            "want": {
+              "error": true,
+              "requests": 2,
+              "outputEmpty": true
+            },
+            "failureStatus": 401
+          },
+          {
+            "id": "section-success",
+            "action": "homework-list",
+            "operation": "community_section_homework_list",
+            "arguments": [
+              "--pending",
+              "--limit",
+              "1",
+              "--section-id",
+              "7"
+            ],
+            "format": "json",
+            "fixture": "homework",
+            "count": 101,
+            "failurePage": 0,
+            "want": {
+              "error": false,
+              "requests": 3,
+              "outputEmpty": false,
+              "rowCount": 1,
+              "total": 1,
+              "identities": [
+                "h101"
+              ]
+            }
+          },
+          {
+            "id": "section-denied",
+            "action": "homework-list",
+            "operation": "community_section_homework_list",
+            "arguments": [
+              "--pending",
+              "--limit",
+              "1",
+              "--section-id",
+              "7"
+            ],
+            "format": "json",
+            "fixture": "homework",
+            "count": 101,
+            "failurePage": 2,
+            "want": {
+              "error": true,
+              "requests": 2,
+              "outputEmpty": true
+            },
+            "failureStatus": 404
+          }
+        ]
       }
     },
     {
       "id": "homework.cli-picker-complete-input",
       "scope": "private",
-      "rule": "Interactive homework picking filters the complete subscribed homework collection before limiting the available choices.",
-      "acceptance": {
-        "given": "100 completed assignments and a pending assignment on the next page.",
-        "when": "Load the production pending-homework picker with a limit of 20.",
-        "then": [
-          "The final-page pending assignment is available for selection."
-        ],
-        "test": {
-          "file": "internal/cmd/homework/contracts_test.go",
-          "name": "TestSpecHomeworkPicker/homework.cli-picker-complete-input"
-        }
+      "rationale": "Interactive homework picking filters the complete subscribed homework collection before limiting the available choices.",
+      "test": {
+        "file": "internal/cmd/homework/contracts_test.go",
+        "name": "TestSpecHomeworkPicker/homework.cli-picker-complete-input"
+      },
+      "expectations": {
+        "kind": "collection",
+        "cases": [
+          {
+            "id": "pending-final-page",
+            "action": "homework-picker",
+            "operation": "getSubscribedHomeworks",
+            "format": "json",
+            "fixture": "subscribed",
+            "count": 101,
+            "failurePage": 0,
+            "want": {
+              "error": false,
+              "requests": 3,
+              "outputEmpty": false,
+              "rowCount": 1,
+              "total": 1,
+              "identities": [
+                "h101"
+              ]
+            },
+            "arguments": [
+              "--pending",
+              "--limit",
+              "20"
+            ]
+          }
+        ]
       }
     },
     {
       "id": "homework.cli-subscription-fallback",
       "scope": "private",
-      "rule": "When a current calendar subscription has no sections, the homework creation picker derives distinct sections from all subscribed homework pages.",
-      "acceptance": {
-        "given": "No current calendar subscription and homework pages containing repeated section 7 and later section 8.",
-        "when": "Run the production subscribed-section loader.",
-        "then": [
-          "Both unique sections are returned, including the section present only on the later page."
-        ],
-        "test": {
-          "file": "internal/cmd/homework/contracts_test.go",
-          "name": "TestSpecHomeworkSubscribedSections/homework.cli-subscription-fallback"
-        }
+      "rationale": "When a current calendar subscription has no sections, the homework creation picker derives distinct sections from all subscribed homework pages.",
+      "test": {
+        "file": "internal/cmd/homework/contracts_test.go",
+        "name": "TestSpecHomeworkSubscribedSections/homework.cli-subscription-fallback"
+      },
+      "expectations": {
+        "kind": "collection",
+        "cases": [
+          {
+            "id": "distinct-sections",
+            "action": "homework-sections",
+            "operation": "getSubscribedHomeworks",
+            "format": "json",
+            "fixture": "subscribed",
+            "count": 101,
+            "failurePage": 0,
+            "want": {
+              "error": false,
+              "requests": 4,
+              "outputEmpty": false,
+              "rowCount": 2,
+              "total": 2,
+              "identities": [
+                "7",
+                "8"
+              ]
+            }
+          }
+        ]
       }
     },
     {
       "id": "homework.cli-created-identity",
       "scope": "private",
-      "rule": "The homework creation success message identifies the created record from the generated response envelope.",
-      "acceptance": {
-        "given": "A successful create endpoint returns homework.id.",
-        "when": "Execute the real section-homework create command.",
-        "then": [
-          "The success message includes the returned homework ID."
-        ],
-        "test": {
-          "file": "internal/cmd/homework/contracts_test.go",
-          "name": "TestSpecHomeworkCreatedIdentity/homework.cli-created-identity"
-        }
+      "rationale": "The homework creation success message identifies the created record from the generated response envelope.",
+      "test": {
+        "file": "internal/cmd/homework/contracts_test.go",
+        "name": "TestSpecHomeworkCreatedIdentity/homework.cli-created-identity"
+      },
+      "expectations": {
+        "kind": "projection",
+        "cases": [
+          {
+            "id": "created-id",
+            "action": "homework-create",
+            "operation": "community_section_homework_create",
+            "arguments": [
+              "create",
+              "7",
+              "--title",
+              "Assignment"
+            ],
+            "format": "table",
+            "fixture": "create",
+            "want": {
+              "error": false,
+              "requests": 1,
+              "preserve": [
+                "/homework/id"
+              ]
+            }
+          }
+        ]
       }
     },
     {
       "id": "upload.cli-complete-list",
       "scope": "private",
-      "rule": "Upload listing reads every server page, preserves quota metadata, and presents only fields declared by the upload contract.",
-      "acceptance": {
-        "given": "101 uploads across two pages and populated usage metadata.",
-        "when": "Execute the upload list command in JSON and table modes, including a failed-page variant.",
-        "then": [
-          "Every upload and the complete total survive JSON output along with usage metadata.",
-          "The table shows the final upload and quota usage without an unsupported content-type column.",
-          "A failed later page prints no partial result."
-        ],
-        "test": {
-          "file": "internal/cmd/upload/contracts_test.go",
-          "name": "TestSpecUploadCompleteList/upload.cli-complete-list"
-        }
+      "rationale": "Upload listing reads every server page, preserves quota metadata, and presents only fields declared by the upload contract.",
+      "test": {
+        "file": "internal/cmd/upload/contracts_test.go",
+        "name": "TestSpecUploadCompleteList/upload.cli-complete-list"
+      },
+      "expectations": {
+        "kind": "collection",
+        "cases": [
+          {
+            "id": "json-success",
+            "action": "upload",
+            "operation": "listUploads",
+            "arguments": [],
+            "format": "json",
+            "fixture": "upload",
+            "count": 101,
+            "failurePage": 0,
+            "want": {
+              "error": false,
+              "requests": 2,
+              "outputEmpty": false,
+              "rowCount": 101,
+              "total": 101,
+              "identities": [
+                "u1",
+                "u2",
+                "u3",
+                "u4",
+                "u5",
+                "u6",
+                "u7",
+                "u8",
+                "u9",
+                "u10",
+                "u11",
+                "u12",
+                "u13",
+                "u14",
+                "u15",
+                "u16",
+                "u17",
+                "u18",
+                "u19",
+                "u20",
+                "u21",
+                "u22",
+                "u23",
+                "u24",
+                "u25",
+                "u26",
+                "u27",
+                "u28",
+                "u29",
+                "u30",
+                "u31",
+                "u32",
+                "u33",
+                "u34",
+                "u35",
+                "u36",
+                "u37",
+                "u38",
+                "u39",
+                "u40",
+                "u41",
+                "u42",
+                "u43",
+                "u44",
+                "u45",
+                "u46",
+                "u47",
+                "u48",
+                "u49",
+                "u50",
+                "u51",
+                "u52",
+                "u53",
+                "u54",
+                "u55",
+                "u56",
+                "u57",
+                "u58",
+                "u59",
+                "u60",
+                "u61",
+                "u62",
+                "u63",
+                "u64",
+                "u65",
+                "u66",
+                "u67",
+                "u68",
+                "u69",
+                "u70",
+                "u71",
+                "u72",
+                "u73",
+                "u74",
+                "u75",
+                "u76",
+                "u77",
+                "u78",
+                "u79",
+                "u80",
+                "u81",
+                "u82",
+                "u83",
+                "u84",
+                "u85",
+                "u86",
+                "u87",
+                "u88",
+                "u89",
+                "u90",
+                "u91",
+                "u92",
+                "u93",
+                "u94",
+                "u95",
+                "u96",
+                "u97",
+                "u98",
+                "u99",
+                "u100",
+                "u101"
+              ],
+              "preserveQuota": true
+            }
+          },
+          {
+            "id": "json-denied",
+            "action": "upload",
+            "operation": "listUploads",
+            "arguments": [],
+            "format": "json",
+            "fixture": "upload",
+            "count": 101,
+            "failurePage": 2,
+            "want": {
+              "error": true,
+              "requests": 2,
+              "outputEmpty": true
+            },
+            "failureStatus": 401
+          },
+          {
+            "id": "table-success",
+            "action": "upload",
+            "operation": "listUploads",
+            "arguments": [],
+            "format": "table",
+            "fixture": "upload",
+            "count": 101,
+            "failurePage": 0,
+            "want": {
+              "error": false,
+              "requests": 2,
+              "outputEmpty": false,
+              "rowCount": 101,
+              "total": 101,
+              "identities": [
+                "u1",
+                "u2",
+                "u3",
+                "u4",
+                "u5",
+                "u6",
+                "u7",
+                "u8",
+                "u9",
+                "u10",
+                "u11",
+                "u12",
+                "u13",
+                "u14",
+                "u15",
+                "u16",
+                "u17",
+                "u18",
+                "u19",
+                "u20",
+                "u21",
+                "u22",
+                "u23",
+                "u24",
+                "u25",
+                "u26",
+                "u27",
+                "u28",
+                "u29",
+                "u30",
+                "u31",
+                "u32",
+                "u33",
+                "u34",
+                "u35",
+                "u36",
+                "u37",
+                "u38",
+                "u39",
+                "u40",
+                "u41",
+                "u42",
+                "u43",
+                "u44",
+                "u45",
+                "u46",
+                "u47",
+                "u48",
+                "u49",
+                "u50",
+                "u51",
+                "u52",
+                "u53",
+                "u54",
+                "u55",
+                "u56",
+                "u57",
+                "u58",
+                "u59",
+                "u60",
+                "u61",
+                "u62",
+                "u63",
+                "u64",
+                "u65",
+                "u66",
+                "u67",
+                "u68",
+                "u69",
+                "u70",
+                "u71",
+                "u72",
+                "u73",
+                "u74",
+                "u75",
+                "u76",
+                "u77",
+                "u78",
+                "u79",
+                "u80",
+                "u81",
+                "u82",
+                "u83",
+                "u84",
+                "u85",
+                "u86",
+                "u87",
+                "u88",
+                "u89",
+                "u90",
+                "u91",
+                "u92",
+                "u93",
+                "u94",
+                "u95",
+                "u96",
+                "u97",
+                "u98",
+                "u99",
+                "u100",
+                "u101"
+              ],
+              "preserveQuota": true
+            }
+          },
+          {
+            "id": "table-denied",
+            "action": "upload",
+            "operation": "listUploads",
+            "arguments": [],
+            "format": "table",
+            "fixture": "upload",
+            "count": 101,
+            "failurePage": 2,
+            "want": {
+              "error": true,
+              "requests": 2,
+              "outputEmpty": true
+            },
+            "failureStatus": 401
+          }
+        ]
       }
     },
     {
       "id": "upload.cli-picker-complete-input",
       "scope": "private",
-      "rule": "The upload deletion picker includes every upload across all server pages.",
-      "acceptance": {
-        "given": "101 uploads and a selection of item 101.",
-        "when": "Run the production upload picker against the real HTTP fixture and supply the selection.",
-        "then": [
-          "The picker displays and returns the final-page upload with its filename and ID."
-        ],
-        "test": {
-          "file": "internal/cmd/upload/contracts_test.go",
-          "name": "TestSpecUploadPicker/upload.cli-picker-complete-input"
-        }
+      "rationale": "The upload deletion picker includes every upload across all server pages.",
+      "test": {
+        "file": "internal/cmd/upload/contracts_test.go",
+        "name": "TestSpecUploadPicker/upload.cli-picker-complete-input"
+      },
+      "expectations": {
+        "kind": "collection",
+        "cases": [
+          {
+            "id": "select-final-page",
+            "action": "upload-picker",
+            "operation": "listUploads",
+            "format": "json",
+            "fixture": "upload",
+            "count": 101,
+            "failurePage": 0,
+            "want": {
+              "error": false,
+              "requests": 2,
+              "outputEmpty": false,
+              "rowCount": 1,
+              "total": 1,
+              "identities": [
+                "u101"
+              ],
+              "filenames": [
+                "File-101.txt"
+              ]
+            },
+            "value": "101"
+          }
+        ]
       }
     },
     {
       "id": "description.cli-content-output",
       "scope": "public",
-      "rule": "Description reads display nested description.content, show the empty state only for empty content, and preserve the nested response in JSON.",
-      "acceptance": {
-        "given": "Populated and empty public descriptions.",
-        "when": "Execute the real community description get command in text and JSON modes.",
-        "then": [
-          "The public GET uses targetType and targetId without authentication.",
-          "Text shows content or the appropriate empty state; JSON retains the nested content and ID."
-        ],
-        "test": {
-          "file": "internal/cmd/root/description_contract_test.go",
-          "name": "TestSpecDescriptionContentOutput/description.cli-content-output"
-        }
+      "rationale": "Description reads display nested description.content, show the empty state only for empty content, and preserve the nested response in JSON.",
+      "test": {
+        "file": "internal/cmd/root/semantic_contract_test.go",
+        "name": "TestSpecDescriptionContentOutput/description.cli-content-output"
+      },
+      "expectations": {
+        "kind": "description",
+        "cases": [
+          {
+            "id": "json-populated",
+            "action": "description",
+            "operation": "getDescription",
+            "arguments": [
+              "--target-type",
+              "course",
+              "--target-id",
+              "42"
+            ],
+            "format": "json",
+            "fixture": "description",
+            "want": {
+              "history": false,
+              "empty": false,
+              "content": "Office hours: Monday afternoon.",
+              "revisionIDs": [],
+              "editors": [],
+              "timestamps": []
+            }
+          },
+          {
+            "id": "json-empty",
+            "action": "description",
+            "operation": "getDescription",
+            "arguments": [
+              "--target-type",
+              "course",
+              "--target-id",
+              "42"
+            ],
+            "format": "json",
+            "fixture": "description-empty",
+            "want": {
+              "history": false,
+              "empty": true,
+              "content": "",
+              "revisionIDs": [],
+              "editors": [],
+              "timestamps": []
+            }
+          },
+          {
+            "id": "table-populated",
+            "action": "description",
+            "operation": "getDescription",
+            "arguments": [
+              "--target-type",
+              "course",
+              "--target-id",
+              "42"
+            ],
+            "format": "table",
+            "fixture": "description",
+            "want": {
+              "history": false,
+              "empty": false,
+              "content": "Office hours: Monday afternoon.",
+              "revisionIDs": [],
+              "editors": [],
+              "timestamps": []
+            }
+          },
+          {
+            "id": "table-empty",
+            "action": "description",
+            "operation": "getDescription",
+            "arguments": [
+              "--target-type",
+              "course",
+              "--target-id",
+              "42"
+            ],
+            "format": "table",
+            "fixture": "description-empty",
+            "want": {
+              "history": false,
+              "empty": true,
+              "content": "",
+              "revisionIDs": [],
+              "editors": [],
+              "timestamps": []
+            }
+          }
+        ]
       }
     },
     {
       "id": "description.cli-history-output",
       "scope": "public",
-      "rule": "Description history displays each revision ID, createdAt timestamp and editor name; absent editors remain readable.",
-      "acceptance": {
-        "given": "Two description revisions, one with a named editor and one with no editor.",
-        "when": "Execute the real community description get command and render its history.",
-        "then": [
-          "Both revision IDs and timestamps are displayed along with the present editor name.",
-          "A missing editor does not prevent readable output."
-        ],
-        "test": {
-          "file": "internal/cmd/root/description_contract_test.go",
-          "name": "TestSpecDescriptionHistoryOutput/description.cli-history-output"
-        }
+      "rationale": "Description history displays each revision ID, createdAt timestamp and editor name; absent editors remain readable.",
+      "test": {
+        "file": "internal/cmd/root/semantic_contract_test.go",
+        "name": "TestSpecDescriptionHistoryOutput/description.cli-history-output"
+      },
+      "expectations": {
+        "kind": "description",
+        "cases": [
+          {
+            "id": "revision-history",
+            "action": "description",
+            "operation": "getDescription",
+            "arguments": [
+              "--target-type",
+              "teacher",
+              "--target-id",
+              "7"
+            ],
+            "format": "table",
+            "fixture": "description-history",
+            "want": {
+              "history": true,
+              "empty": false,
+              "content": "Second revision",
+              "revisionIDs": [
+                "revision-1",
+                "revision-2"
+              ],
+              "editors": [
+                "Editor Alice"
+              ],
+              "timestamps": [
+                "2026-01-01 00:15",
+                "2026-01-02 00:30"
+              ]
+            }
+          }
+        ]
       }
     }
   ]

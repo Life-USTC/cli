@@ -1,36 +1,23 @@
 package room
 
 import (
-	"io"
-	"net/http"
-	"net/http/httptest"
-	"testing"
-
 	"github.com/Life-USTC/CLI/internal/api"
+	"github.com/Life-USTC/CLI/internal/specification"
+	"testing"
 )
 
 func TestSpecFetchRoomMapUsesRoomCodePath(t *testing.T) {
-	t.Run("room-map.cli-request", func(t *testing.T) {
-		t.Setenv("LIFE_USTC_CONFIG_DIR", t.TempDir())
-		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			if r.Method != http.MethodGet || r.URL.Path != "/api/catalog/rooms/B001/map" {
-				t.Fatalf("request = %s %s", r.Method, r.URL)
-			}
-			w.Header().Set("Content-Type", "application/json")
-			_, _ = io.WriteString(w, `{"code":"B001","status":"highlighted","building":"Main","floor":"1","imageUrl":"https://example.test/map.png"}`)
-		}))
-		defer server.Close()
-		client, err := api.NewTypedClient(server.URL, false)
-		if err != nil {
-			t.Fatal(err)
-		}
-		data, err := fetchRoomMap(client, "B001")
-		if err != nil {
-			t.Fatal(err)
-		}
-		if got := data.(map[string]any)["code"]; got != "B001" {
-			t.Fatalf("room code = %#v", got)
-		}
-
-	})
+	t.Run("room-map.cli-request", func(t *testing.T) { specification.Run(t, acceptanceAdapter) })
+}
+func acceptanceAdapter(t *testing.T, in specification.Input) specification.Observation {
+	if in.Action == "normalize" {
+		value, err := normalizeRoomCode(in.Value)
+		return specification.Observation{Output: value, Err: err}
+	}
+	client, err := api.NewTypedClient(in.ServerURL, false)
+	if err != nil {
+		return specification.Observation{Err: err}
+	}
+	data, err := fetchRoomMap(client, "B001")
+	return specification.Observation{Data: data, Err: err}
 }

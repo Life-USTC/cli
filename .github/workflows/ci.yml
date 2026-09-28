@@ -44,7 +44,15 @@ jobs:
         run: make build
 
       - name: Test
-        run: make test
+        run: make test SPEC_EVIDENCE_ARGS=--require-clean
+
+      - name: Upload native specification evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: cli-specification-evidence
+          path: artifacts/specifications
+          if-no-files-found: error
 
       - name: Check generated code is up-to-date
         run: |

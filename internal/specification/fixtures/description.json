@@ -1,0 +1,21 @@
+{
+  "description": {
+    "id": "description-1",
+    "content": "Office hours: Monday afternoon.",
+    "updatedAt": null,
+    "lastEditedAt": null,
+    "renderedHtml": "fixture",
+    "lastEditedBy": null
+  },
+  "history": [],
+  "viewer": {
+    "userId": null,
+    "name": null,
+    "image": null,
+    "isAdmin": false,
+    "isAuthenticated": false,
+    "isSuspended": false,
+    "suspensionReason": null,
+    "suspensionExpiresAt": null
+  }
+}

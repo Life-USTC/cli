@@ -1,0 +1,18 @@
+{
+  "data": [
+    {
+      "id": 1,
+      "jwId": 1,
+      "nameCn": "Semester 1",
+      "code": "1",
+      "startDate": null,
+      "endDate": null
+    }
+  ],
+  "pagination": {
+    "page": 1,
+    "pageSize": 100,
+    "total": 1,
+    "totalPages": 1
+  }
+}

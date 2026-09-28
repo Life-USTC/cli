@@ -29,5 +29,5 @@ func fetchAllHomeworks(ctx context.Context, client *api.TypedClient, sectionID *
 			return api.ParseResponse[openapi.HomeworksListResponseSchema](client.CommunitySectionHomeworkList(ctx, &openapi.CommunitySectionHomeworkListParams{SectionId: sectionID, IncludeDeleted: includeDeleted, Page: page, PageSize: pageSize}))
 		}
 		return api.ParseResponse[openapi.SubscribedHomeworksResponseSchema](client.GetSubscribedHomeworks(ctx, &openapi.GetSubscribedHomeworksParams{Page: page, PageSize: pageSize}))
-	}, path, url.Values{}, "data", 100, "id")
+	}, path, url.Values{}, "data", 50, "id")
 }
