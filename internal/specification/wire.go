@@ -239,10 +239,10 @@ func checkNumericBounds(s *openapi3.Schema, seen map[*openapi3.Schema]bool) erro
 		return nil
 	}
 	seen[s] = true
-	if s.ExclusiveMin && s.Min == nil {
+	if s.ExclusiveMin.IsTrue() && s.Min == nil {
 		return fmt.Errorf("source has exclusiveMinimum without minimum")
 	}
-	if s.ExclusiveMax && s.Max == nil {
+	if s.ExclusiveMax.IsTrue() && s.Max == nil {
 		return fmt.Errorf("source has exclusiveMaximum without maximum")
 	}
 	for _, ref := range s.Properties {
