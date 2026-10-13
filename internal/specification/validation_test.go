@@ -259,7 +259,10 @@ func TestWireValidationRejectsRequestsOutsidePinnedSource(t *testing.T) {
 }
 
 func TestIncompleteNumericSourceBoundsFailClosed(t *testing.T) {
-	for _, schema := range []*openapi3.Schema{{ExclusiveMin: true}, {ExclusiveMax: true}} {
+	for _, schema := range []*openapi3.Schema{
+		{ExclusiveMin: openapi3.ExclusiveBound{Bool: openapi3.Ptr(true)}},
+		{ExclusiveMax: openapi3.ExclusiveBound{Bool: openapi3.Ptr(true)}},
+	} {
 		if err := checkNumericBounds(schema, map[*openapi3.Schema]bool{}); err == nil {
 			t.Fatal("incomplete source bound passed")
 		}
@@ -267,6 +270,14 @@ func TestIncompleteNumericSourceBoundsFailClosed(t *testing.T) {
 	minimum := float64(1)
 	if err := checkNumericBounds(&openapi3.Schema{Min: &minimum}, map[*openapi3.Schema]bool{}); err != nil {
 		t.Fatal(err)
+	}
+	for _, schema := range []*openapi3.Schema{
+		{ExclusiveMin: openapi3.ExclusiveBound{Value: openapi3.Ptr(minimum)}},
+		{ExclusiveMax: openapi3.ExclusiveBound{Value: openapi3.Ptr(minimum)}},
+	} {
+		if err := checkNumericBounds(schema, map[*openapi3.Schema]bool{}); err != nil {
+			t.Fatal(err)
+		}
 	}
 }
 
