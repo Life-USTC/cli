@@ -21,6 +21,7 @@ concurrency:
 jobs:
   sync:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
@@ -61,30 +62,38 @@ jobs:
             +refs/heads/main:refs/remotes/origin/main
           git -C .openapi-server rev-parse --verify refs/remotes/origin/main >/dev/null
 
-      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
-        with:
-          go-version-file: go.mod
-
-      - name: Sync contract and generated client
+      - name: Detect and sync contract changes
+        id: contract
+        env:
+          SERVER_SHA: ${{ steps.server.outputs.sha }}
         run: |
-          test "$(git -C .openapi-server rev-parse HEAD)" = "${{ steps.server.outputs.sha }}"
+          test "$(git -C .openapi-server rev-parse HEAD)" = "$SERVER_SHA"
           if ./scripts/openapi-contract verify >/dev/null 2>&1 \
             && ./scripts/openapi-contract verify-reachable .openapi-server >/dev/null 2>&1 \
             && cmp -s .openapi-server/public/openapi.generated.json api/openapi.json; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
             echo "Server contract is unchanged; preserving the existing provenance pin." >> "$GITHUB_STEP_SUMMARY"
           else
-            make sync-openapi OPENAPI_SERVER_DIR=.openapi-server SERVER_COMMIT=${{ steps.server.outputs.sha }}
+            make sync-openapi OPENAPI_SERVER_DIR=.openapi-server SERVER_COMMIT="$SERVER_SHA"
             make check-openapi-sync OPENAPI_SERVER_DIR=.openapi-server
+            make generate
+            echo "changed=true" >> "$GITHUB_OUTPUT"
           fi
-          make generate
+
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        if: steps.contract.outputs.changed == 'true'
+        with:
+          go-version-file: go.mod
 
       - name: Build, test, and vet
+        if: steps.contract.outputs.changed == 'true'
         run: |
           make build
           make test
           make vet
 
       - name: golangci-lint
+        if: steps.contract.outputs.changed == 'true'
         uses: golangci/golangci-lint-action@ba0d7d2ec06a0ea1cb5fa41b2e4a3ab91d21278a # v9.3.0
         with:
           version: v2.12.2
@@ -92,6 +101,7 @@ jobs:
       # Set OPENAPI_SYNC_TOKEN to a PAT or GitHub App token if automated PRs
       # should trigger the repository's normal pull_request workflows.
       - name: Open or update contract PR
+        if: steps.contract.outputs.changed == 'true'
         uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1 # v8.1.1
         with:
           token: ${{ secrets.OPENAPI_SYNC_TOKEN || github.token }}
