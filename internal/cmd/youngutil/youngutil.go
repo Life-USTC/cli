@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/Life-USTC/CLI/internal/cmd/cmdutil"
+	"github.com/Life-USTC/client-core/calendar"
 )
 
 const (
@@ -249,20 +250,12 @@ func DateRange(view DateView, anchor string, now time.Time) (string, string, err
 		return "", "", err
 	}
 	switch view {
-	case DateDay:
-		formatted := formatDate(date)
-		return formatted, formatted, nil
-	case DateWeek:
-		offset := (int(date.Weekday()) + 6) % 7
-		start := date.AddDate(0, 0, -offset)
-		return formatDate(start), formatDate(start.AddDate(0, 0, 6)), nil
-	case DateMonth:
-		start := time.Date(date.Year(), date.Month(), 1, 0, 0, 0, 0, Shanghai)
-		end := start.AddDate(0, 1, -1)
-		return formatDate(start), formatDate(end), nil
+	case DateDay, DateWeek, DateMonth:
 	default:
 		return "", "", fmt.Errorf("unsupported date view %q", view)
 	}
+	bounds, err := calendar.Bounds(calendar.Period(view), date, time.Monday)
+	return bounds.From, bounds.To, err
 }
 
 func anchorDate(anchor string, now time.Time) (time.Time, error) {
@@ -275,8 +268,4 @@ func anchorDate(anchor string, now time.Time) (time.Time, error) {
 		return time.Time{}, fmt.Errorf("invalid date %q (use YYYY-MM-DD)", anchor)
 	}
 	return date, nil
-}
-
-func formatDate(date time.Time) string {
-	return date.In(Shanghai).Format("2006-01-02")
 }
