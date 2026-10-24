@@ -2,6 +2,7 @@
 package apicmd
 
 var generatedAPIPaths = []string{
+	"/.well-known/apple-app-site-association",
 	"/.well-known/oauth-authorization-server/api/auth",
 	"/.well-known/oauth-protected-resource/api/graphql",
 	"/.well-known/oauth-protected-resource/api/mcp",
@@ -28,6 +29,7 @@ var generatedAPIPaths = []string{
 	"/api/catalog/bus/routes",
 	"/api/catalog/courses",
 	"/api/catalog/courses/{jwId}",
+	"/api/catalog/courses/{jwId}/sections",
 	"/api/catalog/links",
 	"/api/catalog/links/resolve",
 	"/api/catalog/metadata",
@@ -44,6 +46,7 @@ var generatedAPIPaths = []string{
 	"/api/catalog/semesters/current",
 	"/api/catalog/teachers",
 	"/api/catalog/teachers/{id}",
+	"/api/catalog/teachers/{id}/sections",
 	"/api/catalog/weather",
 	"/api/catalog/young-events",
 	"/api/catalog/young-events/images/{path}",
@@ -82,6 +85,7 @@ var generatedAPIPaths = []string{
 	"/api/workspace/link-pins",
 	"/api/workspace/link-pins/batch",
 	"/api/workspace/overview",
+	"/api/workspace/overview/actionable",
 	"/api/workspace/schedules",
 	"/api/workspace/subscriptions",
 	"/api/workspace/subscriptions/batch",

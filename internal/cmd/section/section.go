@@ -265,7 +265,7 @@ func newCmdSchedules() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			data, err := api.ParseResponse[openapi.SectionSchedulesResponseSchema](c.GetSectionSchedules(api.Ctx(), *jwID, &openapi.GetSectionSchedulesParams{}))
+			data, err := api.ParseResponse[openapi.SectionSchedulesReadResponseSchema](c.GetSectionSchedules(api.Ctx(), *jwID, &openapi.GetSectionSchedulesParams{}))
 			if err != nil {
 				return err
 			}
