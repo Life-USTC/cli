@@ -1,5 +1,5 @@
-github.com/Life-USTC/client-core v0.4.0 h1:3Bif0F0mMt4EtievcIpGEeLHFnBnY4C2XP2byGwPySg=
-github.com/Life-USTC/client-core v0.4.0/go.mod h1:2SgYKZ3hbEFEigNGPdbfFS2m149evVw2t/mEjA/S/LM=
+github.com/Life-USTC/client-core v0.5.0 h1:TkSp/rP5V5rastpV8BtbTwR7IlwKh1b7++430Ccf3QQ=
+github.com/Life-USTC/client-core v0.5.0/go.mod h1:2SgYKZ3hbEFEigNGPdbfFS2m149evVw2t/mEjA/S/LM=
 github.com/PuerkitoBio/goquery v1.13.0 h1:mqHbjD7Jmnul4DTR24LKTjo1uUmHUh072kteGV+xpFM=
 github.com/PuerkitoBio/goquery v1.13.0/go.mod h1:Hip5mdBL8K2wEGKJdr27sRaNwIdDajmCwB/ExUPwW+g=
 github.com/RaveNoX/go-jsoncommentstrip v1.0.0/go.mod h1:78ihd09MekBnJnxpICcwzCMzGrKSKYe4AqU6PDYYpjk=
