@@ -13,14 +13,13 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/Life-USTC/client-core/ustc"
 	"github.com/PuerkitoBio/goquery"
 )
 
 const (
 	catalogSemesterURL      = "https://catalog.ustc.edu.cn/api/teach/semester/list"
 	catalogLessonURL        = "https://catalog.ustc.edu.cn/api/teach/lesson/list-for-teach/%d?page=%d&pageSize=%d"
-	jwCourseTableURL        = "https://jw.ustc.edu.cn/for-std/course-table"
-	jwCourseDataURL         = "https://jw.ustc.edu.cn/for-std/course-table/get-data?bizTypeId=2&semesterId=%d&dataId=%s"
 	jwExamURL               = "https://jw.ustc.edu.cn/for-std/exam-arrange"
 	jwScoreSemestersURL     = "https://jw.ustc.edu.cn/for-std/grade/sheet/getSemesters"
 	jwScoreTypesURL         = "https://jw.ustc.edu.cn/for-std/grade/sheet/getGradeSheetTypes"
@@ -585,7 +584,7 @@ func filterBlackboardCourseCalendarIDs(calendars []blackboardCalendar) []string 
 }
 
 func fetchStudentID(ctx context.Context, client *http.Client) (string, error) {
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, jwCourseTableURL, nil)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, ustc.CourseTablePageURL, nil)
 	if err != nil {
 		return "", err
 	}
@@ -598,11 +597,11 @@ func fetchStudentID(ctx context.Context, client *http.Client) (string, error) {
 		return "", responseError(res)
 	}
 
-	return extractStudentIDFromURL(res.Request.URL.String())
+	return ustc.StudentIDFromCourseTableURL(res.Request.URL.String())
 }
 
 func fetchCurrentCourseTable(ctx context.Context, client *http.Client, semesterID int, studentID string) ([]int, []catalogLesson, error) {
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, fmt.Sprintf(jwCourseDataURL, semesterID, studentID), nil)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, ustc.CourseTableDataURL(semesterID, studentID), nil)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -615,40 +614,22 @@ func fetchCurrentCourseTable(ctx context.Context, client *http.Client, semesterI
 		return nil, nil, responseError(res)
 	}
 
-	var payload struct {
-		StudentTableVm struct {
-			LessonIDs []int           `json:"lessonIds"`
-			Lessons   []catalogLesson `json:"lessons"`
-		} `json:"studentTableVm"`
-		LessonIDs       []int                    `json:"lessonIds"`
-		Lessons         []catalogLesson          `json:"lessons"`
-		LessonID2Lesson map[string]catalogLesson `json:"lessonId2Lesson"`
+	data, err := io.ReadAll(res.Body)
+	if err != nil {
+		return nil, nil, fmt.Errorf("read course table data: %w", err)
 	}
-	if err := json.NewDecoder(res.Body).Decode(&payload); err != nil {
-		return nil, nil, fmt.Errorf("decode course table data: %w", err)
+	table, err := ustc.ParseCourseTable(data)
+	if err != nil {
+		return nil, nil, err
 	}
-
-	lessonIDs := payload.StudentTableVm.LessonIDs
-	if len(lessonIDs) == 0 {
-		lessonIDs = payload.LessonIDs
-	}
-	if len(lessonIDs) == 0 {
+	if len(table.LessonIDs) == 0 {
 		return nil, nil, fmt.Errorf("%w for semester %d", errNoLessonIDs, semesterID)
 	}
-
-	slices.Sort(lessonIDs)
-	lessons := payload.StudentTableVm.Lessons
-	if len(lessons) == 0 {
-		lessons = payload.Lessons
+	lessons := make([]catalogLesson, len(table.Lessons))
+	for i, lesson := range table.Lessons {
+		lessons[i] = catalogLesson(lesson)
 	}
-	if len(lessons) == 0 && len(payload.LessonID2Lesson) > 0 {
-		for _, lessonID := range lessonIDs {
-			if lesson, ok := payload.LessonID2Lesson[strconv.Itoa(lessonID)]; ok {
-				lessons = append(lessons, lesson)
-			}
-		}
-	}
-	return slices.Compact(lessonIDs), lessons, nil
+	return table.LessonIDs, lessons, nil
 }
 
 func fetchCatalogLessons(ctx context.Context, client *http.Client, semesterID int) ([]catalogLesson, error) {
@@ -1064,70 +1045,12 @@ func attrOr(selection *goquery.Selection, name, fallback string) string {
 	return fallback
 }
 
-func extractStudentIDFromURL(rawURL string) (string, error) {
-	re := regexp.MustCompile(`/course-table/(?:info/)?(\d+)`)
-	match := re.FindStringSubmatch(rawURL)
-	if len(match) != 2 {
-		return "", fmt.Errorf("could not extract jw student id from %s", rawURL)
-	}
-	return match[1], nil
-}
-
 type pageResponse[T any] struct {
 	Rows      []T `json:"rows"`
 	TotalPage int `json:"totalPage"`
 }
 
-type catalogLesson struct {
-	ID                      int                        `json:"id"`
-	Code                    string                     `json:"code"`
-	DateTimePlacePersonText localizedOrString          `json:"dateTimePlacePersonText"`
-	CourseCode              string                     `json:"courseCode"`
-	CourseName              string                     `json:"courseName"`
-	Credits                 float64                    `json:"credits"`
-	Course                  catalogCourse              `json:"course"`
-	TeacherAssignmentList   []catalogTeacherAssignment `json:"teacherAssignmentList"`
-}
-
-type catalogTeacherAssignment struct {
-	CN      string `json:"cn"`
-	EN      string `json:"en"`
-	Teacher struct {
-		NameZh string `json:"nameZh"`
-		NameEn string `json:"nameEn"`
-	} `json:"teacher"`
-}
-
-type catalogCourse struct {
-	Code    string  `json:"code"`
-	NameZh  string  `json:"nameZh"`
-	NameEn  string  `json:"nameEn"`
-	CN      string  `json:"cn"`
-	EN      string  `json:"en"`
-	Credits float64 `json:"credits"`
-}
-
-type localizedOrString struct {
-	Value string
-}
-
-func (l *localizedOrString) UnmarshalJSON(data []byte) error {
-	var text string
-	if err := json.Unmarshal(data, &text); err == nil {
-		l.Value = text
-		return nil
-	}
-
-	var localized struct {
-		CN string `json:"cn"`
-		EN string `json:"en"`
-	}
-	if err := json.Unmarshal(data, &localized); err != nil {
-		return err
-	}
-	l.Value = firstNonEmpty(localized.CN, localized.EN)
-	return nil
-}
+type catalogLesson ustc.Lesson
 
 func (l catalogLesson) toCurriculumItem(semesterID int) CurriculumItem {
 	teachers := make([]string, 0, len(l.TeacherAssignmentList))
