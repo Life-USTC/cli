@@ -14,6 +14,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Life-USTC/client-core/ustc"
 	"github.com/PuerkitoBio/goquery"
 )
 
@@ -51,14 +52,14 @@ func newJWClient(ctx context.Context, creds Credentials) (*http.Client, error) {
 func newBlackboardClient(ctx context.Context, creds Credentials) (*http.Client, error) {
 	return newAuthenticatedClientForTargets(ctx, creds, []loginTarget{
 		{
-			loginURL:      bbNginxAuthLoginURL(bbCalendarPageURL),
+			loginURL:      bbNginxAuthLoginURL(ustc.BlackboardCalendarPageURL),
 			expectedHost:  "www.bb.ustc.edu.cn",
-			postLoginURLs: []string{bbCalendarPageURL},
+			postLoginURLs: []string{ustc.BlackboardCalendarPageURL},
 		},
 		{
 			loginURL:      bbLoginURL,
 			expectedHost:  "www.bb.ustc.edu.cn",
-			postLoginURLs: []string{bbCalendarPageURL, bbCalendarListURL},
+			postLoginURLs: []string{ustc.BlackboardCalendarPageURL, ustc.BlackboardCalendarsURL},
 		},
 	})
 }

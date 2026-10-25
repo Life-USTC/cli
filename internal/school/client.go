@@ -18,15 +18,8 @@ import (
 )
 
 const (
-	catalogSemesterURL      = "https://catalog.ustc.edu.cn/api/teach/semester/list"
-	catalogLessonURL        = "https://catalog.ustc.edu.cn/api/teach/lesson/list-for-teach/%d?page=%d&pageSize=%d"
-	jwExamURL               = "https://jw.ustc.edu.cn/for-std/exam-arrange"
-	jwScoreSemestersURL     = "https://jw.ustc.edu.cn/for-std/grade/sheet/getSemesters"
-	jwScoreTypesURL         = "https://jw.ustc.edu.cn/for-std/grade/sheet/getGradeSheetTypes"
-	jwScoreListURL          = "https://jw.ustc.edu.cn/for-std/grade/sheet/getGradeList"
-	bbCalendarPageURL       = "https://www.bb.ustc.edu.cn/webapps/calendar/viewPersonal"
-	bbCalendarListURL       = "https://www.bb.ustc.edu.cn/webapps/calendar/calendarData/calendars?mode=personal&course_id="
-	bbCalendarEventsURLBase = "https://www.bb.ustc.edu.cn/webapps/calendar/calendarData/events"
+	catalogSemesterURL = "https://catalog.ustc.edu.cn/api/teach/semester/list"
+	catalogLessonURL   = "https://catalog.ustc.edu.cn/api/teach/lesson/list-for-teach/%d?page=%d&pageSize=%d"
 )
 
 var errNoLessonIDs = errors.New("jw returned no lesson ids")
@@ -34,12 +27,6 @@ var errNoLessonIDs = errors.New("jw returned no lesson ids")
 func IsNoLessonData(err error) bool {
 	return errors.Is(err, errNoLessonIDs)
 }
-
-const (
-	bbCalendarEventsStartMillis int64 = 0
-	bbCalendarEventsEndMillis   int64 = 4102444800000
-	bbCalendarIDsPerRequestMax        = 1800
-)
 
 type Client struct {
 	creds                  Credentials
@@ -231,12 +218,15 @@ func (c *Client) FetchExams(ctx context.Context, semesterIDs ...int) ([]ExamItem
 	if err != nil {
 		return nil, err
 	}
+	return fetchJWExams(ctx, jwClient)
+}
 
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, jwExamURL, nil)
+func fetchJWExams(ctx context.Context, client *http.Client) ([]ExamItem, error) {
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, ustc.ExamArrangementURL, nil)
 	if err != nil {
 		return nil, err
 	}
-	res, err := jwClient.Do(req)
+	res, err := client.Do(req)
 	if err != nil {
 		return nil, fmt.Errorf("fetch exams: %w", err)
 	}
@@ -244,12 +234,7 @@ func (c *Client) FetchExams(ctx context.Context, semesterIDs ...int) ([]ExamItem
 	if res.StatusCode >= 300 {
 		return nil, responseError(res)
 	}
-
-	items, err := parseExamsHTML(res.Body)
-	if err != nil {
-		return nil, err
-	}
-	return items, nil
+	return parseExamsHTML(res.Body)
 }
 
 func (c *Client) FetchScores(ctx context.Context) (ScoreReport, error) {
@@ -282,6 +267,10 @@ func (c *Client) FetchHomework(ctx context.Context) ([]HomeworkItem, error) {
 		return nil, err
 	}
 
+	return fetchBlackboardHomework(ctx, bbClient)
+}
+
+func fetchBlackboardHomework(ctx context.Context, bbClient *http.Client) ([]HomeworkItem, error) {
 	var calendarIDs []string
 	if err := withSchoolDebugStep("Blackboard fetch calendars", func() error {
 		var err error
@@ -304,8 +293,8 @@ func (c *Client) FetchHomework(ctx context.Context) ([]HomeworkItem, error) {
 	statusesByCourse := map[string]map[string]string{}
 
 	itemsByID := make(map[string]HomeworkItem)
-	for _, batch := range batchCalendarIDs(calendarIDs, bbCalendarIDsPerRequestMax) {
-		var events []blackboardCalendarEvent
+	for _, batch := range ustc.BatchBlackboardCalendarIDs(calendarIDs, ustc.BlackboardCalendarIDsPerRequestMax) {
+		var events []ustc.BlackboardCalendarEvent
 		if err := withSchoolDebugStep(fmt.Sprintf("Blackboard fetch events calendars=%d", len(batch)), func() error {
 			var err error
 			events, err = fetchBlackboardCalendarEvents(ctx, bbClient, batch)
@@ -315,7 +304,7 @@ func (c *Client) FetchHomework(ctx context.Context) ([]HomeworkItem, error) {
 		}
 		debugLog("Blackboard events=%d", len(events))
 		for _, event := range events {
-			lessonCode, semesterCode := splitBlackboardCalendarID(event.CalendarID)
+			lessonCode, semesterCode := ustc.SplitBlackboardCalendarID(event.CalendarID)
 			status := event.EventType
 			internalCourseID := courseIDs[event.CalendarID]
 			if internalCourseID != "" && event.ItemSourceID != "" {
@@ -356,27 +345,8 @@ func (c *Client) FetchHomework(ctx context.Context) ([]HomeworkItem, error) {
 	return items, nil
 }
 
-type blackboardCalendarPayload struct {
-	Calendars []blackboardCalendar `json:"calendars"`
-}
-
-type blackboardCalendar struct {
-	ID string `json:"id"`
-}
-
-type blackboardCalendarEvent struct {
-	ID           string `json:"id"`
-	CalendarID   string `json:"calendarId"`
-	ItemSourceID string `json:"itemSourceId"`
-	Title        string `json:"title"`
-	Start        string `json:"start"`
-	End          string `json:"end"`
-	EventType    string `json:"eventType"`
-	CalendarName string `json:"calendarName"`
-}
-
 func fetchBlackboardCourseCalendarIDs(ctx context.Context, client *http.Client) ([]string, error) {
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, bbCalendarListURL, nil)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, ustc.BlackboardCalendarsURL, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -394,19 +364,19 @@ func fetchBlackboardCourseCalendarIDs(ctx context.Context, client *http.Client) 
 	if err != nil {
 		return nil, fmt.Errorf("read Blackboard calendars: %w", err)
 	}
-	var payload blackboardCalendarPayload
-	if err := json.Unmarshal(body, &payload); err != nil {
+	ids, err := ustc.ParseBlackboardCalendarIDs(body)
+	if err != nil {
 		return nil, fmt.Errorf("decode Blackboard calendars: %w: %s", err, responseSnippet(body))
 	}
-	return filterBlackboardCourseCalendarIDs(payload.Calendars), nil
+	return ids, nil
 }
 
-func fetchBlackboardCalendarEvents(ctx context.Context, client *http.Client, calendarIDs []string) ([]blackboardCalendarEvent, error) {
+func fetchBlackboardCalendarEvents(ctx context.Context, client *http.Client, calendarIDs []string) ([]ustc.BlackboardCalendarEvent, error) {
 	if len(calendarIDs) == 0 {
 		return nil, nil
 	}
 
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, buildBlackboardCalendarEventsURL(calendarIDs), nil)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, ustc.BlackboardCalendarEventsURL(calendarIDs), nil)
 	if err != nil {
 		return nil, err
 	}
@@ -420,15 +390,19 @@ func fetchBlackboardCalendarEvents(ctx context.Context, client *http.Client, cal
 		return nil, responseError(res)
 	}
 
-	var events []blackboardCalendarEvent
-	if err := json.NewDecoder(res.Body).Decode(&events); err != nil {
+	var body json.RawMessage
+	if err := json.NewDecoder(res.Body).Decode(&body); err != nil {
+		return nil, fmt.Errorf("decode Blackboard homework: %w", err)
+	}
+	events, err := ustc.ParseBlackboardCalendarEvents(body)
+	if err != nil {
 		return nil, fmt.Errorf("decode Blackboard homework: %w", err)
 	}
 	return events, nil
 }
 
 func fetchBlackboardCourseIDs(ctx context.Context, client *http.Client) (map[string]string, error) {
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, "https://www.bb.ustc.edu.cn/webapps/portal/execute/tabs/tabAction?tab_tab_group_id=_1_1", nil)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, ustc.BlackboardCoursesURL, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -442,34 +416,15 @@ func fetchBlackboardCourseIDs(ctx context.Context, client *http.Client) (map[str
 		return nil, responseError(res)
 	}
 
-	doc, err := goquery.NewDocumentFromReader(res.Body)
+	ids, err := ustc.ParseBlackboardCourseIDs(res.Body)
 	if err != nil {
 		return nil, fmt.Errorf("parse Blackboard portal courses: %w", err)
 	}
-	out := map[string]string{}
-	doc.Find("a").Each(func(_ int, s *goquery.Selection) {
-		href, _ := s.Attr("href")
-		rawCourseID := strings.TrimSpace(strings.Split(strings.TrimSpace(s.Text()), ":")[0])
-		if rawCourseID == "" {
-			return
-		}
-		parsed, err := url.Parse(strings.TrimSpace(href))
-		if err != nil {
-			return
-		}
-		if parsed.Path != "/webapps/blackboard/execute/launcher" || parsed.Query().Get("type") != "Course" {
-			return
-		}
-		internalID := parsed.Query().Get("id")
-		if internalID != "" {
-			out[rawCourseID] = internalID
-		}
-	})
-	return out, nil
+	return ids, nil
 }
 
 func fetchBlackboardGradeStatuses(ctx context.Context, client *http.Client, courseID string) (map[string]string, error) {
-	rawURL := "https://www.bb.ustc.edu.cn/webapps/gradebook/do/student/viewGrades?course_id=" + url.QueryEscape(courseID)
+	rawURL := ustc.BlackboardGradesURL(courseID)
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, rawURL, nil)
 	if err != nil {
 		return nil, err
@@ -484,103 +439,7 @@ func fetchBlackboardGradeStatuses(ctx context.Context, client *http.Client, cour
 		return nil, responseError(res)
 	}
 
-	return blackboardGradeStatusesFromHTML(res.Body), nil
-}
-
-func blackboardGradeStatusesFromHTML(reader io.Reader) map[string]string {
-	doc, err := goquery.NewDocumentFromReader(reader)
-	if err != nil {
-		return nil
-	}
-	out := map[string]string{}
-	doc.Find("#grades_wrapper .sortable_item_row").Each(func(_ int, s *goquery.Selection) {
-		id := strings.TrimSpace(s.AttrOr("id", ""))
-		if id == "" {
-			return
-		}
-		status := strings.TrimSpace(s.Find(".cell.activity .activityType").First().Text())
-		if status == "" {
-			status = strings.TrimSpace(s.Find(".cell.gradeStatus").First().Text())
-		}
-		if status != "" {
-			out["_"+id+"_1"] = compactWhitespace(status)
-		}
-	})
-	return out
-}
-
-func splitBlackboardCalendarID(calendarID string) (string, string) {
-	parts := strings.Split(strings.TrimSpace(calendarID), ".")
-	if len(parts) < 3 {
-		return strings.TrimSpace(calendarID), ""
-	}
-	semesterCode := parts[len(parts)-1]
-	if len(semesterCode) != 6 {
-		return strings.TrimSpace(calendarID), ""
-	}
-	for _, r := range semesterCode[:4] {
-		if r < '0' || r > '9' {
-			return strings.TrimSpace(calendarID), ""
-		}
-	}
-	switch semesterCode[4:] {
-	case "SP", "SU", "FA":
-		return strings.Join(parts[:len(parts)-1], "."), semesterCode
-	default:
-		return strings.TrimSpace(calendarID), ""
-	}
-}
-
-func batchCalendarIDs(calendarIDs []string, maxQueryLength int) [][]string {
-	if len(calendarIDs) == 0 {
-		return nil
-	}
-	if maxQueryLength <= 0 {
-		return [][]string{append([]string(nil), calendarIDs...)}
-	}
-
-	batches := make([][]string, 0, 1)
-	current := make([]string, 0, len(calendarIDs))
-	currentLen := 0
-	for _, calendarID := range calendarIDs {
-		extraLen := len(calendarID)
-		if len(current) > 0 {
-			extraLen++
-		}
-		if currentLen > 0 && currentLen+extraLen > maxQueryLength {
-			batches = append(batches, current)
-			current = make([]string, 0, len(calendarIDs))
-			currentLen = 0
-		}
-		current = append(current, calendarID)
-		currentLen += extraLen
-	}
-	if len(current) > 0 {
-		batches = append(batches, current)
-	}
-	return batches
-}
-
-func buildBlackboardCalendarEventsURL(calendarIDs []string) string {
-	return fmt.Sprintf(
-		"%s?start=%d&end=%d&course_id=&calendarIds=%s",
-		bbCalendarEventsURLBase,
-		bbCalendarEventsStartMillis,
-		bbCalendarEventsEndMillis,
-		strings.Join(calendarIDs, ","),
-	)
-}
-
-func filterBlackboardCourseCalendarIDs(calendars []blackboardCalendar) []string {
-	ids := make([]string, 0, len(calendars))
-	for _, calendar := range calendars {
-		if calendar.ID == "" || calendar.ID == "PERSONAL" || calendar.ID == "INSTITUTION" {
-			continue
-		}
-		ids = append(ids, calendar.ID)
-	}
-	slices.Sort(ids)
-	return slices.Compact(ids)
+	return ustc.ParseBlackboardGradeStatuses(res.Body), nil
 }
 
 func fetchStudentID(ctx context.Context, client *http.Client) (string, error) {
@@ -695,28 +554,34 @@ func fetchJWScoreReport(ctx context.Context, client *http.Client) (ScoreReport, 
 		semesterIDs = append(semesterIDs, semester.ID)
 		semesterNames[semester.ID] = semester.Name()
 	}
-
-	payload, err := fetchJWScoreList(ctx, client, types[0].ID, semesterIDs)
+	parsed, err := fetchJWScoreList(ctx, client, types[0].ID, semesterIDs, semesterNames)
 	if err != nil {
 		return ScoreReport{}, err
 	}
 
-	summary, err := buildJWScoreSummary(payload.Overview, payload.StdGradeRank)
-	if err != nil {
-		return ScoreReport{}, err
+	report := ScoreReport{Summary: parsed.Summary, Items: make([]ScoreItem, len(parsed.Items))}
+	for i, item := range parsed.Items {
+		// The numeric profile produces integer identifiers and a grade point,
+		// including zero for the CLI's existing missing-value behavior.
+		semesterID, _ := strconv.Atoi(item.SemesterID)
+		report.Items[i] = ScoreItem{
+			SemesterID:   semesterID,
+			SemesterName: item.SemesterName,
+			CourseName:   item.CourseName,
+			LessonCode:   item.LessonCode,
+			CourseCode:   item.CourseCode,
+			Credits:      item.Credits,
+			GradePoint:   *item.GradePoint,
+			Score:        item.Score,
+			GradeText:    item.GradeText,
+		}
 	}
-
-	report := ScoreReport{
-		Summary: summary,
-		Items:   flattenJWScoreItems(payload.Semesters, semesterNames),
-	}
-	SortScores(report.Items)
 	return report, nil
 }
 
 func fetchJWScoreSemesters(ctx context.Context, client *http.Client) ([]Semester, error) {
 	var semesters []Semester
-	if err := fetchJSON(ctx, client, jwScoreSemestersURL, nil, &semesters); err != nil {
+	if err := fetchJSON(ctx, client, ustc.ScoreSemestersURL, nil, &semesters); err != nil {
 		return nil, fmt.Errorf("fetch score semesters: %w", err)
 	}
 	return semesters, nil
@@ -724,73 +589,23 @@ func fetchJWScoreSemesters(ctx context.Context, client *http.Client) ([]Semester
 
 func fetchJWScoreTypes(ctx context.Context, client *http.Client) ([]scoreSheetType, error) {
 	var types []scoreSheetType
-	if err := fetchJSON(ctx, client, jwScoreTypesURL, nil, &types); err != nil {
+	if err := fetchJSON(ctx, client, ustc.ScoreTypesURL, nil, &types); err != nil {
 		return nil, fmt.Errorf("fetch score transcript types: %w", err)
 	}
 	return types, nil
 }
 
-func fetchJWScoreList(ctx context.Context, client *http.Client, trainTypeID int, semesterIDs []int) (scoreListResponse, error) {
-	query := url.Values{}
-	query.Set("trainTypeId", strconv.Itoa(trainTypeID))
-	query.Set("semesterIds", joinInts(semesterIDs))
-
-	var payload scoreListResponse
-	if err := fetchJSON(ctx, client, jwScoreListURL, query, &payload); err != nil {
-		return scoreListResponse{}, fmt.Errorf("fetch score list: %w", err)
+func fetchJWScoreList(ctx context.Context, client *http.Client, trainTypeID int, semesterIDs []int, semesterNames map[int]string) (ustc.ScoreReport, error) {
+	rawURL := ustc.NumericScoreListURL(trainTypeID, semesterIDs)
+	var body json.RawMessage
+	if err := fetchJSON(ctx, client, rawURL, nil, &body); err != nil {
+		return ustc.ScoreReport{}, fmt.Errorf("fetch score list: %w", err)
 	}
-	return payload, nil
-}
-
-func buildJWScoreSummary(overview scoreOverview, rank *scoreRankInfo) (json.RawMessage, error) {
-	summary := map[string]any{}
-	if overview.PassedCredits != 0 || overview.NotPassedCredits != 0 || overview.GPA != 0 || overview.WeightedScore != 0 || overview.ArithmeticScore != 0 {
-		summary["totalCredits"] = overview.PassedCredits + overview.NotPassedCredits
-		summary["earnedCredits"] = overview.PassedCredits
-		summary["failedCredits"] = overview.NotPassedCredits
-		summary["gpa"] = overview.GPA
-		summary["weightedAverage"] = overview.WeightedScore
-		summary["averageScore"] = overview.ArithmeticScore
+	report, err := ustc.ParseNumericScores(body, semesterNames)
+	if err != nil {
+		return ustc.ScoreReport{}, fmt.Errorf("fetch score list: decode %s: %w", rawURL, err)
 	}
-	if rank != nil {
-		summary["fromSemester"] = rank.StartSemesterName
-		summary["toSemester"] = rank.EndSemesterName
-		summary["periodGPA"] = rank.GPA
-		if rank.MajorName != "" && rank.MajorRank != 0 && rank.MajorStdCount != 0 {
-			summary["ranking"] = fmt.Sprintf("全校%s年级%s专业 GPA 排名 %d/%d", rank.Grade, rank.MajorName, rank.MajorRank, rank.MajorStdCount)
-		}
-	}
-	if len(summary) == 0 {
-		return nil, nil
-	}
-	return json.Marshal(summary)
-}
-
-func flattenJWScoreItems(semesters []scoreSemesterScores, semesterNames map[int]string) []ScoreItem {
-	out := make([]ScoreItem, 0)
-	for _, semester := range semesters {
-		out = append(out, flattenScoreItems(semester.Scores, semester.ID, semesterNames[semester.ID])...)
-	}
-	return out
-}
-
-func flattenScoreItems(items []scoreAPIItem, defaultSemesterID int, defaultSemesterName string) []ScoreItem {
-	out := make([]ScoreItem, 0, len(items))
-	for _, item := range items {
-		semesterID := firstNonZeroInt(item.SemesterID, item.SemesterAssoc, defaultSemesterID)
-		out = append(out, ScoreItem{
-			SemesterID:   semesterID,
-			SemesterName: firstNonEmpty(item.SemesterName, item.SemesterCh, defaultSemesterName, item.Semester.SemesterCn, item.Semester.SemesterEn),
-			CourseName:   firstNonEmpty(item.CourseName, item.CourseNameCh, item.Course.NameZh, item.Course.NameEn, item.CourseNameEn),
-			LessonCode:   item.LessonCode,
-			CourseCode:   firstNonEmpty(item.CourseCode, item.Course.Code),
-			Credits:      firstNonZero(item.Credits, item.Course.Credits),
-			GradePoint:   item.GradePoint,
-			Score:        firstNonEmpty(item.ScoreCh, item.Score, item.ScoreText, item.Grade, item.ScoreEn),
-			GradeText:    firstNonEmpty(item.GradeText, item.ScoreText),
-		})
-	}
-	return out
+	return report, nil
 }
 
 func fetchJSON[T any](ctx context.Context, client *http.Client, rawURL string, query url.Values, out *T) error {
@@ -819,61 +634,27 @@ func fetchJSON[T any](ctx context.Context, client *http.Client, rawURL string, q
 	return nil
 }
 
-func joinInts(values []int) string {
-	if len(values) == 0 {
-		return ""
-	}
-	parts := make([]string, len(values))
-	for i, value := range values {
-		parts[i] = strconv.Itoa(value)
-	}
-	return strings.Join(parts, ",")
-}
-
 func parseExamsHTML(r io.Reader) ([]ExamItem, error) {
-	doc, err := goquery.NewDocumentFromReader(r)
+	body, err := io.ReadAll(r)
 	if err != nil {
 		return nil, fmt.Errorf("parse exams page: %w", err)
 	}
-
-	items := make([]ExamItem, 0)
-	doc.Find("table tbody tr").Each(func(_ int, row *goquery.Selection) {
-		cells := row.Find("td")
-		if cells.Length() < 4 {
-			return
+	parsed, err := ustc.ParseExamStatusTable(body)
+	if err != nil {
+		return nil, err
+	}
+	items := make([]ExamItem, len(parsed))
+	for i, item := range parsed {
+		items[i] = ExamItem{
+			CourseName: item.CourseName,
+			LessonCode: item.LessonCode,
+			ExamType:   item.ExamType,
+			DateTime:   item.DateTime,
+			Location:   item.Location,
+			Seat:       item.Seat,
+			Status:     item.Status,
 		}
-		values := make([]string, 0, cells.Length())
-		cells.Each(func(_ int, cell *goquery.Selection) {
-			values = append(values, compactWhitespace(cell.Text()))
-		})
-		item := ExamItem{}
-		if len(values) > 0 {
-			item.CourseName = values[0]
-		}
-		if len(values) > 1 {
-			item.LessonCode = values[1]
-		}
-		if len(values) > 2 {
-			item.ExamType = values[2]
-		}
-		if len(values) > 3 {
-			item.DateTime = values[3]
-		}
-		if len(values) > 4 {
-			item.Location = values[4]
-		}
-		if len(values) > 5 {
-			item.Seat = values[5]
-		}
-		if len(values) > 6 {
-			item.Status = values[6]
-		}
-		if item.CourseName != "" {
-			items = append(items, item)
-		}
-	})
-
-	SortExams(items)
+	}
 	return items, nil
 }
 
@@ -1072,67 +853,8 @@ func (l catalogLesson) toCurriculumItem(semesterID int) CurriculumItem {
 	}
 }
 
-type scoreAPIItem struct {
-	SemesterID    int            `json:"semesterId"`
-	SemesterAssoc int            `json:"semesterAssoc"`
-	SemesterName  string         `json:"semesterName"`
-	SemesterCh    string         `json:"semesterCh"`
-	SemesterEn    string         `json:"semesterEn"`
-	LessonCode    string         `json:"lessonCode"`
-	CourseCode    string         `json:"courseCode"`
-	CourseName    string         `json:"courseName"`
-	CourseNameCh  string         `json:"courseNameCh"`
-	CourseNameEn  string         `json:"courseNameEn"`
-	Credits       float64        `json:"credits"`
-	GradePoint    float64        `json:"gp"`
-	Score         string         `json:"score"`
-	ScoreCh       string         `json:"scoreCh"`
-	ScoreEn       string         `json:"scoreEn"`
-	ScoreText     string         `json:"scoreText"`
-	Grade         string         `json:"grade"`
-	GradeText     string         `json:"gradeDetail"`
-	Course        scoreAPICourse `json:"course"`
-	Semester      Semester       `json:"semester"`
-}
-
-type scoreAPICourse struct {
-	Code    string  `json:"code"`
-	NameZh  string  `json:"nameZh"`
-	NameEn  string  `json:"nameEn"`
-	Credits float64 `json:"credits"`
-}
-
 type scoreSheetType struct {
 	ID int `json:"id"`
-}
-
-type scoreListResponse struct {
-	Overview     scoreOverview         `json:"overview"`
-	Semesters    []scoreSemesterScores `json:"semesters"`
-	StdGradeRank *scoreRankInfo        `json:"stdGradeRank"`
-}
-
-type scoreSemesterScores struct {
-	ID     int            `json:"id"`
-	Scores []scoreAPIItem `json:"scores"`
-}
-
-type scoreOverview struct {
-	PassedCredits    float64 `json:"passedCredits"`
-	GPA              float64 `json:"gpa"`
-	WeightedScore    float64 `json:"weightedScore"`
-	NotPassedCredits float64 `json:"notPassedCredits"`
-	ArithmeticScore  float64 `json:"arithmeticScore"`
-}
-
-type scoreRankInfo struct {
-	StartSemesterName string  `json:"startSemesterName"`
-	EndSemesterName   string  `json:"endSemesterName"`
-	GPA               float64 `json:"gpa"`
-	Grade             string  `json:"grade"`
-	MajorName         string  `json:"majorName"`
-	MajorRank         int     `json:"majorRank"`
-	MajorStdCount     int     `json:"majorStdCount"`
 }
 
 func responseError(res *http.Response) error {
@@ -1153,15 +875,6 @@ func compactWhitespace(value string) string {
 }
 
 func firstNonZero(values ...float64) float64 {
-	for _, value := range values {
-		if value != 0 {
-			return value
-		}
-	}
-	return 0
-}
-
-func firstNonZeroInt(values ...int) int {
 	for _, value := range values {
 		if value != 0 {
 			return value
