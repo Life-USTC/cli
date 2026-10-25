@@ -12,6 +12,7 @@ import (
 
 	"github.com/Life-USTC/CLI/internal/cmd/cmdutil"
 	"github.com/Life-USTC/client-core/calendar"
+	corepagination "github.com/Life-USTC/client-core/pagination"
 )
 
 const (
@@ -101,8 +102,9 @@ func FetchAllPages(
 		return nil, fmt.Errorf("page size must be positive")
 	}
 
+	progress := corepagination.NewProgress(1)
 	firstParams := cloneValues(params)
-	firstParams.Set("page", "1")
+	firstParams.Set("page", strconv.Itoa(progress.NextPage()))
 	firstParams.Set("pageSize", strconv.Itoa(pageSize))
 	first, err := fetch(ctx, firstParams)
 	if err != nil {
@@ -131,11 +133,13 @@ func FetchAllPages(
 		if len(rows) != 0 || totalPages > 1 {
 			return nil, fmt.Errorf("%s returned inconsistent empty pagination", path)
 		}
+		progress = progress.AfterPage(len(rows), false)
 	} else {
 		if totalPages < 1 {
 			return nil, fmt.Errorf("%s returned no pages for %d results", path, total)
 		}
-		for page := 2; page <= totalPages; page++ {
+		progress = progress.AfterPage(len(rows), totalPages > 1)
+		for page := progress.NextPage(); page != 0; page = progress.NextPage() {
 			pageParams := cloneValues(params)
 			pageParams.Set("page", strconv.Itoa(page))
 			pageParams.Set("pageSize", strconv.Itoa(pageSize))
@@ -160,10 +164,11 @@ func FetchAllPages(
 				}
 			}
 			rows = append(rows, pageResult.Rows...)
+			progress = progress.AfterPage(len(pageResult.Rows), page < totalPages)
 		}
 	}
-	if len(rows) != total {
-		return nil, fmt.Errorf("%s returned %d of %d results", path, len(rows), total)
+	if progress.ReceivedCount() != total {
+		return nil, fmt.Errorf("%s returned %d of %d results", path, progress.ReceivedCount(), total)
 	}
 
 	result := cmdutil.NewListResult(first, key)
@@ -171,7 +176,7 @@ func FetchAllPages(
 	if m := cmdutil.AsMap(result.Raw); m != nil {
 		if pg := cmdutil.AsMap(m["pagination"]); pg != nil {
 			pg["page"] = 1
-			resultPageSize := len(rows)
+			resultPageSize := progress.ReceivedCount()
 			if resultPageSize == 0 {
 				resultPageSize = pageSize
 			}
