@@ -15,6 +15,7 @@ import (
 	"github.com/Life-USTC/CLI/internal/cmd/cmdutil"
 	"github.com/Life-USTC/CLI/internal/cmd/youngutil"
 	"github.com/Life-USTC/CLI/internal/output"
+	"github.com/Life-USTC/client-core/young"
 )
 
 type listOpts struct {
@@ -166,47 +167,53 @@ func buildListParams(opts listOpts) (url.Values, error) {
 	if err != nil {
 		return nil, err
 	}
-	active, err := normalizeActive(opts.active)
+	query, err := buildEventQuery(opts)
 	if err != nil {
 		return nil, err
 	}
+	for key, values := range query.Parameters(nil, nil) {
+		params[key] = values
+	}
+	return params, nil
+}
+
+func buildEventQuery(opts listOpts) (young.EventQuery, error) {
+	query := young.EventQuery{
+		Category: opts.category, Search: opts.search, OrganizerID: opts.organizerID,
+	}
+	active, err := normalizeActive(opts.active)
+	if err != nil {
+		return query, err
+	}
 	if active != "" {
-		params.Set("active", active)
+		value := active == "true"
+		query.Active = &value
 	}
 	dateUnknown, err := normalizeBooleanFilter("--date-unknown", opts.dateUnknown)
 	if err != nil {
-		return nil, err
+		return query, err
 	}
 	from := strings.TrimSpace(opts.dateFrom)
 	to := strings.TrimSpace(opts.dateTo)
 	if (from == "") != (to == "") {
-		return nil, fmt.Errorf("--date-from and --date-to must be provided together")
+		return query, fmt.Errorf("--date-from and --date-to must be provided together")
 	}
 	if dateUnknown != "" && (from != "" || to != "") {
-		return nil, fmt.Errorf("--date-unknown cannot be combined with --date-from or --date-to")
+		return query, fmt.Errorf("--date-unknown cannot be combined with --date-from or --date-to")
 	}
 	if dateUnknown != "" {
-		params.Set("dateUnknown", dateUnknown)
+		value := dateUnknown == "true"
+		query.DateUnknown = &value
 	}
-	for key, value := range map[string]string{
-		"category":    opts.category,
-		"search":      opts.search,
-		"organizerId": opts.organizerID,
-		"dateFrom":    from,
-		"dateTo":      to,
-	} {
-		if value = strings.TrimSpace(value); value != "" {
-			params.Set(key, value)
-		}
-	}
+	query.DateFrom, query.DateTo = from, to
 	timeBasis := strings.TrimSpace(opts.timeBasis)
 	if timeBasis != "" {
 		if timeBasis != "activity" && timeBasis != "registration" {
-			return nil, fmt.Errorf("--time-basis must be activity or registration")
+			return query, fmt.Errorf("--time-basis must be activity or registration")
 		}
-		params.Set("timeBasis", timeBasis)
+		query.TimeBasis = young.TimeBasis(timeBasis)
 	}
-	return params, nil
+	return query, nil
 }
 
 func normalizeActive(value string) (string, error) {
@@ -360,7 +367,7 @@ func runDateView(cmd *cobra.Command, view youngutil.DateView, anchor string, opt
 		dateTo:      dateTo,
 		timeBasis:   opts.timeBasis,
 	}
-	query, err := buildListParams(params)
+	query, err := buildEventQuery(params)
 	if err != nil {
 		return err
 	}
@@ -368,7 +375,7 @@ func runDateView(cmd *cobra.Command, view youngutil.DateView, anchor string, opt
 	if err != nil {
 		return err
 	}
-	data, err := fetchDateEvents(cmd.Context(), client, query)
+	data, err := fetchDateEvents(cmd.Context(), client, query.Parameters(nil, nil))
 	if err != nil {
 		return err
 	}
@@ -379,7 +386,7 @@ func runDateView(cmd *cobra.Command, view youngutil.DateView, anchor string, opt
 			{Key: "Last synced", Value: output.Resolve(meta, "source.lastSyncedAt")},
 			{Key: "Unknown dates", Value: output.Resolve(meta, "unknownDateCount")},
 		}, "Calendar source")
-		fmt.Println("Unknown-date activities: life-ustc catalog young-event list --date-unknown true --time-basis " + opts.timeBasis)
+		fmt.Println("Unknown-date activities: " + unknownDateCommand(query))
 	}
 	list := cmdutil.NewListResult(data, "data")
 	return output.OutputList(list.Raw, list.Rows, []output.Column{
@@ -390,6 +397,20 @@ func runDateView(cmd *cobra.Command, view youngutil.DateView, anchor string, opt
 		{Header: "Organizer", Key: "organizer"},
 		{Header: "Young ID", Key: "youngId"},
 	}, list.Total, list.Page)
+}
+
+func unknownDateCommand(query young.EventQuery) string {
+	params := query.ForUnknownDates().Parameters(nil, nil)
+	command := "life-ustc catalog young-event list --date-unknown " + params.Get("dateUnknown")
+	for _, field := range [][2]string{
+		{"active", "active"}, {"category", "category"}, {"search", "search"},
+		{"organizer-id", "organizerId"}, {"time-basis", "timeBasis"},
+	} {
+		if value := params.Get(field[1]); value != "" {
+			command += " --" + field[0] + " '" + strings.ReplaceAll(value, "'", "'\\''") + "'"
+		}
+	}
+	return command
 }
 
 func dateStartKey(timeBasis string) string {

@@ -82,6 +82,23 @@ func TestBuildListParamsSupportsUnknownDateFilter(t *testing.T) {
 	}
 }
 
+func TestBuildListParamsKeepsFalseDistinctFromAbsent(t *testing.T) {
+	params, err := buildListParams(listOpts{active: " false ", dateUnknown: "false", search: " 科大 & club "})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(params) != 3 || params.Get("active") != "false" || params.Get("dateUnknown") != "false" || params.Get("search") != "科大 & club" {
+		t.Fatalf("params = %#v", params)
+	}
+	absent, err := buildListParams(listOpts{})
+	if err != nil || len(absent) != 0 {
+		t.Fatalf("absent filters = %#v, %v", absent, err)
+	}
+	if _, err := buildListParams(listOpts{dateUnknown: "false", dateFrom: "2026-09-01", dateTo: "2026-09-30"}); err == nil {
+		t.Fatal("CLI accepted explicit dateUnknown=false with date bounds")
+	}
+}
+
 func TestDateRegistrationUsesRegistrationColumns(t *testing.T) {
 	if got := dateStartKey("registration"); got != "applyStartAt" {
 		t.Fatalf("registration start key = %q", got)
