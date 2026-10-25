@@ -17,11 +17,6 @@ import (
 	"github.com/PuerkitoBio/goquery"
 )
 
-const (
-	catalogSemesterURL = "https://catalog.ustc.edu.cn/api/teach/semester/list"
-	catalogLessonURL   = "https://catalog.ustc.edu.cn/api/teach/lesson/list-for-teach/%d?page=%d&pageSize=%d"
-)
-
 var errNoLessonIDs = errors.New("jw returned no lesson ids")
 
 func IsNoLessonData(err error) bool {
@@ -32,7 +27,7 @@ type Client struct {
 	creds                  Credentials
 	program                Program
 	graduateScheduleClient *http.Client
-	graduateScheduleTerms  []graduateYJS1Term
+	graduateScheduleTerms  []ustc.YJS1Semester
 }
 
 func NewClient(creds Credentials, programs ...Program) *Client {
@@ -52,7 +47,13 @@ func (c *Client) FetchSemesters(ctx context.Context) ([]Semester, error) {
 		return nil, err
 	}
 
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, catalogSemesterURL, nil)
+	return fetchCatalogSemesters(ctx, client, func() (*http.Client, error) {
+		return newJWClient(ctx, c.creds)
+	})
+}
+
+func fetchCatalogSemesters(ctx context.Context, client *http.Client, fallback func() (*http.Client, error)) ([]Semester, error) {
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, ustc.CatalogSemestersURL, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -63,18 +64,33 @@ func (c *Client) FetchSemesters(ctx context.Context) ([]Semester, error) {
 	}
 	defer func() { _ = res.Body.Close() }()
 	if res.StatusCode >= 300 {
-		jwClient, err := newJWClient(ctx, c.creds)
+		jwClient, err := fallback()
 		if err != nil {
 			return nil, responseError(res)
 		}
 		return fetchJWScoreSemesters(ctx, jwClient)
 	}
 
-	var semesters []Semester
-	if err := json.NewDecoder(res.Body).Decode(&semesters); err != nil {
+	var data json.RawMessage
+	if err := json.NewDecoder(res.Body).Decode(&data); err != nil {
 		return nil, fmt.Errorf("decode semesters: %w", err)
 	}
-	return semesters, nil
+	parsed, err := ustc.ParseUndergraduateSemesters(data)
+	if err != nil {
+		return nil, fmt.Errorf("decode semesters: %w", err)
+	}
+	return undergraduateSemesters(parsed), nil
+}
+
+func undergraduateSemesters(parsed []ustc.UndergraduateSemester) []Semester {
+	if parsed == nil {
+		return nil
+	}
+	semesters := make([]Semester, len(parsed))
+	for i, semester := range parsed {
+		semesters[i] = Semester(semester)
+	}
+	return semesters
 }
 
 func PickSemester(semesters []Semester, semesterID int) (Semester, error) {
@@ -494,7 +510,7 @@ func fetchCurrentCourseTable(ctx context.Context, client *http.Client, semesterI
 func fetchCatalogLessons(ctx context.Context, client *http.Client, semesterID int) ([]catalogLesson, error) {
 	var lessons []catalogLesson
 	for page := 1; ; page++ {
-		req, err := http.NewRequestWithContext(ctx, http.MethodGet, fmt.Sprintf(catalogLessonURL, semesterID, page, 500), nil)
+		req, err := http.NewRequestWithContext(ctx, http.MethodGet, ustc.CatalogLessonsURL(semesterID, page, 500), nil)
 		if err != nil {
 			return nil, err
 		}
@@ -514,16 +530,21 @@ func fetchCatalogLessons(ctx context.Context, client *http.Client, semesterID in
 			return nil, fmt.Errorf("read catalog lessons: %w", err)
 		}
 
-		var direct []catalogLesson
-		if err := json.Unmarshal(body, &direct); err == nil {
-			return direct, nil
-		}
-
-		var payload pageResponse[catalogLesson]
-		if err := json.Unmarshal(body, &payload); err != nil {
+		payload, err := ustc.ParseCatalogLessonPage(body)
+		if err != nil {
 			return nil, fmt.Errorf("decode catalog lessons: %w", err)
 		}
-		lessons = append(lessons, payload.Rows...)
+		var rows []catalogLesson
+		if payload.Rows != nil {
+			rows = make([]catalogLesson, len(payload.Rows))
+			for i, lesson := range payload.Rows {
+				rows[i] = catalogLesson(lesson)
+			}
+		}
+		if payload.Direct {
+			return rows, nil
+		}
+		lessons = append(lessons, rows...)
 		if payload.TotalPage == 0 || page >= payload.TotalPage {
 			break
 		}
@@ -580,17 +601,25 @@ func fetchJWScoreReport(ctx context.Context, client *http.Client) (ScoreReport, 
 }
 
 func fetchJWScoreSemesters(ctx context.Context, client *http.Client) ([]Semester, error) {
-	var semesters []Semester
-	if err := fetchJSON(ctx, client, ustc.ScoreSemestersURL, nil, &semesters); err != nil {
+	var data json.RawMessage
+	if err := fetchJSON(ctx, client, ustc.ScoreSemestersURL, nil, &data); err != nil {
 		return nil, fmt.Errorf("fetch score semesters: %w", err)
 	}
-	return semesters, nil
+	parsed, err := ustc.ParseUndergraduateSemesters(data)
+	if err != nil {
+		return nil, fmt.Errorf("fetch score semesters: decode %s: %w", ustc.ScoreSemestersURL, err)
+	}
+	return undergraduateSemesters(parsed), nil
 }
 
-func fetchJWScoreTypes(ctx context.Context, client *http.Client) ([]scoreSheetType, error) {
-	var types []scoreSheetType
-	if err := fetchJSON(ctx, client, ustc.ScoreTypesURL, nil, &types); err != nil {
+func fetchJWScoreTypes(ctx context.Context, client *http.Client) ([]ustc.ScoreSheetType, error) {
+	var data json.RawMessage
+	if err := fetchJSON(ctx, client, ustc.ScoreTypesURL, nil, &data); err != nil {
 		return nil, fmt.Errorf("fetch score transcript types: %w", err)
+	}
+	types, err := ustc.ParseScoreSheetTypes(data)
+	if err != nil {
+		return nil, fmt.Errorf("fetch score transcript types: decode %s: %w", ustc.ScoreTypesURL, err)
 	}
 	return types, nil
 }
@@ -794,41 +823,11 @@ func normalizeSpace(value string) string {
 	return strings.Join(strings.Fields(strings.TrimSpace(value)), " ")
 }
 
-func splitTeachers(value string) []string {
-	parts := regexp.MustCompile(`[、,，;/；]+`).Split(value, -1)
-	teachers := make([]string, 0, len(parts))
-	for _, part := range parts {
-		name := compactWhitespace(part)
-		if name != "" {
-			teachers = append(teachers, name)
-		}
-	}
-	slices.Sort(teachers)
-	return slices.Compact(teachers)
-}
-
-func parseLeadingInt(value string) int {
-	match := regexp.MustCompile(`^\d+`).FindString(strings.TrimSpace(value))
-	if match == "" {
-		return 0
-	}
-	parsed, err := strconv.Atoi(match)
-	if err != nil {
-		return 0
-	}
-	return parsed
-}
-
 func attrOr(selection *goquery.Selection, name, fallback string) string {
 	if value, ok := selection.Attr(name); ok {
 		return value
 	}
 	return fallback
-}
-
-type pageResponse[T any] struct {
-	Rows      []T `json:"rows"`
-	TotalPage int `json:"totalPage"`
 }
 
 type catalogLesson ustc.Lesson
@@ -851,10 +850,6 @@ func (l catalogLesson) toCurriculumItem(semesterID int) CurriculumItem {
 		Teachers:   slices.Compact(teachers),
 		Schedule:   compactWhitespace(l.DateTimePlacePersonText.Value),
 	}
-}
-
-type scoreSheetType struct {
-	ID int `json:"id"`
 }
 
 func responseError(res *http.Response) error {
