@@ -196,14 +196,10 @@ func fetchGraduateYJS1JSON(ctx context.Context, client *http.Client, appPageURL,
 
 func newGraduateYJS1Client(ctx context.Context, creds Credentials, appPageURL string) (*http.Client, error) {
 	return newAuthenticatedClient(ctx, creds, loginTarget{
-		loginURL:      graduateYJS1LoginURL(appPageURL),
+		loginURL:      ustc.CASServiceLoginURL(appPageURL),
 		expectedHost:  "yjs1.ustc.edu.cn",
 		postLoginURLs: []string{appPageURL},
 	})
-}
-
-func graduateYJS1LoginURL(appPageURL string) string {
-	return "https://id.ustc.edu.cn/cas/login?service=" + url.QueryEscape(appPageURL)
 }
 
 func postGraduateYJS1FormJSON(ctx context.Context, client *http.Client, appPageURL, rawURL string, form url.Values, dest any) error {
