@@ -4063,19 +4063,23 @@ type ActionableOverviewResponseSchema struct {
 	} `json:"anchor"`
 	Deadlines struct {
 		AllPending []struct {
-			At                 *time.Time                                                           `json:"at"`
-			CompletionRequired *bool                                                                `json:"completionRequired,omitempty"`
-			Content            *string                                                              `json:"content,omitempty"`
-			EndsAt             *time.Time                                                           `json:"endsAt"`
-			ExamMode           *string                                                              `json:"examMode,omitempty"`
-			HasTime            *bool                                                                `json:"hasTime,omitempty"`
-			Id                 string                                                               `json:"id"`
-			Location           *string                                                              `json:"location"`
-			Priority           *ActionableOverviewResponseSchemaDeadlinesAllPendingPriority         `json:"priority,omitempty"`
-			SectionCode        *string                                                              `json:"sectionCode,omitempty"`
-			SectionJwId        *int                                                                 `json:"sectionJwId,omitempty"`
-			SubscriptionKind   *ActionableOverviewResponseSchemaDeadlinesAllPendingSubscriptionKind `json:"subscriptionKind,omitempty"`
-			Target             *struct {
+			At                 *time.Time `json:"at"`
+			CompletionRequired *bool      `json:"completionRequired,omitempty"`
+			ConflictIntervals  *[]struct {
+				EndAt   time.Time `json:"endAt"`
+				StartAt time.Time `json:"startAt"`
+			} `json:"conflictIntervals,omitempty"`
+			Content          *string                                                              `json:"content,omitempty"`
+			EndsAt           *time.Time                                                           `json:"endsAt"`
+			ExamMode         *string                                                              `json:"examMode,omitempty"`
+			HasTime          *bool                                                                `json:"hasTime,omitempty"`
+			Id               string                                                               `json:"id"`
+			Location         *string                                                              `json:"location"`
+			Priority         *ActionableOverviewResponseSchemaDeadlinesAllPendingPriority         `json:"priority,omitempty"`
+			SectionCode      *string                                                              `json:"sectionCode,omitempty"`
+			SectionJwId      *int                                                                 `json:"sectionJwId,omitempty"`
+			SubscriptionKind *ActionableOverviewResponseSchemaDeadlinesAllPendingSubscriptionKind `json:"subscriptionKind,omitempty"`
+			Target           *struct {
 				Id   string                                                        `json:"id"`
 				Kind ActionableOverviewResponseSchemaDeadlinesAllPendingTargetKind `json:"kind"`
 			} `json:"target,omitempty"`
@@ -4086,19 +4090,23 @@ type ActionableOverviewResponseSchema struct {
 			YoungId  *string                                                 `json:"youngId"`
 		} `json:"allPending"`
 		NextThreeDays []struct {
-			At                 *time.Time                                                              `json:"at"`
-			CompletionRequired *bool                                                                   `json:"completionRequired,omitempty"`
-			Content            *string                                                                 `json:"content,omitempty"`
-			EndsAt             *time.Time                                                              `json:"endsAt"`
-			ExamMode           *string                                                                 `json:"examMode,omitempty"`
-			HasTime            *bool                                                                   `json:"hasTime,omitempty"`
-			Id                 string                                                                  `json:"id"`
-			Location           *string                                                                 `json:"location"`
-			Priority           *ActionableOverviewResponseSchemaDeadlinesNextThreeDaysPriority         `json:"priority,omitempty"`
-			SectionCode        *string                                                                 `json:"sectionCode,omitempty"`
-			SectionJwId        *int                                                                    `json:"sectionJwId,omitempty"`
-			SubscriptionKind   *ActionableOverviewResponseSchemaDeadlinesNextThreeDaysSubscriptionKind `json:"subscriptionKind,omitempty"`
-			Target             *struct {
+			At                 *time.Time `json:"at"`
+			CompletionRequired *bool      `json:"completionRequired,omitempty"`
+			ConflictIntervals  *[]struct {
+				EndAt   time.Time `json:"endAt"`
+				StartAt time.Time `json:"startAt"`
+			} `json:"conflictIntervals,omitempty"`
+			Content          *string                                                                 `json:"content,omitempty"`
+			EndsAt           *time.Time                                                              `json:"endsAt"`
+			ExamMode         *string                                                                 `json:"examMode,omitempty"`
+			HasTime          *bool                                                                   `json:"hasTime,omitempty"`
+			Id               string                                                                  `json:"id"`
+			Location         *string                                                                 `json:"location"`
+			Priority         *ActionableOverviewResponseSchemaDeadlinesNextThreeDaysPriority         `json:"priority,omitempty"`
+			SectionCode      *string                                                                 `json:"sectionCode,omitempty"`
+			SectionJwId      *int                                                                    `json:"sectionJwId,omitempty"`
+			SubscriptionKind *ActionableOverviewResponseSchemaDeadlinesNextThreeDaysSubscriptionKind `json:"subscriptionKind,omitempty"`
+			Target           *struct {
 				Id   string                                                           `json:"id"`
 				Kind ActionableOverviewResponseSchemaDeadlinesNextThreeDaysTargetKind `json:"kind"`
 			} `json:"target,omitempty"`
@@ -4109,19 +4117,23 @@ type ActionableOverviewResponseSchema struct {
 			YoungId  *string                                                    `json:"youngId"`
 		} `json:"nextThreeDays"`
 		Today []struct {
-			At                 *time.Time                                                      `json:"at"`
-			CompletionRequired *bool                                                           `json:"completionRequired,omitempty"`
-			Content            *string                                                         `json:"content,omitempty"`
-			EndsAt             *time.Time                                                      `json:"endsAt"`
-			ExamMode           *string                                                         `json:"examMode,omitempty"`
-			HasTime            *bool                                                           `json:"hasTime,omitempty"`
-			Id                 string                                                          `json:"id"`
-			Location           *string                                                         `json:"location"`
-			Priority           *ActionableOverviewResponseSchemaDeadlinesTodayPriority         `json:"priority,omitempty"`
-			SectionCode        *string                                                         `json:"sectionCode,omitempty"`
-			SectionJwId        *int                                                            `json:"sectionJwId,omitempty"`
-			SubscriptionKind   *ActionableOverviewResponseSchemaDeadlinesTodaySubscriptionKind `json:"subscriptionKind,omitempty"`
-			Target             *struct {
+			At                 *time.Time `json:"at"`
+			CompletionRequired *bool      `json:"completionRequired,omitempty"`
+			ConflictIntervals  *[]struct {
+				EndAt   time.Time `json:"endAt"`
+				StartAt time.Time `json:"startAt"`
+			} `json:"conflictIntervals,omitempty"`
+			Content          *string                                                         `json:"content,omitempty"`
+			EndsAt           *time.Time                                                      `json:"endsAt"`
+			ExamMode         *string                                                         `json:"examMode,omitempty"`
+			HasTime          *bool                                                           `json:"hasTime,omitempty"`
+			Id               string                                                          `json:"id"`
+			Location         *string                                                         `json:"location"`
+			Priority         *ActionableOverviewResponseSchemaDeadlinesTodayPriority         `json:"priority,omitempty"`
+			SectionCode      *string                                                         `json:"sectionCode,omitempty"`
+			SectionJwId      *int                                                            `json:"sectionJwId,omitempty"`
+			SubscriptionKind *ActionableOverviewResponseSchemaDeadlinesTodaySubscriptionKind `json:"subscriptionKind,omitempty"`
+			Target           *struct {
 				Id   string                                                   `json:"id"`
 				Kind ActionableOverviewResponseSchemaDeadlinesTodayTargetKind `json:"kind"`
 			} `json:"target,omitempty"`
@@ -4133,20 +4145,24 @@ type ActionableOverviewResponseSchema struct {
 		} `json:"today"`
 	} `json:"deadlines"`
 	Focus *struct {
-		At                 *time.Time                                             `json:"at"`
-		CompletionRequired *bool                                                  `json:"completionRequired,omitempty"`
-		Content            *string                                                `json:"content,omitempty"`
-		EndsAt             *time.Time                                             `json:"endsAt"`
-		ExamMode           *string                                                `json:"examMode,omitempty"`
-		HasTime            *bool                                                  `json:"hasTime,omitempty"`
-		Id                 string                                                 `json:"id"`
-		Location           *string                                                `json:"location"`
-		Priority           *ActionableOverviewResponseSchemaFocusPriority         `json:"priority,omitempty"`
-		SectionCode        *string                                                `json:"sectionCode,omitempty"`
-		SectionJwId        *int                                                   `json:"sectionJwId,omitempty"`
-		Status             ActionableOverviewResponseSchemaFocusStatus            `json:"status"`
-		SubscriptionKind   *ActionableOverviewResponseSchemaFocusSubscriptionKind `json:"subscriptionKind,omitempty"`
-		Target             *struct {
+		At                 *time.Time `json:"at"`
+		CompletionRequired *bool      `json:"completionRequired,omitempty"`
+		ConflictIntervals  *[]struct {
+			EndAt   time.Time `json:"endAt"`
+			StartAt time.Time `json:"startAt"`
+		} `json:"conflictIntervals,omitempty"`
+		Content          *string                                                `json:"content,omitempty"`
+		EndsAt           *time.Time                                             `json:"endsAt"`
+		ExamMode         *string                                                `json:"examMode,omitempty"`
+		HasTime          *bool                                                  `json:"hasTime,omitempty"`
+		Id               string                                                 `json:"id"`
+		Location         *string                                                `json:"location"`
+		Priority         *ActionableOverviewResponseSchemaFocusPriority         `json:"priority,omitempty"`
+		SectionCode      *string                                                `json:"sectionCode,omitempty"`
+		SectionJwId      *int                                                   `json:"sectionJwId,omitempty"`
+		Status           ActionableOverviewResponseSchemaFocusStatus            `json:"status"`
+		SubscriptionKind *ActionableOverviewResponseSchemaFocusSubscriptionKind `json:"subscriptionKind,omitempty"`
+		Target           *struct {
 			Id   string                                          `json:"id"`
 			Kind ActionableOverviewResponseSchemaFocusTargetKind `json:"kind"`
 		} `json:"target,omitempty"`
@@ -4167,19 +4183,23 @@ type ActionableOverviewResponseSchema struct {
 		TotalCount           int `json:"totalCount"`
 	} `json:"subscriptions"`
 	Upcoming []struct {
-		At                 *time.Time                                                `json:"at"`
-		CompletionRequired *bool                                                     `json:"completionRequired,omitempty"`
-		Content            *string                                                   `json:"content,omitempty"`
-		EndsAt             *time.Time                                                `json:"endsAt"`
-		ExamMode           *string                                                   `json:"examMode,omitempty"`
-		HasTime            *bool                                                     `json:"hasTime,omitempty"`
-		Id                 string                                                    `json:"id"`
-		Location           *string                                                   `json:"location"`
-		Priority           *ActionableOverviewResponseSchemaUpcomingPriority         `json:"priority,omitempty"`
-		SectionCode        *string                                                   `json:"sectionCode,omitempty"`
-		SectionJwId        *int                                                      `json:"sectionJwId,omitempty"`
-		SubscriptionKind   *ActionableOverviewResponseSchemaUpcomingSubscriptionKind `json:"subscriptionKind,omitempty"`
-		Target             *struct {
+		At                 *time.Time `json:"at"`
+		CompletionRequired *bool      `json:"completionRequired,omitempty"`
+		ConflictIntervals  *[]struct {
+			EndAt   time.Time `json:"endAt"`
+			StartAt time.Time `json:"startAt"`
+		} `json:"conflictIntervals,omitempty"`
+		Content          *string                                                   `json:"content,omitempty"`
+		EndsAt           *time.Time                                                `json:"endsAt"`
+		ExamMode         *string                                                   `json:"examMode,omitempty"`
+		HasTime          *bool                                                     `json:"hasTime,omitempty"`
+		Id               string                                                    `json:"id"`
+		Location         *string                                                   `json:"location"`
+		Priority         *ActionableOverviewResponseSchemaUpcomingPriority         `json:"priority,omitempty"`
+		SectionCode      *string                                                   `json:"sectionCode,omitempty"`
+		SectionJwId      *int                                                      `json:"sectionJwId,omitempty"`
+		SubscriptionKind *ActionableOverviewResponseSchemaUpcomingSubscriptionKind `json:"subscriptionKind,omitempty"`
+		Target           *struct {
 			Id   string                                             `json:"id"`
 			Kind ActionableOverviewResponseSchemaUpcomingTargetKind `json:"kind"`
 		} `json:"target,omitempty"`
@@ -4190,19 +4210,23 @@ type ActionableOverviewResponseSchema struct {
 		YoungId  *string                                      `json:"youngId"`
 	} `json:"upcoming"`
 	Urgency []struct {
-		At                 *time.Time                                               `json:"at"`
-		CompletionRequired *bool                                                    `json:"completionRequired,omitempty"`
-		Content            *string                                                  `json:"content,omitempty"`
-		EndsAt             *time.Time                                               `json:"endsAt"`
-		ExamMode           *string                                                  `json:"examMode,omitempty"`
-		HasTime            *bool                                                    `json:"hasTime,omitempty"`
-		Id                 string                                                   `json:"id"`
-		Location           *string                                                  `json:"location"`
-		Priority           *ActionableOverviewResponseSchemaUrgencyPriority         `json:"priority,omitempty"`
-		SectionCode        *string                                                  `json:"sectionCode,omitempty"`
-		SectionJwId        *int                                                     `json:"sectionJwId,omitempty"`
-		SubscriptionKind   *ActionableOverviewResponseSchemaUrgencySubscriptionKind `json:"subscriptionKind,omitempty"`
-		Target             *struct {
+		At                 *time.Time `json:"at"`
+		CompletionRequired *bool      `json:"completionRequired,omitempty"`
+		ConflictIntervals  *[]struct {
+			EndAt   time.Time `json:"endAt"`
+			StartAt time.Time `json:"startAt"`
+		} `json:"conflictIntervals,omitempty"`
+		Content          *string                                                  `json:"content,omitempty"`
+		EndsAt           *time.Time                                               `json:"endsAt"`
+		ExamMode         *string                                                  `json:"examMode,omitempty"`
+		HasTime          *bool                                                    `json:"hasTime,omitempty"`
+		Id               string                                                   `json:"id"`
+		Location         *string                                                  `json:"location"`
+		Priority         *ActionableOverviewResponseSchemaUrgencyPriority         `json:"priority,omitempty"`
+		SectionCode      *string                                                  `json:"sectionCode,omitempty"`
+		SectionJwId      *int                                                     `json:"sectionJwId,omitempty"`
+		SubscriptionKind *ActionableOverviewResponseSchemaUrgencySubscriptionKind `json:"subscriptionKind,omitempty"`
+		Target           *struct {
 			Id   string                                            `json:"id"`
 			Kind ActionableOverviewResponseSchemaUrgencyTargetKind `json:"kind"`
 		} `json:"target,omitempty"`
@@ -8917,34 +8941,40 @@ type PaginatedYoungEventResponseSchema struct {
 		Capacity               *int       `json:"capacity"`
 		Category               *string    `json:"category"`
 		CategoryCode           *string    `json:"categoryCode"`
-		ContactName            *string    `json:"contactName"`
-		ContactTel             *string    `json:"contactTel"`
-		CreatedAt              *time.Time `json:"createdAt"`
-		CreatedAtUpstream      *time.Time `json:"createdAtUpstream"`
-		Department             *string    `json:"department"`
-		DepartmentId           *string    `json:"departmentId"`
-		Duration               *float32   `json:"duration"`
-		EndAt                  *time.Time `json:"endAt"`
-		ExternalSponsor        *string    `json:"externalSponsor"`
-		FavCount               *int       `json:"favCount"`
-		Form                   *string    `json:"form"`
-		FormCode               *string    `json:"formCode"`
-		Grades                 *string    `json:"grades"`
-		Hours                  *float32   `json:"hours"`
-		ImageUrl               *string    `json:"imageUrl"`
-		IsActive               bool       `json:"isActive"`
-		IsOnline               *bool      `json:"isOnline"`
-		LastSeenAt             *time.Time `json:"lastSeenAt"`
-		LimitNum               *int       `json:"limitNum"`
-		Location               *string    `json:"location"`
-		Module                 *string    `json:"module"`
-		ModuleCode             *string    `json:"moduleCode"`
-		Name                   string     `json:"name"`
-		OnlineMeetingInfo      *string    `json:"onlineMeetingInfo"`
-		Organizer              *string    `json:"organizer"`
-		OrganizerId            *string    `json:"organizerId"`
-		PartakeNum             *int       `json:"partakeNum"`
-		Places                 *[]struct {
+
+		// ConflictIntervals Known occupied intervals; an absent or empty array does not establish availability.
+		ConflictIntervals *[]struct {
+			EndAt   time.Time `json:"endAt"`
+			StartAt time.Time `json:"startAt"`
+		} `json:"conflictIntervals,omitempty"`
+		ContactName       *string    `json:"contactName"`
+		ContactTel        *string    `json:"contactTel"`
+		CreatedAt         *time.Time `json:"createdAt"`
+		CreatedAtUpstream *time.Time `json:"createdAtUpstream"`
+		Department        *string    `json:"department"`
+		DepartmentId      *string    `json:"departmentId"`
+		Duration          *float32   `json:"duration"`
+		EndAt             *time.Time `json:"endAt"`
+		ExternalSponsor   *string    `json:"externalSponsor"`
+		FavCount          *int       `json:"favCount"`
+		Form              *string    `json:"form"`
+		FormCode          *string    `json:"formCode"`
+		Grades            *string    `json:"grades"`
+		Hours             *float32   `json:"hours"`
+		ImageUrl          *string    `json:"imageUrl"`
+		IsActive          bool       `json:"isActive"`
+		IsOnline          *bool      `json:"isOnline"`
+		LastSeenAt        *time.Time `json:"lastSeenAt"`
+		LimitNum          *int       `json:"limitNum"`
+		Location          *string    `json:"location"`
+		Module            *string    `json:"module"`
+		ModuleCode        *string    `json:"moduleCode"`
+		Name              string     `json:"name"`
+		OnlineMeetingInfo *string    `json:"onlineMeetingInfo"`
+		Organizer         *string    `json:"organizer"`
+		OrganizerId       *string    `json:"organizerId"`
+		PartakeNum        *int       `json:"partakeNum"`
+		Places            *[]struct {
 			PlaceEt   *string `json:"placeEt"`
 			PlaceInfo *string `json:"placeInfo"`
 			PlaceSt   *string `json:"placeSt"`
@@ -8999,19 +9029,23 @@ type PaginatedYoungOrganizerResponseSchema struct {
 // PersonalCalendarPageSchema defines model for personalCalendarPageSchema.
 type PersonalCalendarPageSchema struct {
 	Data []struct {
-		At                 *time.Time                                      `json:"at"`
-		CompletionRequired *bool                                           `json:"completionRequired,omitempty"`
-		Content            *string                                         `json:"content,omitempty"`
-		EndsAt             *time.Time                                      `json:"endsAt"`
-		ExamMode           *string                                         `json:"examMode,omitempty"`
-		HasTime            *bool                                           `json:"hasTime,omitempty"`
-		Id                 string                                          `json:"id"`
-		Location           *string                                         `json:"location"`
-		Priority           *PersonalCalendarPageSchemaDataPriority         `json:"priority,omitempty"`
-		SectionCode        *string                                         `json:"sectionCode,omitempty"`
-		SectionJwId        *int                                            `json:"sectionJwId,omitempty"`
-		SubscriptionKind   *PersonalCalendarPageSchemaDataSubscriptionKind `json:"subscriptionKind,omitempty"`
-		Target             *struct {
+		At                 *time.Time `json:"at"`
+		CompletionRequired *bool      `json:"completionRequired,omitempty"`
+		ConflictIntervals  *[]struct {
+			EndAt   time.Time `json:"endAt"`
+			StartAt time.Time `json:"startAt"`
+		} `json:"conflictIntervals,omitempty"`
+		Content          *string                                         `json:"content,omitempty"`
+		EndsAt           *time.Time                                      `json:"endsAt"`
+		ExamMode         *string                                         `json:"examMode,omitempty"`
+		HasTime          *bool                                           `json:"hasTime,omitempty"`
+		Id               string                                          `json:"id"`
+		Location         *string                                         `json:"location"`
+		Priority         *PersonalCalendarPageSchemaDataPriority         `json:"priority,omitempty"`
+		SectionCode      *string                                         `json:"sectionCode,omitempty"`
+		SectionJwId      *int                                            `json:"sectionJwId,omitempty"`
+		SubscriptionKind *PersonalCalendarPageSchemaDataSubscriptionKind `json:"subscriptionKind,omitempty"`
+		Target           *struct {
 			Id   string                                   `json:"id"`
 			Kind PersonalCalendarPageSchemaDataTargetKind `json:"kind"`
 		} `json:"target,omitempty"`
@@ -10962,36 +10996,42 @@ type YoungEventDetailSchema struct {
 	Capacity               *int       `json:"capacity"`
 	Category               *string    `json:"category"`
 	CategoryCode           *string    `json:"categoryCode"`
-	ContactName            *string    `json:"contactName"`
-	ContactTel             *string    `json:"contactTel"`
-	CreatedAt              *time.Time `json:"createdAt"`
-	CreatedAtUpstream      *time.Time `json:"createdAtUpstream"`
-	Department             *string    `json:"department"`
-	DepartmentId           *string    `json:"departmentId"`
-	Description            *string    `json:"description"`
-	Duration               *float32   `json:"duration"`
-	EndAt                  *time.Time `json:"endAt"`
-	ExternalSponsor        *string    `json:"externalSponsor"`
-	FavCount               *int       `json:"favCount"`
-	Form                   *string    `json:"form"`
-	FormCode               *string    `json:"formCode"`
-	Grades                 *string    `json:"grades"`
-	Hours                  *float32   `json:"hours"`
-	ImageUrl               *string    `json:"imageUrl"`
-	IsActive               bool       `json:"isActive"`
-	IsOnline               *bool      `json:"isOnline"`
-	LastSeenAt             *time.Time `json:"lastSeenAt"`
-	LimitNum               *int       `json:"limitNum"`
-	Location               *string    `json:"location"`
-	Module                 *string    `json:"module"`
-	ModuleCode             *string    `json:"moduleCode"`
-	Name                   string     `json:"name"`
-	OnlineMeetingInfo      *string    `json:"onlineMeetingInfo"`
-	Organizer              *string    `json:"organizer"`
-	OrganizerId            *string    `json:"organizerId"`
-	PartakeNum             *int       `json:"partakeNum"`
-	ParticipationNotes     *string    `json:"participationNotes"`
-	Places                 *[]struct {
+
+	// ConflictIntervals Known occupied intervals; an absent or empty array does not establish availability.
+	ConflictIntervals *[]struct {
+		EndAt   time.Time `json:"endAt"`
+		StartAt time.Time `json:"startAt"`
+	} `json:"conflictIntervals,omitempty"`
+	ContactName        *string    `json:"contactName"`
+	ContactTel         *string    `json:"contactTel"`
+	CreatedAt          *time.Time `json:"createdAt"`
+	CreatedAtUpstream  *time.Time `json:"createdAtUpstream"`
+	Department         *string    `json:"department"`
+	DepartmentId       *string    `json:"departmentId"`
+	Description        *string    `json:"description"`
+	Duration           *float32   `json:"duration"`
+	EndAt              *time.Time `json:"endAt"`
+	ExternalSponsor    *string    `json:"externalSponsor"`
+	FavCount           *int       `json:"favCount"`
+	Form               *string    `json:"form"`
+	FormCode           *string    `json:"formCode"`
+	Grades             *string    `json:"grades"`
+	Hours              *float32   `json:"hours"`
+	ImageUrl           *string    `json:"imageUrl"`
+	IsActive           bool       `json:"isActive"`
+	IsOnline           *bool      `json:"isOnline"`
+	LastSeenAt         *time.Time `json:"lastSeenAt"`
+	LimitNum           *int       `json:"limitNum"`
+	Location           *string    `json:"location"`
+	Module             *string    `json:"module"`
+	ModuleCode         *string    `json:"moduleCode"`
+	Name               string     `json:"name"`
+	OnlineMeetingInfo  *string    `json:"onlineMeetingInfo"`
+	Organizer          *string    `json:"organizer"`
+	OrganizerId        *string    `json:"organizerId"`
+	PartakeNum         *int       `json:"partakeNum"`
+	ParticipationNotes *string    `json:"participationNotes"`
+	Places             *[]struct {
 		PlaceEt   *string `json:"placeEt"`
 		PlaceInfo *string `json:"placeInfo"`
 		PlaceSt   *string `json:"placeSt"`
@@ -11032,34 +11072,40 @@ type YoungEventSubscriptionListSchema struct {
 			Capacity               *int       `json:"capacity"`
 			Category               *string    `json:"category"`
 			CategoryCode           *string    `json:"categoryCode"`
-			ContactName            *string    `json:"contactName"`
-			ContactTel             *string    `json:"contactTel"`
-			CreatedAt              *time.Time `json:"createdAt"`
-			CreatedAtUpstream      *time.Time `json:"createdAtUpstream"`
-			Department             *string    `json:"department"`
-			DepartmentId           *string    `json:"departmentId"`
-			Duration               *float32   `json:"duration"`
-			EndAt                  *time.Time `json:"endAt"`
-			ExternalSponsor        *string    `json:"externalSponsor"`
-			FavCount               *int       `json:"favCount"`
-			Form                   *string    `json:"form"`
-			FormCode               *string    `json:"formCode"`
-			Grades                 *string    `json:"grades"`
-			Hours                  *float32   `json:"hours"`
-			ImageUrl               *string    `json:"imageUrl"`
-			IsActive               bool       `json:"isActive"`
-			IsOnline               *bool      `json:"isOnline"`
-			LastSeenAt             *time.Time `json:"lastSeenAt"`
-			LimitNum               *int       `json:"limitNum"`
-			Location               *string    `json:"location"`
-			Module                 *string    `json:"module"`
-			ModuleCode             *string    `json:"moduleCode"`
-			Name                   string     `json:"name"`
-			OnlineMeetingInfo      *string    `json:"onlineMeetingInfo"`
-			Organizer              *string    `json:"organizer"`
-			OrganizerId            *string    `json:"organizerId"`
-			PartakeNum             *int       `json:"partakeNum"`
-			Places                 *[]struct {
+
+			// ConflictIntervals Known occupied intervals; an absent or empty array does not establish availability.
+			ConflictIntervals *[]struct {
+				EndAt   time.Time `json:"endAt"`
+				StartAt time.Time `json:"startAt"`
+			} `json:"conflictIntervals,omitempty"`
+			ContactName       *string    `json:"contactName"`
+			ContactTel        *string    `json:"contactTel"`
+			CreatedAt         *time.Time `json:"createdAt"`
+			CreatedAtUpstream *time.Time `json:"createdAtUpstream"`
+			Department        *string    `json:"department"`
+			DepartmentId      *string    `json:"departmentId"`
+			Duration          *float32   `json:"duration"`
+			EndAt             *time.Time `json:"endAt"`
+			ExternalSponsor   *string    `json:"externalSponsor"`
+			FavCount          *int       `json:"favCount"`
+			Form              *string    `json:"form"`
+			FormCode          *string    `json:"formCode"`
+			Grades            *string    `json:"grades"`
+			Hours             *float32   `json:"hours"`
+			ImageUrl          *string    `json:"imageUrl"`
+			IsActive          bool       `json:"isActive"`
+			IsOnline          *bool      `json:"isOnline"`
+			LastSeenAt        *time.Time `json:"lastSeenAt"`
+			LimitNum          *int       `json:"limitNum"`
+			Location          *string    `json:"location"`
+			Module            *string    `json:"module"`
+			ModuleCode        *string    `json:"moduleCode"`
+			Name              string     `json:"name"`
+			OnlineMeetingInfo *string    `json:"onlineMeetingInfo"`
+			Organizer         *string    `json:"organizer"`
+			OrganizerId       *string    `json:"organizerId"`
+			PartakeNum        *int       `json:"partakeNum"`
+			Places            *[]struct {
 				PlaceEt   *string `json:"placeEt"`
 				PlaceInfo *string `json:"placeInfo"`
 				PlaceSt   *string `json:"placeSt"`
