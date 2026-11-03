@@ -15,7 +15,7 @@ require (
 	github.com/joho/godotenv v1.5.1
 	github.com/mattn/go-runewidth v0.0.31
 	github.com/muesli/termenv v0.16.0
-	github.com/oapi-codegen/runtime v1.7.0
+	github.com/oapi-codegen/runtime v1.8.0
 	github.com/santhosh-tekuri/jsonschema/v6 v6.0.3
 	github.com/spf13/cobra v1.10.2
 	github.com/spf13/pflag v1.0.10
