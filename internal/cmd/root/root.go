@@ -3,6 +3,7 @@ package root
 import (
 	"os"
 	"path/filepath"
+	"runtime/debug"
 
 	"github.com/fatih/color"
 	"github.com/spf13/cobra"
@@ -84,7 +85,7 @@ endpoint access.`,
 		},
 		SilenceUsage:  true,
 		SilenceErrors: true,
-		Version:       version,
+		Version:       executableVersion(version, debug.ReadBuildInfo),
 	}
 
 	cmd.CompletionOptions.DisableDefaultCmd = true
