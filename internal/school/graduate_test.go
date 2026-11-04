@@ -356,6 +356,8 @@ func TestGraduateYJS1RequestFailuresStopTheFlow(t *testing.T) {
 			failures := []string{"network", "read", "HTTP", "invalid JSON", "wrong type", "code"}
 			if endpoint.get {
 				failures = []string{"network", "read", "HTTP", "missing ID"}
+			} else if endpoint.url != graduateTestScoreProfile {
+				failures = append(failures, "multiple data sets")
 			}
 			for _, failure := range failures {
 				t.Run(flow.name+"/"+endpoint.url+"/"+failure, func(t *testing.T) {
@@ -378,6 +380,8 @@ func TestGraduateYJS1RequestFailuresStopTheFlow(t *testing.T) {
 						fixture.body = `{"code":"9","msg":"fixture rejected"}`
 					case "missing ID":
 						fixture.body = `{"USERID" : "ignored"}`
+					case "multiple data sets":
+						fixture.body = `{"code":"0","datas":{"first":{"rows":[]},"second":{"rows":[]}}}`
 					}
 					err := flow.fetch(graduateFixtureClient(t, fixtures))
 					if err == nil {
@@ -414,6 +418,10 @@ func TestGraduateYJS1RequestFailuresStopTheFlow(t *testing.T) {
 						}
 						if err.Error() != want {
 							t.Fatalf("code error = %q, want %q", err, want)
+						}
+					case "multiple data sets":
+						if err.Error() != "graduate yjs1 response contains multiple data sets" {
+							t.Fatalf("ambiguity error = %v", err)
 						}
 					case "missing ID":
 						if err.Error() != "could not resolve graduate student ID from "+graduateTestHomeworkApp {
