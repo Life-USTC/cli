@@ -16584,6 +16584,11 @@ type ClientInterface interface {
 	// Corresponds with GET /api/catalog/young-events (the `GetApiCatalogYoungEvents` operationId).
 	GetApiCatalogYoungEvents(ctx context.Context, params *GetApiCatalogYoungEventsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// GetApiCatalogYoungEventsByIdYoungIdImage Resolve any event ID to its current immutable poster representation
+	//
+	// Corresponds with GET /api/catalog/young-events/by-id/{youngId}/image (the `GetApiCatalogYoungEventsByIdYoungIdImage` operationId).
+	GetApiCatalogYoungEventsByIdYoungIdImage(ctx context.Context, youngId string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// GetApiCatalogYoungEventsImagesPath Serve a cached rich-text inline image for second-classroom (Young) events by
 	//
 	// Corresponds with GET /api/catalog/young-events/images/{path} (the `GetApiCatalogYoungEventsImagesPath` operationId).
@@ -16594,7 +16599,7 @@ type ClientInterface interface {
 	// Corresponds with GET /api/catalog/young-events/{youngId} (the `GetApiCatalogYoungEventsYoungId` operationId).
 	GetApiCatalogYoungEventsYoungId(ctx context.Context, youngId string, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// GetApiCatalogYoungEventsYoungIdImage Redirect to the current immutable poster representation
+	// GetApiCatalogYoungEventsYoungIdImage Legacy event-poster resolver; prefer /api/catalog/young-events/by-id/{youngId}/image
 	//
 	// Corresponds with GET /api/catalog/young-events/{youngId}/image (the `GetApiCatalogYoungEventsYoungIdImage` operationId).
 	GetApiCatalogYoungEventsYoungIdImage(ctx context.Context, youngId string, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -18220,6 +18225,21 @@ func (c *Client) GetApiCatalogYoungEvents(ctx context.Context, params *GetApiCat
 	return c.Client.Do(req)
 }
 
+// GetApiCatalogYoungEventsByIdYoungIdImage Resolve any event ID to its current immutable poster representation
+//
+// Corresponds with GET /api/catalog/young-events/by-id/{youngId}/image (the `GetApiCatalogYoungEventsByIdYoungIdImage` operationId).
+func (c *Client) GetApiCatalogYoungEventsByIdYoungIdImage(ctx context.Context, youngId string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetApiCatalogYoungEventsByIdYoungIdImageRequest(c.Server, youngId)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
 // GetApiCatalogYoungEventsImagesPath Serve a cached rich-text inline image for second-classroom (Young) events by
 //
 // Corresponds with GET /api/catalog/young-events/images/{path} (the `GetApiCatalogYoungEventsImagesPath` operationId).
@@ -18250,7 +18270,7 @@ func (c *Client) GetApiCatalogYoungEventsYoungId(ctx context.Context, youngId st
 	return c.Client.Do(req)
 }
 
-// GetApiCatalogYoungEventsYoungIdImage Redirect to the current immutable poster representation
+// GetApiCatalogYoungEventsYoungIdImage Legacy event-poster resolver; prefer /api/catalog/young-events/by-id/{youngId}/image
 //
 // Corresponds with GET /api/catalog/young-events/{youngId}/image (the `GetApiCatalogYoungEventsYoungIdImage` operationId).
 func (c *Client) GetApiCatalogYoungEventsYoungIdImage(ctx context.Context, youngId string, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -23256,6 +23276,40 @@ func NewGetApiCatalogYoungEventsRequest(server string, params *GetApiCatalogYoun
 	return req, nil
 }
 
+// NewGetApiCatalogYoungEventsByIdYoungIdImageRequest constructs an http.Request for the GetApiCatalogYoungEventsByIdYoungIdImage method
+func NewGetApiCatalogYoungEventsByIdYoungIdImageRequest(server string, youngId string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "youngId", youngId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/api/catalog/young-events/by-id/%s/image", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
 // NewGetApiCatalogYoungEventsImagesPathRequest constructs an http.Request for the GetApiCatalogYoungEventsImagesPath method
 func NewGetApiCatalogYoungEventsImagesPathRequest(server string, path string) (*http.Request, error) {
 	var err error
@@ -27752,6 +27806,13 @@ type ClientWithResponsesInterface interface {
 	// Corresponds with GET /api/catalog/young-events (the `GetApiCatalogYoungEvents` operationId).
 	GetApiCatalogYoungEventsWithResponse(ctx context.Context, params *GetApiCatalogYoungEventsParams, reqEditors ...RequestEditorFn) (*GetApiCatalogYoungEventsResponse, error)
 
+	// GetApiCatalogYoungEventsByIdYoungIdImageWithResponse Resolve any event ID to its current immutable poster representation
+	//
+	// Returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with GET /api/catalog/young-events/by-id/{youngId}/image (the `GetApiCatalogYoungEventsByIdYoungIdImage` operationId).
+	GetApiCatalogYoungEventsByIdYoungIdImageWithResponse(ctx context.Context, youngId string, reqEditors ...RequestEditorFn) (*GetApiCatalogYoungEventsByIdYoungIdImageResponse, error)
+
 	// GetApiCatalogYoungEventsImagesPathWithResponse Serve a cached rich-text inline image for second-classroom (Young) events by
 	//
 	// Returns a wrapper object for the known response body format(s).
@@ -27766,7 +27827,7 @@ type ClientWithResponsesInterface interface {
 	// Corresponds with GET /api/catalog/young-events/{youngId} (the `GetApiCatalogYoungEventsYoungId` operationId).
 	GetApiCatalogYoungEventsYoungIdWithResponse(ctx context.Context, youngId string, reqEditors ...RequestEditorFn) (*GetApiCatalogYoungEventsYoungIdResponse, error)
 
-	// GetApiCatalogYoungEventsYoungIdImageWithResponse Redirect to the current immutable poster representation
+	// GetApiCatalogYoungEventsYoungIdImageWithResponse Legacy event-poster resolver; prefer /api/catalog/young-events/by-id/{youngId}/image
 	//
 	// Returns a wrapper object for the known response body format(s).
 	//
@@ -31374,6 +31435,54 @@ func (r GetApiCatalogYoungEventsResponse) StatusCode() int {
 
 // ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
 func (r GetApiCatalogYoungEventsResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type GetApiCatalogYoungEventsByIdYoungIdImageResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *OpenApiErrorSchema
+	// JSON404 the response for an HTTP 404 `application/json` response
+	JSON404 *OpenApiErrorSchema
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r GetApiCatalogYoungEventsByIdYoungIdImageResponse) GetJSON400() *OpenApiErrorSchema {
+	return r.JSON400
+}
+
+// GetJSON404 returns the response for an HTTP 404 `application/json` response
+func (r GetApiCatalogYoungEventsByIdYoungIdImageResponse) GetJSON404() *OpenApiErrorSchema {
+	return r.JSON404
+}
+
+// GetBody returns the raw response body bytes
+func (r GetApiCatalogYoungEventsByIdYoungIdImageResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r GetApiCatalogYoungEventsByIdYoungIdImageResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetApiCatalogYoungEventsByIdYoungIdImageResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r GetApiCatalogYoungEventsByIdYoungIdImageResponse) ContentType() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Header.Get("Content-Type")
 	}
@@ -37825,6 +37934,19 @@ func (c *ClientWithResponses) GetApiCatalogYoungEventsWithResponse(ctx context.C
 	return ParseGetApiCatalogYoungEventsResponse(rsp)
 }
 
+// GetApiCatalogYoungEventsByIdYoungIdImageWithResponse Resolve any event ID to its current immutable poster representation
+//
+// Returns a wrapper object for the known response body format(s).
+//
+// Corresponds with GET /api/catalog/young-events/by-id/{youngId}/image (the `GetApiCatalogYoungEventsByIdYoungIdImage` operationId).
+func (c *ClientWithResponses) GetApiCatalogYoungEventsByIdYoungIdImageWithResponse(ctx context.Context, youngId string, reqEditors ...RequestEditorFn) (*GetApiCatalogYoungEventsByIdYoungIdImageResponse, error) {
+	rsp, err := c.GetApiCatalogYoungEventsByIdYoungIdImage(ctx, youngId, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetApiCatalogYoungEventsByIdYoungIdImageResponse(rsp)
+}
+
 // GetApiCatalogYoungEventsImagesPathWithResponse Serve a cached rich-text inline image for second-classroom (Young) events by
 //
 // Returns a wrapper object for the known response body format(s).
@@ -37851,7 +37973,7 @@ func (c *ClientWithResponses) GetApiCatalogYoungEventsYoungIdWithResponse(ctx co
 	return ParseGetApiCatalogYoungEventsYoungIdResponse(rsp)
 }
 
-// GetApiCatalogYoungEventsYoungIdImageWithResponse Redirect to the current immutable poster representation
+// GetApiCatalogYoungEventsYoungIdImageWithResponse Legacy event-poster resolver; prefer /api/catalog/young-events/by-id/{youngId}/image
 //
 // Returns a wrapper object for the known response body format(s).
 //
@@ -41305,6 +41427,42 @@ func ParseGetApiCatalogYoungEventsResponse(rsp *http.Response) (*GetApiCatalogYo
 			return nil, err
 		}
 		response.JSON400 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetApiCatalogYoungEventsByIdYoungIdImageResponse parses an HTTP response from a GetApiCatalogYoungEventsByIdYoungIdImageWithResponse call
+func ParseGetApiCatalogYoungEventsByIdYoungIdImageResponse(rsp *http.Response) (*GetApiCatalogYoungEventsByIdYoungIdImageResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetApiCatalogYoungEventsByIdYoungIdImageResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case rsp.StatusCode == 302:
+		break // No content-type
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest OpenApiErrorSchema
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest OpenApiErrorSchema
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
 
 	}
 

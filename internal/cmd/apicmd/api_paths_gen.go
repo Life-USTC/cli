@@ -49,6 +49,7 @@ var generatedAPIPaths = []string{
 	"/api/catalog/teachers/{id}/sections",
 	"/api/catalog/weather",
 	"/api/catalog/young-events",
+	"/api/catalog/young-events/by-id/{youngId}/image",
 	"/api/catalog/young-events/images/{path}",
 	"/api/catalog/young-events/{youngId}",
 	"/api/catalog/young-events/{youngId}/image",
