@@ -16495,6 +16495,11 @@ type ClientInterface interface {
 	// Corresponds with GET /api/catalog/metadata (the `GetMetadata` operationId).
 	GetMetadata(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// GetApiCatalogRoomsImagesNameSvg Read a fixed local .svg schematic by basename within a trusted Demo session
+	//
+	// Corresponds with GET /api/catalog/rooms/images/{name}.svg (the `GetApiCatalogRoomsImagesNameSvg` operationId).
+	GetApiCatalogRoomsImagesNameSvg(ctx context.Context, name string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// CatalogRoomsMap Look up a room's highlighted map or an available building overview
 	//
 	// Corresponds with GET /api/catalog/rooms/{code}/map (the `CatalogRoomsMap` operationId).
@@ -17956,6 +17961,21 @@ func (c *Client) CatalogLinkResolve(ctx context.Context, params *CatalogLinkReso
 // Corresponds with GET /api/catalog/metadata (the `GetMetadata` operationId).
 func (c *Client) GetMetadata(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewGetMetadataRequest(c.Server)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// GetApiCatalogRoomsImagesNameSvg Read a fixed local .svg schematic by basename within a trusted Demo session
+//
+// Corresponds with GET /api/catalog/rooms/images/{name}.svg (the `GetApiCatalogRoomsImagesNameSvg` operationId).
+func (c *Client) GetApiCatalogRoomsImagesNameSvg(ctx context.Context, name string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetApiCatalogRoomsImagesNameSvgRequest(c.Server, name)
 	if err != nil {
 		return nil, err
 	}
@@ -21833,6 +21853,40 @@ func NewGetMetadataRequest(server string) (*http.Request, error) {
 	}
 
 	operationPath := fmt.Sprintf("/api/catalog/metadata")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetApiCatalogRoomsImagesNameSvgRequest constructs an http.Request for the GetApiCatalogRoomsImagesNameSvg method
+func NewGetApiCatalogRoomsImagesNameSvgRequest(server string, name string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "name", name, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/api/catalog/rooms/images/%s.svg", pathParam0)
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -27687,6 +27741,13 @@ type ClientWithResponsesInterface interface {
 	// Corresponds with GET /api/catalog/metadata (the `GetMetadata` operationId).
 	GetMetadataWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetMetadataResponse, error)
 
+	// GetApiCatalogRoomsImagesNameSvgWithResponse Read a fixed local .svg schematic by basename within a trusted Demo session
+	//
+	// Returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with GET /api/catalog/rooms/images/{name}.svg (the `GetApiCatalogRoomsImagesNameSvg` operationId).
+	GetApiCatalogRoomsImagesNameSvgWithResponse(ctx context.Context, name string, reqEditors ...RequestEditorFn) (*GetApiCatalogRoomsImagesNameSvgResponse, error)
+
 	// CatalogRoomsMapWithResponse Look up a room's highlighted map or an available building overview
 	//
 	// Returns a wrapper object for the known response body format(s).
@@ -30632,6 +30693,54 @@ func (r GetMetadataResponse) StatusCode() int {
 
 // ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
 func (r GetMetadataResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
+type GetApiCatalogRoomsImagesNameSvgResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON400 the response for an HTTP 400 `application/json` response
+	JSON400 *OpenApiErrorSchema
+	// JSON404 the response for an HTTP 404 `application/json` response
+	JSON404 *OpenApiErrorSchema
+}
+
+// GetJSON400 returns the response for an HTTP 400 `application/json` response
+func (r GetApiCatalogRoomsImagesNameSvgResponse) GetJSON400() *OpenApiErrorSchema {
+	return r.JSON400
+}
+
+// GetJSON404 returns the response for an HTTP 404 `application/json` response
+func (r GetApiCatalogRoomsImagesNameSvgResponse) GetJSON404() *OpenApiErrorSchema {
+	return r.JSON404
+}
+
+// GetBody returns the raw response body bytes
+func (r GetApiCatalogRoomsImagesNameSvgResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r GetApiCatalogRoomsImagesNameSvgResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetApiCatalogRoomsImagesNameSvgResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r GetApiCatalogRoomsImagesNameSvgResponse) ContentType() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Header.Get("Content-Type")
 	}
@@ -37713,6 +37822,19 @@ func (c *ClientWithResponses) GetMetadataWithResponse(ctx context.Context, reqEd
 	return ParseGetMetadataResponse(rsp)
 }
 
+// GetApiCatalogRoomsImagesNameSvgWithResponse Read a fixed local .svg schematic by basename within a trusted Demo session
+//
+// Returns a wrapper object for the known response body format(s).
+//
+// Corresponds with GET /api/catalog/rooms/images/{name}.svg (the `GetApiCatalogRoomsImagesNameSvg` operationId).
+func (c *ClientWithResponses) GetApiCatalogRoomsImagesNameSvgWithResponse(ctx context.Context, name string, reqEditors ...RequestEditorFn) (*GetApiCatalogRoomsImagesNameSvgResponse, error) {
+	rsp, err := c.GetApiCatalogRoomsImagesNameSvg(ctx, name, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetApiCatalogRoomsImagesNameSvgResponse(rsp)
+}
+
 // CatalogRoomsMapWithResponse Look up a room's highlighted map or an available building overview
 //
 // Returns a wrapper object for the known response body format(s).
@@ -40855,6 +40977,42 @@ func ParseGetMetadataResponse(rsp *http.Response) (*GetMetadataResponse, error) 
 			return nil, err
 		}
 		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetApiCatalogRoomsImagesNameSvgResponse parses an HTTP response from a GetApiCatalogRoomsImagesNameSvgWithResponse call
+func ParseGetApiCatalogRoomsImagesNameSvgResponse(rsp *http.Response) (*GetApiCatalogRoomsImagesNameSvgResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetApiCatalogRoomsImagesNameSvgResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case rsp.StatusCode == 304:
+		break // No content-type
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest OpenApiErrorSchema
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest OpenApiErrorSchema
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
 
 	}
 
