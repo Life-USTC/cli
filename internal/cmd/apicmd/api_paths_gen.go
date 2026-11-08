@@ -33,6 +33,7 @@ var generatedAPIPaths = []string{
 	"/api/catalog/links",
 	"/api/catalog/links/resolve",
 	"/api/catalog/metadata",
+	"/api/catalog/rooms/images/{name}.svg",
 	"/api/catalog/rooms/{code}/map",
 	"/api/catalog/schedules",
 	"/api/catalog/sections",
