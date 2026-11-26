@@ -10,7 +10,7 @@ require (
 	github.com/charmbracelet/lipgloss v1.1.0
 	github.com/fatih/color v1.19.0
 	github.com/getkin/kin-openapi v0.152.0
-	github.com/go-openapi/jsonpointer v1.0.2
+	github.com/go-openapi/jsonpointer v1.0.3
 	github.com/itchyny/gojq v0.12.20
 	github.com/joho/godotenv v1.5.1
 	github.com/mattn/go-runewidth v0.0.31
